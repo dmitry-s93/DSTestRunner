@@ -1,0 +1,61 @@
+/* Copyright 2023 DSTestRunner Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package test.page
+
+import config.WebDriverConfig
+import logger.Logger
+import java.net.URI
+
+class PageData(pageName: String, urlPath: String?, identifier: String?, description: String?, elements: HashMap<String, String>?) {
+    private val pageName: String
+    private val urlPath: String?
+    private val identifier: String?
+    private val description: String?
+    private val elements: HashMap<String, String>?
+
+    init {
+        this.pageName = pageName
+        this.urlPath = urlPath
+        this.identifier = identifier
+        this.description = description
+        this.elements = elements
+    }
+
+    fun getUrl(): String {
+        if (urlPath != null)
+            return URI(WebDriverConfig.getUrl()).resolve(urlPath).toString()
+        return WebDriverConfig.getUrl()
+    }
+
+    fun getUrlPath(): String? {
+        return urlPath
+    }
+
+    fun getIdentifier(): String? {
+        return identifier
+    }
+
+    fun getDescription(): String? {
+        return description
+    }
+
+    fun getElementLocator(elementName: String): String? {
+        if (elements != null && elements.containsKey(elementName))
+            return elements[elementName]
+        Logger.warning("Element '$elementName' is not set in '$pageName' page")
+        return null
+    }
+}

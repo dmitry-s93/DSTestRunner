@@ -1,0 +1,20 @@
+{
+  "MainConfig": {
+    "name": "WebTest",
+    "threads": 5,
+    "driverImpl": "driver.impl.ChromeDriverImpl",
+    "reporterImpl": "reporter.impl.CsvReporterImpl",
+    "testSource": "WebTestList",
+    "pageSource": "pages.PageList",
+    "consoleLogLevel": 4
+  },
+  "ReporterConfig": {
+    "reportDir": "/home/dmitry/report"
+  },
+  "WebDriverConfig": {
+    "url": "https://www.saucedemo.com/",
+    "remoteAddress": "http://localhost:4444/wd/hub",
+    "pageLoadTimeout": 20000,
+    "implicitlyWait": 10000
+  }
+}
