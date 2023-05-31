@@ -20,6 +20,7 @@ interface Driver {
     fun checkLoadPage(url: String, identifier: String?): Boolean
     fun getCurrentUrl(): String
     fun getElementValue(locator: String): String
+    fun getScreenshot(): ByteArray
     fun setPage(url: String)
     fun setValue(locator: String, value: String, sequenceMode: Boolean = false)
     fun isExist(locator: String): Boolean

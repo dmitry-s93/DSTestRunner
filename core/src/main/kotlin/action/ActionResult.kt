@@ -18,13 +18,16 @@ package action
 class ActionResult(
     result: Result = Result.FAIL,
     error: String? = null,
+    screenshot: ByteArray? = null
 ) {
     private val result: Result
     private val error: String?
+    private val screenshot: ByteArray?
 
     init {
         this.result = result
         this.error = error
+        this.screenshot = screenshot
     }
 
     fun result(): Result {
@@ -33,5 +36,12 @@ class ActionResult(
 
     fun error(): String? {
         return error
+    }
+
+    /**
+     * Returns a screenshot of the error
+     */
+    fun screenshot(): ByteArray? {
+        return screenshot
     }
 }

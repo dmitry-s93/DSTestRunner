@@ -15,6 +15,9 @@
 
 package action
 
+import driver.DriverSession
+import logger.Logger
+
 enum class Result {
     PASS, FAIL
 }
@@ -25,6 +28,12 @@ open class ActionReturn {
     }
 
     open fun fail(errorDesc: String): ActionResult {
-        return ActionResult(Result.FAIL, errorDesc)
+        val screenshot = try {
+            DriverSession.getSession().getScreenshot()
+        } catch (e: Exception) {
+            Logger.error("Failed to take a screenshot of the error: ${e.message}")
+            null
+        }
+        return ActionResult(Result.FAIL, errorDesc, screenshot)
     }
 }

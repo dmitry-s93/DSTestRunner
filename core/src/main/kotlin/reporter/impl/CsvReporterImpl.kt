@@ -20,6 +20,7 @@ import action.ActionResult
 import com.opencsv.CSVWriterBuilder
 import config.ReporterConfig
 import reporter.Reporter
+import java.io.FileOutputStream
 import java.io.FileWriter
 import java.nio.file.Paths
 
@@ -45,10 +46,15 @@ class CsvReporterImpl : Reporter {
     }
 
     private fun addLine(id: String, parentId: String, name: String, actionResult: ActionResult) {
-        var actionError = actionResult.error()
-        if (actionError == null)
-            actionError = ""
-        reportData.add(arrayOf("$parentId.$id", name, actionResult.result().toString(), actionError))
+        val actionError = if (actionResult.error() == null) "" else actionResult.error()
+        if (actionResult.screenshot() != null)
+            saveScreenshot(actionResult.screenshot()!!, "$parentId.$id $name.png".replace(" ", "_"))
+        reportData.add(arrayOf("$parentId.$id", name, actionResult.result().toString(), actionError.toString()))
+    }
+
+    private fun saveScreenshot(screenshot: ByteArray, fileName: String) {
+        val path = Paths.get(ReporterConfig.getReportDir(), fileName)
+        FileOutputStream(path.toFile()).use { stream -> stream.write(screenshot) }
     }
 
     override fun quit() {

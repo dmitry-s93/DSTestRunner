@@ -70,6 +70,10 @@ class ChromeDriverImpl : Driver {
         return getWebElement(locator).text
     }
 
+    override fun getScreenshot(): ByteArray {
+        return (driver as TakesScreenshot).getScreenshotAs(OutputType.BYTES)
+    }
+
     private fun getWebElement(locator: String): WebElement {
         val webElement = driver.findElement(By.xpath(locator))
         await()
