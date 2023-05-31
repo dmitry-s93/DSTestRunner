@@ -15,30 +15,34 @@
 
 package config
 
-import org.json.JSONObject
 import logger.Logger
+import org.json.JSONObject
 import utils.ResourceUtils
 
-class ReporterConfig {
+class BrowserOptionsConfig {
     companion object {
-        private lateinit var reportDir: String
+        private lateinit var arguments: MutableList<String>
 
         private fun readConfig() {
             try {
-                Logger.debug("Reading parameters from config", "ReporterConfig")
+                Logger.debug("Reading parameters from config", "BrowserOptionsConfig")
+                arguments = mutableListOf()
                 val config = JSONObject(ResourceUtils().getResourceByName(MainConfig.getConfiguration()))
-                val reporterConfig = config.getJSONObject("ReporterConfig")
-                reportDir = reporterConfig.getString("reportDir")
+                if (config.has("BrowserOptionsConfig")) {
+                    config.getJSONArray("BrowserOptionsConfig").forEach {
+                        arguments.add(it.toString())
+                    }
+                }
             } catch (e: org.json.JSONException) {
-                Logger.error("An error occurred while reading the config", "ReporterConfig")
+                Logger.error("An error occurred while reading the config", "BrowserOptionsConfig")
                 throw e
             }
         }
 
-        fun getReportDir(): String {
-            if (!::reportDir.isInitialized)
+        fun getArguments(): List<String> {
+            if (!::arguments.isInitialized)
                 readConfig()
-            return reportDir
+            return arguments
         }
     }
 }

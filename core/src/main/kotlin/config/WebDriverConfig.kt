@@ -28,6 +28,7 @@ class WebDriverConfig {
 
         private fun readConfig() {
             try {
+                Logger.debug("Reading parameters from config", "WebDriverConfig")
                 val config = JSONObject(ResourceUtils().getResourceByName(MainConfig.getConfiguration()))
                 val webDriverConfig = config.getJSONObject("WebDriverConfig")
                 url = webDriverConfig.getString("url")

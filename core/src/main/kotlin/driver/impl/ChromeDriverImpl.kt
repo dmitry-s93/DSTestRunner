@@ -15,6 +15,7 @@
 
 package driver.impl
 
+import config.BrowserOptionsConfig
 import config.WebDriverConfig
 import driver.Driver
 import logger.Logger
@@ -27,6 +28,7 @@ import java.net.URL
 import java.time.Duration
 
 
+@Suppress("unused")
 class ChromeDriverImpl : Driver {
     private val driver: WebDriver
     private val pageLoadTimeout: Long = WebDriverConfig.getPageLoadTimeout()
@@ -34,7 +36,7 @@ class ChromeDriverImpl : Driver {
 
     init {
         val chromeOptions = ChromeOptions()
-        chromeOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL)
+        chromeOptions.addArguments(BrowserOptionsConfig.getArguments())
         driver = RemoteWebDriver(URL(WebDriverConfig.getRemoteAddress()), chromeOptions)
         driver.manage().timeouts().pageLoadTimeout(Duration.ofMillis(pageLoadTimeout))
         driver.manage().timeouts().implicitlyWait(Duration.ofMillis(implicitlyWait))

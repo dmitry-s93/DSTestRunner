@@ -16,5 +16,8 @@
     "remoteAddress": "http://localhost:4444/wd/hub",
     "pageLoadTimeout": 20000,
     "implicitlyWait": 10000
-  }
+  },
+  "BrowserOptionsConfig": [
+    "window-size=1280,720"
+  ]
 }
