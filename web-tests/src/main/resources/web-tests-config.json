@@ -6,7 +6,7 @@
     "reporterImpl": "reporter.impl.CsvReporterImpl",
     "testSource": "WebTestList",
     "pageSource": "pages.PageList",
-    "consoleLogLevel": 4
+    "consoleLogLevel": 0
   },
   "ReporterConfig": {
     "reportDir": "/home/dmitry/report"

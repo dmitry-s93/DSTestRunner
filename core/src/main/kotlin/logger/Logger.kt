@@ -22,7 +22,7 @@ import java.util.*
 class Logger {
     companion object {
         private enum class LogLevel {
-            INFO, WARN, ERROR, DEBUG
+            DEBUG, INFO, WARN, ERROR,
         }
 
         fun debug(logText: String, logSource: String? = null) {
@@ -42,7 +42,7 @@ class Logger {
         }
 
         private fun printLog(logText: String, logLevel: LogLevel, logSource: String?) {
-            if (MainConfig.getConsoleLogLevel() < logLevel.ordinal + 1)
+            if (MainConfig.getConsoleLogLevel() > logLevel.ordinal)
                 return
 
             val ansiColor = when (logLevel) {
