@@ -23,6 +23,7 @@ class DriverSession {
     companion object {
         private var driverSession = ThreadLocal<Driver>()
 
+        @Synchronized
         fun createSession() {
             try {
                 driverSession.set(DriverFactory().createDriver(MainConfig.getDriverImpl()))

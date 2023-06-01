@@ -23,6 +23,7 @@ class ReporterSession {
     companion object {
         private var reporterSession = ThreadLocal<Reporter>()
 
+        @Synchronized
         fun createSession() {
             try {
                 reporterSession.set(ReporterFactory().createReporter(MainConfig.getReporterImpl()))
