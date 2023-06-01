@@ -23,25 +23,27 @@ class MainConfig {
     companion object {
         private lateinit var name: String
         private lateinit var configuration: String
-        private var threads: Int = -1
+        private var threads: Int = 0
         private lateinit var driverImpl: String
         private lateinit var reporterImpl: String
         private lateinit var testSource: String
         private lateinit var pageSource: String
-        private var consoleLogLevel: Int = -1
+        private var consoleLogLevel: Int = 0
 
         fun setConfiguration(configName: String) {
             configuration = configName
+            readConfig()
         }
 
         fun getConfiguration(): String {
             return configuration
         }
 
+        @Synchronized
         private fun readConfig() {
             try {
                 val config = JSONObject(ResourceUtils().getResourceByName(configuration))
-                val mainConfig = config.getJSONObject("MainConfig")
+                val mainConfig = config.getJSONObject("Main")
                 name = mainConfig.getString("name")
                 threads = mainConfig.getInt("threads")
                 driverImpl = mainConfig.getString("driverImpl")
@@ -56,38 +58,26 @@ class MainConfig {
         }
 
         fun getThreads(): Int {
-            if (threads == -1)
-                readConfig()
             return threads
         }
 
         fun getDriverImpl(): String {
-            if (!::driverImpl.isInitialized)
-                readConfig()
             return driverImpl
         }
 
         fun getReporterImpl(): String {
-            if (!::reporterImpl.isInitialized)
-                readConfig()
             return reporterImpl
         }
 
         fun getTestSource(): String {
-            if (!::testSource.isInitialized)
-                readConfig()
             return testSource
         }
 
         fun getPageSource(): String {
-            if (!::pageSource.isInitialized)
-                readConfig()
             return pageSource
         }
 
         fun getConsoleLogLevel(): Int {
-            if (consoleLogLevel == -1)
-                readConfig()
             return consoleLogLevel
         }
     }

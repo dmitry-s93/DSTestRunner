@@ -25,16 +25,20 @@ class WebDriverConfig {
         private lateinit var remoteAddress: String
         private var pageLoadTimeout: Long = 0
         private var implicitlyWait: Long = 0
+        private var isLoaded: Boolean = false
 
+        @Synchronized
         private fun readConfig() {
+            if (isLoaded) return
             try {
                 Logger.debug("Reading parameters from config", "WebDriverConfig")
                 val config = JSONObject(ResourceUtils().getResourceByName(MainConfig.getConfiguration()))
-                val webDriverConfig = config.getJSONObject("WebDriverConfig")
+                val webDriverConfig = config.getJSONObject("WebDriver")
                 url = webDriverConfig.getString("url")
                 remoteAddress = webDriverConfig.getString("remoteAddress")
                 pageLoadTimeout = webDriverConfig.getLong("pageLoadTimeout")
                 implicitlyWait = webDriverConfig.getLong("implicitlyWait")
+                isLoaded = true
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", "WebDriverConfig")
                 throw e
@@ -42,26 +46,22 @@ class WebDriverConfig {
         }
 
         fun getUrl(): String {
-            if (!::url.isInitialized)
-                readConfig()
+            if (!isLoaded) readConfig()
             return url
         }
 
         fun getRemoteAddress(): String {
-            if (!::remoteAddress.isInitialized)
-                readConfig()
+            if (!isLoaded) readConfig()
             return remoteAddress
         }
 
         fun getPageLoadTimeout(): Long {
-            if (pageLoadTimeout.toInt() == 0)
-                readConfig()
+            if (!isLoaded) readConfig()
             return pageLoadTimeout
         }
 
         fun getImplicitlyWait(): Long {
-            if (implicitlyWait.toInt() == 0)
-                readConfig()
+            if (!isLoaded) readConfig()
             return implicitlyWait
         }
     }

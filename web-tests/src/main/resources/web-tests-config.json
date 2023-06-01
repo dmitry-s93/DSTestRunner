@@ -1,5 +1,5 @@
 {
-  "MainConfig": {
+  "Main": {
     "name": "WebTest",
     "threads": 5,
     "driverImpl": "driver.impl.ChromeDriverImpl",
@@ -8,16 +8,16 @@
     "pageSource": "pages.PageList",
     "consoleLogLevel": 0
   },
-  "ReporterConfig": {
+  "Reporter": {
     "reportDir": "/home/dmitry/report"
   },
-  "WebDriverConfig": {
+  "WebDriver": {
     "url": "https://www.saucedemo.com/",
     "remoteAddress": "http://localhost:4444/wd/hub",
     "pageLoadTimeout": 20000,
     "implicitlyWait": 10000
   },
-  "BrowserOptionsConfig": [
+  "BrowserOptions": [
     "window-size=1280,1024"
   ]
 }

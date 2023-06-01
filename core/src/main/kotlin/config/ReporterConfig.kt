@@ -22,13 +22,16 @@ import utils.ResourceUtils
 class ReporterConfig {
     companion object {
         private lateinit var reportDir: String
+        private var isLoaded: Boolean = false
 
         private fun readConfig() {
+            if (isLoaded) return
             try {
                 Logger.debug("Reading parameters from config", "ReporterConfig")
                 val config = JSONObject(ResourceUtils().getResourceByName(MainConfig.getConfiguration()))
-                val reporterConfig = config.getJSONObject("ReporterConfig")
+                val reporterConfig = config.getJSONObject("Reporter")
                 reportDir = reporterConfig.getString("reportDir")
+                isLoaded = true
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", "ReporterConfig")
                 throw e
@@ -36,8 +39,7 @@ class ReporterConfig {
         }
 
         fun getReportDir(): String {
-            if (!::reportDir.isInitialized)
-                readConfig()
+            if (!isLoaded) readConfig()
             return reportDir
         }
     }

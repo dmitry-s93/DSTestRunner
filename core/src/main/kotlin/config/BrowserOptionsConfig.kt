@@ -22,17 +22,21 @@ import utils.ResourceUtils
 class BrowserOptionsConfig {
     companion object {
         private lateinit var arguments: MutableList<String>
+        private var isLoaded: Boolean = false
 
+        @Synchronized
         private fun readConfig() {
+            if (isLoaded) return
             try {
                 Logger.debug("Reading parameters from config", "BrowserOptionsConfig")
                 arguments = mutableListOf()
                 val config = JSONObject(ResourceUtils().getResourceByName(MainConfig.getConfiguration()))
-                if (config.has("BrowserOptionsConfig")) {
-                    config.getJSONArray("BrowserOptionsConfig").forEach {
+                if (config.has("BrowserOptions")) {
+                    config.getJSONArray("BrowserOptions").forEach {
                         arguments.add(it.toString())
                     }
                 }
+                isLoaded = true
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", "BrowserOptionsConfig")
                 throw e
@@ -40,8 +44,7 @@ class BrowserOptionsConfig {
         }
 
         fun getArguments(): List<String> {
-            if (!::arguments.isInitialized)
-                readConfig()
+            if (!isLoaded) readConfig()
             return arguments
         }
     }
