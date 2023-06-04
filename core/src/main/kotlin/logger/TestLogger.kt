@@ -22,7 +22,7 @@ class TestLogger {
     companion object {
         fun log(id: String, parentId: String, testName: String, actionResult: ActionResult) {
             val result = actionResult.result()
-            val error = actionResult.error()
+            val message = actionResult.message()
 
             val ansiColor = when (result) {
                 Result.PASS -> Color.ANSI_GREEN
@@ -30,8 +30,8 @@ class TestLogger {
             }
 
             var errorPart = ""
-            if (error != null)
-                errorPart = "\n${Color.ANSI_RED}$error${Color.ANSI_RESET}"
+            if (message != null)
+                errorPart = "\n${Color.ANSI_RED}$message${Color.ANSI_RESET}"
 
             println("${Logger.getTime()} ${Logger.getThreadId()} $ansiColor$result${Color.ANSI_RESET} --> ${Color.ANSI_CYAN}$parentId.$id $testName${Color.ANSI_RESET}$errorPart")
         }

@@ -43,7 +43,7 @@ class OpenBrowserAction(pageName: String) : ActionReturn(), Action {
             DriverSession.createSession()
             DriverSession.getSession().setPage(pageUrl)
         } catch (e: Exception) {
-            return fail(Localization.get("OpenBrowserAction.GeneralError", e.message))
+            return fail(Localization.get("OpenBrowserAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }
@@ -57,9 +57,11 @@ class OpenBrowserAction(pageName: String) : ActionReturn(), Action {
 }
 
 fun openBrowser(pageName: String): ActionData {
+    val startTime = System.currentTimeMillis()
     val action = OpenBrowserAction(pageName)
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()
-    return ActionData(result, parameters, name)
+    val stopTime = System.currentTimeMillis()
+    return ActionData(result, parameters, name, startTime, stopTime)
 }

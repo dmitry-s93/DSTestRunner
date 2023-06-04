@@ -3,13 +3,13 @@
     "name": "WebTest",
     "threads": 5,
     "driverImpl": "driver.impl.ChromeDriverImpl",
-    "reporterImpl": "reporter.impl.CsvReporterImpl",
+    "reporterImpl": "reporter.impl.AllureReporter",
     "testSource": "WebTestList",
     "pageSource": "pages.PageList",
     "consoleLogLevel": 0
   },
   "Reporter": {
-    "reportDir": "/home/dmitry/report"
+    "reportDir": "/home/user/allure-results"
   },
   "WebDriver": {
     "url": "https://www.saucedemo.com/",

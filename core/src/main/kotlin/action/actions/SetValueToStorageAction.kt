@@ -51,9 +51,11 @@ class SetValueToStorageAction(name: String, value: String) : ActionReturn(), Act
 }
 
 fun setValueToStorage(name: String, value: String): ActionData {
+    val startTime = System.currentTimeMillis()
     val action = SetValueToStorageAction(name, value)
     val result = action.execute()
     val parameters = action.getParameters()
     val actionName = action.getName()
-    return ActionData(result, parameters, actionName)
+    val stopTime = System.currentTimeMillis()
+    return ActionData(result, parameters, actionName, startTime, stopTime)
 }

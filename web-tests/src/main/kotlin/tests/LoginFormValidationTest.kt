@@ -1,10 +1,16 @@
 package tests
 
 import action.actions.*
+import reporter.impl.allure
 import test.TestBuilder
 
 class LoginFormValidationTest : TestBuilder("TEST_02", "Login Form Validation") {
     init {
+        allure {
+            epic("Authentication")
+            feature("User Login")
+            description("Test for checking negative cases at user login")
+        }
         before {
             step("01_before", openBrowser("LoginPage"))
 

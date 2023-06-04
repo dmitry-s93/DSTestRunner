@@ -43,7 +43,7 @@ class IsNotExistAction(elementName: String) : ActionReturn(), Action {
             if (!DriverSession.getSession().isNotExist(elementLocator))
                 return fail(Localization.get("IsNotExistAction.ElementIsPresent"))
         } catch (e: Exception) {
-            return fail(Localization.get("IsNotExistAction.GeneralError", e.message))
+            return fail(Localization.get("IsNotExistAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }
@@ -57,10 +57,12 @@ class IsNotExistAction(elementName: String) : ActionReturn(), Action {
 }
 
 fun isNotExist(elementName: String, function: (IsNotExistAction.() -> Unit)? = null): ActionData {
+    val startTime = System.currentTimeMillis()
     val action = IsNotExistAction(elementName)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()
-    return ActionData(result, parameters, name)
+    val stopTime = System.currentTimeMillis()
+    return ActionData(result, parameters, name, startTime, stopTime)
 }

@@ -15,7 +15,6 @@
 
 package reporter.impl
 
-import action.ActionData
 import action.ActionResult
 import com.opencsv.CSVWriterBuilder
 import config.ReporterConfig
@@ -25,7 +24,8 @@ import java.io.FileWriter
 import java.nio.file.Paths
 
 
-class CsvReporterImpl : Reporter {
+@Suppress("unused")
+class CsvReporter : Reporter {
     private var testId: String? = null
     private var testName: String? = null
 
@@ -37,19 +37,19 @@ class CsvReporterImpl : Reporter {
         reportData.add(arrayOf("ID", "Name", "Result", "Error"))
     }
 
-    override fun addStep(id: String, parentId: String, name: String, actionData: ActionData) {
-        addLine(id, parentId, name, actionData.getResult())
-    }
-
-    override fun addMultiStep(id: String, parentId: String, name: String, actionResult: ActionResult) {
-        addLine(id, parentId, name, actionResult)
-    }
-
-    private fun addLine(id: String, parentId: String, name: String, actionResult: ActionResult) {
-        val actionError = if (actionResult.error() == null) "" else actionResult.error()
+    override fun addStep(
+        id: String,
+        parentId: String,
+        name: String,
+        parameters: HashMap<String, String>,
+        actionResult: ActionResult,
+        startTime: Long,
+        stopTime: Long
+    ) {
+        val message = if (actionResult.message() == null) "" else actionResult.message().toString()
         if (actionResult.screenshot() != null)
             saveScreenshot(actionResult.screenshot()!!, "$parentId.$id $name.png".replace(" ", "_"))
-        reportData.add(arrayOf("$parentId.$id", name, actionResult.result().toString(), actionError.toString()))
+        reportData.add(arrayOf("$parentId.$id", name, actionResult.result().toString(), message))
     }
 
     private fun saveScreenshot(screenshot: ByteArray, fileName: String) {

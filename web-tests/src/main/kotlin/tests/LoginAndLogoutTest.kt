@@ -1,10 +1,16 @@
 package tests
 
 import action.actions.*
+import reporter.impl.allure
 import test.TestBuilder
 
 class LoginAndLogoutTest : TestBuilder("TEST_01", "Login and logout") {
     init {
+        allure {
+            epic("Authentication")
+            feature("User Login")
+            description("User Login/Logout Direct Test")
+        }
         before {
             step("01_before", openBrowser("LoginPage"))
             step("02_before", checkLoadPage("LoginPage"))

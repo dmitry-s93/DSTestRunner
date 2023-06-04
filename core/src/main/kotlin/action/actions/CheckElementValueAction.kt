@@ -47,7 +47,7 @@ class CheckElementValueAction(elementName: String, expectedValue: String) : Acti
             if (elementValue != expectedValue)
                 return fail(Localization.get("CheckElementValueAction.ElementValueNotMatch", elementValue, expectedValue))
         } catch (e: Exception) {
-            return fail(Localization.get("CheckElementValueAction.GeneralError", e.message))
+            return fail(Localization.get("CheckElementValueAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }
@@ -62,10 +62,12 @@ class CheckElementValueAction(elementName: String, expectedValue: String) : Acti
 }
 
 fun checkElementValue(elementName: String, expectedValue: String, function: (CheckElementValueAction.() -> Unit)? = null): ActionData {
+    val startTime = System.currentTimeMillis()
     val action = CheckElementValueAction(elementName, expectedValue)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()
-    return ActionData(result, parameters, name)
+    val stopTime = System.currentTimeMillis()
+    return ActionData(result, parameters, name, startTime, stopTime)
 }

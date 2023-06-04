@@ -15,12 +15,19 @@
 
 package reporter
 
-import action.ActionData
 import action.ActionResult
 
 interface Reporter {
     fun setTestInfo(testId: String, testName: String)
-    fun addStep(id: String, parentId: String, name: String, actionData: ActionData)
-    fun addMultiStep(id: String, parentId: String, name: String, actionResult: ActionResult)
+    fun addStep(
+        id: String,
+        parentId: String,
+        name: String,
+        parameters: HashMap<String, String>,
+        actionResult: ActionResult,
+        startTime: Long,
+        stopTime: Long
+    )
+
     fun quit()
 }

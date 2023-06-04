@@ -32,7 +32,7 @@ class CloseBrowserAction : ActionReturn(), Action {
         try {
             DriverSession.closeSession()
         } catch (e: Exception) {
-            return fail(Localization.get("CloseBrowserAction.GeneralError", e.message))
+            return fail(Localization.get("CloseBrowserAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }
@@ -43,9 +43,11 @@ class CloseBrowserAction : ActionReturn(), Action {
 }
 
 fun closeBrowser(): ActionData {
+    val startTime = System.currentTimeMillis()
     val action = CloseBrowserAction()
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()
-    return ActionData(result, parameters, name)
+    val stopTime = System.currentTimeMillis()
+    return ActionData(result, parameters, name, startTime, stopTime)
 }

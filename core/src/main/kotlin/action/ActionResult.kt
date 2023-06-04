@@ -17,16 +17,19 @@ package action
 
 class ActionResult(
     result: Result = Result.FAIL,
-    error: String? = null,
+    message: String? = null,
+    trace: String? = null,
     screenshot: ByteArray? = null
 ) {
     private val result: Result
-    private val error: String?
+    private val message: String?
+    private val trace: String?
     private val screenshot: ByteArray?
 
     init {
         this.result = result
-        this.error = error
+        this.message = message
+        this.trace = trace
         this.screenshot = screenshot
     }
 
@@ -34,8 +37,12 @@ class ActionResult(
         return result
     }
 
-    fun error(): String? {
-        return error
+    fun message(): String? {
+        return message
+    }
+
+    fun trace(): String? {
+        return trace
     }
 
     /**

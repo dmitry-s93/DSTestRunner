@@ -32,5 +32,4 @@ dependencies {
     implementation("org.awaitility:awaitility:4.2.0")
     // https://mvnrepository.com/artifact/com.opencsv/opencsv
     implementation("com.opencsv:opencsv:5.7.1")
-
 }

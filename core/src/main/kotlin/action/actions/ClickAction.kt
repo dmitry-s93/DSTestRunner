@@ -42,7 +42,7 @@ class ClickAction(elementName: String) : ActionReturn(), Action {
                 return fail(Localization.get("General.ElementLocatorNotSpecified"))
             DriverSession.getSession().click(elementLocator)
         } catch (e: Exception) {
-            return fail(Localization.get("ClickAction.GeneralError", e.message))
+            return fail(Localization.get("ClickAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }
@@ -56,9 +56,11 @@ class ClickAction(elementName: String) : ActionReturn(), Action {
 }
 
 fun click(elementName: String): ActionData {
+    val startTime = System.currentTimeMillis()
     val action = ClickAction(elementName)
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()
-    return ActionData(result, parameters, name)
+    val stopTime = System.currentTimeMillis()
+    return ActionData(result, parameters, name, startTime, stopTime)
 }

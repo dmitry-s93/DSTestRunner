@@ -49,7 +49,7 @@ class CheckLoadPageAction(pageName: String) : ActionReturn(), Action {
                 return fail(Localization.get("CheckLoadPageAction.IdentifierNotFound", pageIdentifier))
             }
         } catch (e: Exception) {
-            return fail(Localization.get("CheckLoadPageAction.GeneralError", e.message))
+            return fail(Localization.get("CheckLoadPageAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }
@@ -64,10 +64,12 @@ class CheckLoadPageAction(pageName: String) : ActionReturn(), Action {
 }
 
 fun checkLoadPage(pageName: String, function: (CheckLoadPageAction.() -> Unit)? = null): ActionData {
+    val startTime = System.currentTimeMillis()
     val action = CheckLoadPageAction(pageName)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()
-    return ActionData(result, parameters, name)
+    val stopTime = System.currentTimeMillis()
+    return ActionData(result, parameters, name, startTime, stopTime)
 }

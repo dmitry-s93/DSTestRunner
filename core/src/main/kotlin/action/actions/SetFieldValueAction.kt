@@ -45,7 +45,7 @@ class SetFieldValueAction(fieldName: String, value: String) : ActionReturn(), Ac
                 DriverSession.getSession().setValue(locator, value, sequenceMode)
             }
         } catch (e: Exception) {
-            return fail(Localization.get("SetFieldValueAction.GeneralError", e.message))
+            return fail(Localization.get("SetFieldValueAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }
@@ -64,10 +64,12 @@ class SetFieldValueAction(fieldName: String, value: String) : ActionReturn(), Ac
 }
 
 fun setFieldValue(fieldName: String, value: String, function: (SetFieldValueAction.() -> Unit)? = null): ActionData {
+    val startTime = System.currentTimeMillis()
     val action = SetFieldValueAction(fieldName, value)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()
-    return ActionData(result, parameters, name)
+    val stopTime = System.currentTimeMillis()
+    return ActionData(result, parameters, name, startTime, stopTime)
 }

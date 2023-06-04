@@ -41,7 +41,7 @@ class SetPageAction(pageName: String) : ActionReturn(), Action {
         try {
             DriverSession.getSession().setPage(pageUrl)
         } catch (e: Exception) {
-            return fail("An error occurred while opening the page: ${e.message}")
+            return fail("An error occurred while opening the page: ${e.message}", e.stackTraceToString())
         }
         return pass()
     }
@@ -55,10 +55,12 @@ class SetPageAction(pageName: String) : ActionReturn(), Action {
 }
 
 fun setPage(pageName: String, function: (SetPageAction.() -> Unit)? = null): ActionData {
+    val startTime = System.currentTimeMillis()
     val action = SetPageAction(pageName)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()
-    return ActionData(result, parameters, name)
+    val stopTime = System.currentTimeMillis()
+    return ActionData(result, parameters, name, startTime, stopTime)
 }

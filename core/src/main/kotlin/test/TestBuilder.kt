@@ -69,9 +69,12 @@ open class TestBuilder(id: String, name: String) {
         if (stepName.isEmpty())
             stepName = actionData.getName()
         val stepResult = actionData.getResult()
+        val stepParams = actionData.getParameters()
+        val startTime = actionData.getStartTime()
+        val stopTime = actionData.getStopTime()
         TestLogger.log(id, parentId, stepName, stepResult)
         if (!before && !after)
-            ReporterSession.getSession().addStep(id, parentId, stepName, actionData)
+            ReporterSession.getSession().addStep(id, parentId, stepName, stepParams, stepResult, startTime, stopTime)
         name = ""
         if (stepResult.result() == Result.FAIL)
             result = Result.FAIL
@@ -85,14 +88,17 @@ open class TestBuilder(id: String, name: String) {
         val currentResult = result
         parentId += ".$id"
         result = Result.PASS
+        val startTime = System.currentTimeMillis()
+        val stopTime : Long
         try {
             function()
         } catch (e: TestFailedError) {
             throw e
         } finally {
+            stopTime = System.currentTimeMillis()
             parentId = currentTestId
             TestLogger.log(id, parentId, name, ActionResult(result))
-            ReporterSession.getSession().addMultiStep(id, parentId, name, ActionResult(result))
+            ReporterSession.getSession().addStep(id, parentId, name, HashMap(), ActionResult(result), startTime, stopTime)
             if (result != Result.FAIL)
                 result = currentResult
         }

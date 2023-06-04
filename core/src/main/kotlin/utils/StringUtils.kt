@@ -13,12 +13,22 @@
  * limitations under the License.
  */
 
-package action
+package utils
 
-interface Action {
-    fun getName(): String
-    fun execute(): ActionResult
-    fun getParameters(): HashMap<String, String>
-    fun pass(): ActionResult
-    fun fail(message: String, trace: String?): ActionResult
+import java.math.BigInteger
+import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
+
+
+class StringUtils {
+    fun md5sum(input: String): String? {
+        val messageDigest: MessageDigest = try {
+            MessageDigest.getInstance("MD5")
+        } catch (e: NoSuchAlgorithmException) {
+            throw RuntimeException("Unable to compute md5sum for string", e)
+        }
+        messageDigest.update(input.toByteArray())
+        val hash = BigInteger(1, messageDigest.digest())
+        return hash.toString(16)
+    }
 }
