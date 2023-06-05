@@ -19,5 +19,15 @@
   },
   "BrowserOptions": [
     "window-size=1280,1024"
-  ]
+  ],
+  "UserList": {
+    "StandardUser": {
+      "login": "standard_user",
+      "password": "secret_sauce"
+    },
+    "LockedUser": {
+      "login": "locked_out_user",
+      "password": "secret_sauce"
+    }
+  }
 }

@@ -16,7 +16,6 @@
 import config.MainConfig
 import logger.Logger
 import test.TestListFactory
-import java.util.*
 import java.util.concurrent.Executors
 import kotlin.system.exitProcess
 
