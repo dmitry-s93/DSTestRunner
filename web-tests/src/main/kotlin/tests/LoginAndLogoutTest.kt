@@ -14,12 +14,11 @@ class LoginAndLogoutTest : TestBuilder("TEST_01", "Login and logout") {
         before {
             step("01_before", openBrowser("LoginPage"))
             step("02_before", checkLoadPage("LoginPage"))
-            step("03_before", setValueToStorage("StandardUserConst", "standard_user"))
-            step("04_before", setValueToStorage("PasswordConst", "secret_sauce"))
+            step("03_before", importUser("StandardUser", "user"))
         }
         steps {
-            step("01", setFieldValue("UsernameEdit", "{StandardUserConst}"))
-            step("02", setFieldValue("PasswordEdit", "{PasswordConst}"))
+            step("01", setFieldValue("UsernameEdit", "{user_login}"))
+            step("02", setFieldValue("PasswordEdit", "{user_password}"))
             step("03", click("LoginButton"))
             step("04", checkLoadPage("InventoryPage"))
             step("05", click("BurgerMenuButton"))
