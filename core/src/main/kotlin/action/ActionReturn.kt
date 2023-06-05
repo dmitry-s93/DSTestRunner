@@ -27,13 +27,13 @@ open class ActionReturn {
         return ActionResult(Result.PASS, null)
     }
 
-    open fun fail(errorDesc: String): ActionResult {
+    open fun fail(message: String, trace: String? = null): ActionResult {
         val screenshot = try {
             DriverSession.getSession().getScreenshot()
         } catch (e: Exception) {
             Logger.error("Failed to take a screenshot of the error: ${e.message}")
             null
         }
-        return ActionResult(Result.FAIL, errorDesc, screenshot)
+        return ActionResult(Result.FAIL, message, trace, screenshot)
     }
 }
