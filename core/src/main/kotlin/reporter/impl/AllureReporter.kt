@@ -37,7 +37,7 @@ class AllureReporter : Reporter {
 
     private var description: String? = null
     private val labels = JSONArray()
-    private val steps = JSONArray()
+    private val steps: LinkedHashMap<String, LinkedHashMap<String, JSONObject>> = LinkedHashMap()
 
     private var testResult: Result = Result.PASS
 
@@ -47,7 +47,6 @@ class AllureReporter : Reporter {
         this.startTime = System.currentTimeMillis()
     }
 
-    // TODO Add nesting support
     override fun addStep(
         id: String,
         parentId: String,
@@ -72,7 +71,9 @@ class AllureReporter : Reporter {
             put("start", startTime)
             put("stop", stopTime)
         }
-        steps.put(step)
+        if (!steps.containsKey(parentId))
+            steps[parentId] = LinkedHashMap()
+        steps[parentId]?.put("$parentId.$id", step)
     }
 
     override fun quit() {
@@ -93,7 +94,7 @@ class AllureReporter : Reporter {
             put("status", getStatus(testResult))
             put("stage", "finished")
             put("description", description)
-            put("steps", steps)
+            put("steps", getSteps(testId))
             put("start", startTime)
             put("stop", stopTime)
         }
@@ -103,6 +104,16 @@ class AllureReporter : Reporter {
         file.write(result.toString())
         file.flush()
         file.close()
+    }
+
+    private fun getSteps(id: String): JSONArray {
+        val jsonArray = JSONArray()
+        steps[id]?.forEach {
+            val step = it.value
+            step.put("steps", getSteps(it.key))
+            jsonArray.put(step)
+        }
+        return jsonArray
     }
 
     private fun addLabel(name: String, value: String) {
