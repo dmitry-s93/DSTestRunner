@@ -3,7 +3,7 @@
     "name": "WebTest",
     "threads": 5,
     "driverImpl": "driver.impl.ChromeDriverImpl",
-    "reporterImpl": "reporter.impl.AllureReporter",
+    "reporterImpl": "reporter.allure.AllureReporter",
     "testSource": "WebTestList",
     "pageSource": "pages.PageList",
     "consoleLogLevel": 0

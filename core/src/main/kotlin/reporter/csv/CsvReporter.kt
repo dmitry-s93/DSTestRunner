@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package reporter.impl
+package reporter.csv
 
 import action.ActionResult
 import com.opencsv.CSVWriterBuilder

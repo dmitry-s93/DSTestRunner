@@ -1,7 +1,8 @@
 package tests
 
 import action.actions.*
-import reporter.impl.allure
+import reporter.allure.SeverityLevel
+import reporter.allure.allure
 import test.TestBuilder
 
 class LoginFormValidationTest : TestBuilder("TEST_02", "Login Form Validation") {
@@ -10,6 +11,7 @@ class LoginFormValidationTest : TestBuilder("TEST_02", "Login Form Validation") 
             epic("Authentication")
             feature("User Login")
             description("Test for checking negative cases at user login")
+            severity(SeverityLevel.CRITICAL)
         }
         before {
             step("01_before", openBrowser("LoginPage"))

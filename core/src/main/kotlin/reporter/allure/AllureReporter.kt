@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package reporter.impl
+package reporter.allure
 
 import action.ActionResult
 import action.Result
@@ -37,6 +37,7 @@ class AllureReporter : Reporter {
 
     private var description: String? = null
     private val labels = JSONArray()
+    private val links = JSONArray()
     private val steps: LinkedHashMap<String, LinkedHashMap<String, JSONObject>> = LinkedHashMap()
 
     private var testResult: Result = Result.PASS
@@ -90,6 +91,7 @@ class AllureReporter : Reporter {
             put("historyId", StringUtils().md5sum(testId))
             put("fullName", "$testId $testName".replace(" ", "_"))
             put("labels", labels)
+            put("links", links)
             put("name", testName)
             put("status", getStatus(testResult))
             put("stage", "finished")
@@ -125,6 +127,17 @@ class AllureReporter : Reporter {
         )
     }
 
+    private fun addLink(name: String, url: String? = null, type: String) {
+        links.put(
+            with(JSONObject()) {
+                put("name", name)
+                if (url != null)
+                    put("url", url)
+                put("type", type)
+            }
+        )
+    }
+
     fun epic(name: String) {
         addLabel("epic", name)
     }
@@ -137,8 +150,31 @@ class AllureReporter : Reporter {
         addLabel("story", name)
     }
 
+    fun severity(severity: SeverityLevel) {
+        addLabel("severity", severity.value)
+    }
+
     fun description(description: String) {
         this.description = description
+    }
+
+    fun link(name: String, url: String? = null, type: String? = null) {
+        var linkType = type
+        if (linkType.isNullOrEmpty())
+            linkType = "custom"
+        addLink(name, url, linkType)
+    }
+
+    fun tmsLink(value: String) {
+        addLink(value, type = "tms")
+    }
+
+    fun issue(value: String) {
+        addLink(value, type = "issue")
+    }
+
+    fun allureId(value: String) {
+        addLabel("AS_ID", value)
     }
 
     private fun getStatus(result: Result): String {
