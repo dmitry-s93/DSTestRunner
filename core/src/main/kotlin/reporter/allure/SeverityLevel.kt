@@ -18,7 +18,7 @@ package reporter.allure
 enum class SeverityLevel(val value: String) {
     BLOCKER("blocker"),
     CRITICAL("critical"),
-    NORMA("normal"),
+    NORMAL("normal"),
     MINOR("minor"),
     TRIVIAL("trivial");
 }
