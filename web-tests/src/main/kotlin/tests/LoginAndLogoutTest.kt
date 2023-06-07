@@ -1,7 +1,8 @@
 package tests
 
 import action.actions.*
-import reporter.impl.allure
+import reporter.allure.SeverityLevel
+import reporter.allure.allure
 import test.TestBuilder
 
 class LoginAndLogoutTest : TestBuilder("TEST_01", "Login and logout") {
@@ -10,6 +11,7 @@ class LoginAndLogoutTest : TestBuilder("TEST_01", "Login and logout") {
             epic("Authentication")
             feature("User Login")
             description("User Login/Logout Direct Test")
+            severity(SeverityLevel.BLOCKER)
         }
         before {
             step("01_before", openBrowser("LoginPage"))
