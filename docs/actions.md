@@ -1,5 +1,28 @@
 # Available Actions
 
+---
+
+## closeWindow
+
+Closes the active window or windows with the specified page.
+
+### Usage
+
+```kotlin
+step("<step_id>", closeWindow("<window_to_close>"))
+```
+
+### For example
+
+```kotlin
+// Closes the active window
+step("01", closeWindow())
+// Closes the window with the specified page 
+step("02", closeWindow("LoginPage"))
+```
+
+---
+
 ## importUser
 
 Imports the user from the config into the test storage.

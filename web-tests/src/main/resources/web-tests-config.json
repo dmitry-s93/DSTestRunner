@@ -2,7 +2,7 @@
   "Main": {
     "name": "WebTest",
     "threads": 5,
-    "driverImpl": "driver.impl.ChromeDriverImpl",
+    "driverImpl": "driver.web.ChromeDriver",
     "reporterImpl": "reporter.allure.AllureReporter",
     "testSource": "WebTestList",
     "pageSource": "pages.PageList",

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package driver.impl
+package driver.web
 
 import config.BrowserOptionsConfig
 import config.WebDriverConfig
@@ -29,7 +29,7 @@ import java.time.Duration
 
 
 @Suppress("unused")
-class ChromeDriverImpl : Driver {
+class ChromeDriver : Driver {
     private val driver: WebDriver
     private val pageLoadTimeout: Long = WebDriverConfig.getPageLoadTimeout()
     private val implicitlyWait: Long = WebDriverConfig.getImplicitlyWait()
@@ -62,6 +62,35 @@ class ChromeDriverImpl : Driver {
         } finally {
             setImplicitlyWait(implicitlyWait)
         }
+    }
+
+    override fun closeWindow(url: String?): Boolean {
+        if (url.isNullOrEmpty()) {
+            driver.close()
+            setWindowHandleOrFirst()
+            return true
+        } else {
+            val currentWindowHandle = driver.windowHandle
+            for (windowHandle in driver.windowHandles) {
+                driver.switchTo().window(windowHandle)
+                if (getCurrentUrl().startsWith(url)) {
+                    driver.close()
+                    setWindowHandleOrFirst(currentWindowHandle)
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    private fun setWindowHandleOrFirst(windowHandle: String? = null) {
+        val windowHandles = driver.windowHandles
+        if (windowHandles.isEmpty())
+            return
+        if (windowHandle != null && windowHandles.contains(windowHandle))
+            driver.switchTo().window(windowHandle)
+        else
+            driver.switchTo().window(windowHandles.first())
     }
 
     override fun getCurrentUrl(): String {
