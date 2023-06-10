@@ -18,6 +18,7 @@ package driver
 interface Driver {
     fun click(locator: String)
     fun checkLoadPage(url: String, identifier: String?): Boolean
+    fun switchToWindow(url: String?): Boolean
     fun closeWindow(url: String?): Boolean
     fun getCurrentUrl(): String
     fun getElementValue(locator: String): String

@@ -23,7 +23,7 @@ import config.Localization
 import driver.DriverSession
 import storage.PageStorage
 
-class CloseWindowAction(pageName: String?) : ActionReturn(), Action {
+class SwitchToWindowAction(pageName: String?) : ActionReturn(), Action {
     private val pageName: String?
     private val pageUrl: String?
 
@@ -34,16 +34,16 @@ class CloseWindowAction(pageName: String?) : ActionReturn(), Action {
 
     override fun getName(): String {
         if (pageName.isNullOrEmpty())
-            return Localization.get("CloseWindowAction.DefaultName")
-        return Localization.get("CloseWindowAction.DefaultNameWithPage", pageName)
+            return Localization.get("SwitchToWindowAction.DefaultName")
+        return Localization.get("SwitchToWindowAction.DefaultNameWithPage", pageName)
     }
 
     override fun execute(): ActionResult {
         try {
-            if (!DriverSession.getSession().closeWindow(pageUrl))
-                return fail(Localization.get("CloseWindowAction.UnableToFindWindow"))
+            if (!DriverSession.getSession().switchToWindow(pageUrl))
+                return fail(Localization.get("SwitchToWindowAction.UnableToFindWindow"))
         } catch (e: Exception) {
-            return fail(Localization.get("CloseWindowAction.GeneralError", e.message), e.stackTraceToString())
+            return fail(Localization.get("SwitchToWindowAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }
@@ -59,13 +59,13 @@ class CloseWindowAction(pageName: String?) : ActionReturn(), Action {
 }
 
 /**
- * Closes the window with page [pageName]
+ * Switches to the window with page [pageName]
  *
- * Closes the active window (if [pageName] is not specified)
+ * Switches to the first other window (if [pageName] is not specified)
  */
-fun closeWindow(pageName: String? = null): ActionData {
+fun switchToWindow(pageName: String?): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = CloseWindowAction(pageName)
+    val action = SwitchToWindowAction(pageName)
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()
