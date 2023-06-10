@@ -2,9 +2,30 @@
 
 ---
 
+## switchToWindow
+
+Switches to the first other window or to the window with the specified page.
+
+### Usage
+
+```kotlin
+step("<step_id>", switchToWindow("<window_to_switch>"))
+```
+
+### For example
+
+```kotlin
+// Switches to the first other window
+step("01", switchToWindow())
+// Switches to the window with the specified page 
+step("02", switchToWindow("LoginPage"))
+```
+
+---
+
 ## closeWindow
 
-Closes the active window or windows with the specified page.
+Closes the active window or the window with the specified page.
 
 ### Usage
 

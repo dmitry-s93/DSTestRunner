@@ -64,18 +64,31 @@ class ChromeDriver : Driver {
         }
     }
 
+    override fun switchToWindow(url: String?): Boolean {
+        val initialWindowHandle = driver.windowHandle
+        for (windowHandle in driver.windowHandles) {
+            driver.switchTo().window(windowHandle)
+            if (url.isNullOrEmpty() && windowHandle != initialWindowHandle)
+                return true
+            if (url != null  && getCurrentUrl().startsWith(url))
+                return true
+        }
+        setWindowHandleOrFirst(initialWindowHandle)
+        return false
+    }
+
     override fun closeWindow(url: String?): Boolean {
         if (url.isNullOrEmpty()) {
             driver.close()
             setWindowHandleOrFirst()
             return true
         } else {
-            val currentWindowHandle = driver.windowHandle
+            val initialWindowHandle = driver.windowHandle
             for (windowHandle in driver.windowHandles) {
                 driver.switchTo().window(windowHandle)
                 if (getCurrentUrl().startsWith(url)) {
                     driver.close()
-                    setWindowHandleOrFirst(currentWindowHandle)
+                    setWindowHandleOrFirst(initialWindowHandle)
                     return true
                 }
             }
