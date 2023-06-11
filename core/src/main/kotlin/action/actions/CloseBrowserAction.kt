@@ -42,9 +42,10 @@ class CloseBrowserAction : ActionReturn(), Action {
     }
 }
 
-fun closeBrowser(): ActionData {
+fun closeBrowser(function: (CloseBrowserAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
     val action = CloseBrowserAction()
+    function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()

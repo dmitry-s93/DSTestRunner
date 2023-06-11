@@ -55,9 +55,10 @@ class ClickAction(elementName: String) : ActionReturn(), Action {
     }
 }
 
-fun click(elementName: String): ActionData {
+fun click(elementName: String, function: (ClickAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
     val action = ClickAction(elementName)
+    function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()

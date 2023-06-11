@@ -50,9 +50,10 @@ class SetValueToStorageAction(name: String, value: String) : ActionReturn(), Act
     }
 }
 
-fun setValueToStorage(name: String, value: String): ActionData {
+fun setValueToStorage(name: String, value: String, function: (SetValueToStorageAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
     val action = SetValueToStorageAction(name, value)
+    function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
     val actionName = action.getName()

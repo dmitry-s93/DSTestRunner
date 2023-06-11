@@ -55,9 +55,10 @@ class ImportUserAction(name: String, prefix: String) : ActionReturn(), Action {
     }
 }
 
-fun importUser(name: String, prefix: String): ActionData {
+fun importUser(name: String, prefix: String, function: (ImportUserAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
     val action = ImportUserAction(name, prefix)
+    function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
     val actionName = action.getName()

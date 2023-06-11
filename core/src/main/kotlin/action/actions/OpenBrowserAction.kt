@@ -56,9 +56,10 @@ class OpenBrowserAction(pageName: String) : ActionReturn(), Action {
     }
 }
 
-fun openBrowser(pageName: String): ActionData {
+fun openBrowser(pageName: String, function: (OpenBrowserAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
     val action = OpenBrowserAction(pageName)
+    function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()
