@@ -63,9 +63,10 @@ class SwitchToWindowAction(pageName: String?) : ActionReturn(), Action {
  *
  * Switches to the first other window (if [pageName] is not specified)
  */
-fun switchToWindow(pageName: String?): ActionData {
+fun switchToWindow(pageName: String?, function: (SwitchToWindowAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
     val action = SwitchToWindowAction(pageName)
+    function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()

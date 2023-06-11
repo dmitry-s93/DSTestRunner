@@ -63,9 +63,10 @@ class CloseWindowAction(pageName: String?) : ActionReturn(), Action {
  *
  * Closes the active window (if [pageName] is not specified)
  */
-fun closeWindow(pageName: String? = null): ActionData {
+fun closeWindow(pageName: String? = null, function: (CloseWindowAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
     val action = CloseWindowAction(pageName)
+    function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()
