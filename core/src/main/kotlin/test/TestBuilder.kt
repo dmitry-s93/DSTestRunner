@@ -42,11 +42,21 @@ open class TestBuilder(id: String, name: String) {
 
     fun before(function: () -> Unit) {
         before = true
-        function()
+        executeSteps(function)
         before = false
     }
 
     fun steps(function: () -> Unit) {
+        executeSteps(function)
+    }
+
+    fun after(function: () -> Unit) {
+        after = true
+        executeSteps(function)
+        after = false
+    }
+
+    private fun executeSteps(function: () -> Unit) {
         val thisRequired = required
         try {
             function()
@@ -54,14 +64,8 @@ open class TestBuilder(id: String, name: String) {
             if (thisRequired && testId != parentId)
                 throw e
         } finally {
-            required = true
+            required = thisRequired
         }
-    }
-
-    fun after(function: () -> Unit) {
-        after = true
-        function()
-        after = false
     }
 
     fun step(id: String, actionData: ActionData) {
@@ -101,6 +105,7 @@ open class TestBuilder(id: String, name: String) {
             ReporterSession.getSession().addStep(id, parentId, name, HashMap(), ActionResult(result), startTime, stopTime)
             if (result != Result.FAIL)
                 result = currentResult
+            required = true
         }
     }
 
@@ -108,5 +113,3 @@ open class TestBuilder(id: String, name: String) {
         required = false
     }
 }
-
-
