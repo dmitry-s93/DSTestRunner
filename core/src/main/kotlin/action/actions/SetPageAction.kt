@@ -19,6 +19,7 @@ import action.Action
 import action.ActionData
 import action.ActionResult
 import action.ActionReturn
+import config.Localization
 import driver.DriverSession
 import storage.PageStorage
 
@@ -32,16 +33,16 @@ class SetPageAction(pageName: String) : ActionReturn(), Action {
     }
 
     override fun getName(): String {
-        return "Go to the '$pageName' page"
+        return Localization.get("SetPageAction.DefaultName", pageName)
     }
 
     override fun execute(): ActionResult {
         if (pageUrl.isNullOrEmpty())
-            return fail("Page url not specified")
+            return fail(Localization.get("SetPageAction.PageUrlNotSpecified"))
         try {
             DriverSession.getSession().setPage(pageUrl)
         } catch (e: Exception) {
-            return fail("An error occurred while opening the page: ${e.message}", e.stackTraceToString())
+            return fail(Localization.get("SetPageAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }
