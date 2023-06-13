@@ -15,6 +15,7 @@
 
 package config
 
+import logger.LogLevel
 import logger.Logger
 import org.json.JSONObject
 import utils.ResourceUtils
@@ -28,7 +29,7 @@ class MainConfig {
         private lateinit var reporterImpl: String
         private lateinit var testSource: String
         private lateinit var pageSource: String
-        private var consoleLogLevel: Int = 0
+        private var consoleLogLevel: Int = 1
 
         fun setConfiguration(configName: String) {
             configuration = configName
@@ -50,7 +51,15 @@ class MainConfig {
                 reporterImpl = mainConfig.getString("reporterImpl")
                 testSource = mainConfig.getString("testSource")
                 pageSource = mainConfig.getString("pageSource")
-                consoleLogLevel = mainConfig.getInt("consoleLogLevel")
+                val consoleLogLevelString = mainConfig.getString("consoleLogLevel").uppercase()
+                try {
+                    consoleLogLevel = LogLevel.valueOf(consoleLogLevelString).value
+                } catch (e: IllegalArgumentException) {
+                    Logger.warning(
+                        "Invalid logging level specified (\"$consoleLogLevelString\"). The logging level will be set to \"WARN\".",
+                        "MainConfig"
+                    )
+                }
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", "MainConfig")
                 throw e

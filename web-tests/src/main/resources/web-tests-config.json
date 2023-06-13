@@ -6,7 +6,7 @@
     "reporterImpl": "reporter.allure.AllureReporter",
     "testSource": "WebTestList",
     "pageSource": "pages.PageList",
-    "consoleLogLevel": 0
+    "consoleLogLevel": "DEBUG"
   },
   "Reporter": {
     "reportDir": "/home/user/allure-results"
