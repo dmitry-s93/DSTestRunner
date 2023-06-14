@@ -8,9 +8,6 @@
     "pageSource": "pages.PageList",
     "consoleLogLevel": "DEBUG"
   },
-  "Reporter": {
-    "reportDir": "/home/user/allure-results"
-  },
   "WebDriver": {
     "url": "https://www.saucedemo.com/",
     "remoteAddress": "http://localhost:4444/wd/hub",
