@@ -24,13 +24,12 @@ import driver.DriverSession
 import storage.PageStorage
 import storage.ValueStorage
 
-class SetFieldValueAction(fieldName: String, value: String) : ActionReturn(), Action {
-    private val fieldName: String
+class SetFieldValueAction(private val fieldName: String, value: String) : ActionReturn(), Action {
     private val value: String
+    private val elementLocator: String? = PageStorage.getCurrentPage()?.getElementLocator(fieldName)
     private var sequenceMode: Boolean = false
 
     init {
-        this.fieldName = fieldName
         this.value = ValueStorage.replace(value)
     }
 
@@ -40,10 +39,9 @@ class SetFieldValueAction(fieldName: String, value: String) : ActionReturn(), Ac
 
     override fun execute(): ActionResult {
         try {
-            val locator = PageStorage.getCurrentPage()?.getElementLocator(fieldName)
-            if (locator != null) {
-                DriverSession.getSession().setValue(locator, value, sequenceMode)
-            }
+            if (elementLocator.isNullOrEmpty())
+                return fail(Localization.get("General.ElementLocatorNotSpecified"))
+            DriverSession.getSession().setValue(elementLocator, value, sequenceMode)
         } catch (e: Exception) {
             return fail(Localization.get("SetFieldValueAction.GeneralError", e.message), e.stackTraceToString())
         }
@@ -52,7 +50,8 @@ class SetFieldValueAction(fieldName: String, value: String) : ActionReturn(), Ac
 
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
-        parameters["fieldName"] = fieldName
+        parameters["elementName"] = fieldName
+        parameters["elementLocator"] = elementLocator.toString()
         parameters["value"] = value
         parameters["sequenceMode"] = sequenceMode.toString()
         return parameters

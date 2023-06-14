@@ -24,13 +24,12 @@ import driver.DriverSession
 import storage.PageStorage
 import storage.ValueStorage
 
-class CheckElementValueAction(elementName: String, expectedValue: String) : ActionReturn(), Action {
-    private val elementName: String
+class CheckElementValueAction(private val elementName: String, expectedValue: String) : ActionReturn(), Action {
+    private val elementLocator: String? = PageStorage.getCurrentPage()?.getElementLocator(elementName)
     private val expectedValue: String
     private var elementValue: String? = null
 
     init {
-        this.elementName = elementName
         this.expectedValue = ValueStorage.replace(expectedValue)
     }
 
@@ -40,10 +39,9 @@ class CheckElementValueAction(elementName: String, expectedValue: String) : Acti
 
     override fun execute(): ActionResult {
         try {
-            val locator = PageStorage.getCurrentPage()?.getElementLocator(elementName)
-            if (locator.isNullOrEmpty())
+            if (elementLocator.isNullOrEmpty())
                 return fail(Localization.get("General.ElementLocatorNotSpecified"))
-            elementValue = DriverSession.getSession().getElementValue(locator)
+            elementValue = DriverSession.getSession().getElementValue(elementLocator)
             if (elementValue != expectedValue)
                 return fail(Localization.get("CheckElementValueAction.ElementValueNotMatch", elementValue, expectedValue))
         } catch (e: Exception) {
@@ -55,6 +53,7 @@ class CheckElementValueAction(elementName: String, expectedValue: String) : Acti
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
         parameters["elementName"] = elementName
+        parameters["elementLocator"] = elementLocator.toString()
         parameters["elementValue"] = elementValue.toString()
         parameters["expectedValue"] = expectedValue
         return parameters
