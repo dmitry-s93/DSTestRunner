@@ -25,6 +25,7 @@ import reporter.ReporterSession
 import utils.StringUtils
 import java.io.FileOutputStream
 import java.io.FileWriter
+import java.nio.charset.Charset
 import java.nio.file.Paths
 import java.util.*
 
@@ -102,7 +103,7 @@ class AllureReporter : Reporter {
         }
         val fileName = "$uuid-result.json"
         val path = Paths.get(ReporterConfig.getReportDir(), fileName)
-        val file = FileWriter(path.toFile())
+        val file = FileWriter(path.toFile(), Charset.forName("UTF-8"))
         file.write(result.toString())
         file.flush()
         file.close()
