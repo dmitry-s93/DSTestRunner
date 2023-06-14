@@ -17,7 +17,7 @@ package reporter.allure
 
 import action.ActionResult
 import action.Result
-import config.ReporterConfig
+import config.reporter.AllureReporterConfig
 import org.json.JSONArray
 import org.json.JSONObject
 import reporter.Reporter
@@ -102,7 +102,7 @@ class AllureReporter : Reporter {
             put("stop", stopTime)
         }
         val fileName = "$uuid-result.json"
-        val path = Paths.get(ReporterConfig.getReportDir(), fileName)
+        val path = Paths.get(AllureReporterConfig.getReportDir(), fileName)
         val file = FileWriter(path.toFile(), Charset.forName("UTF-8"))
         file.write(result.toString())
         file.flush()
@@ -229,7 +229,7 @@ class AllureReporter : Reporter {
     }
 
     private fun saveScreenshot(screenshot: ByteArray, fileName: String) {
-        val path = Paths.get(ReporterConfig.getReportDir(), fileName)
+        val path = Paths.get(AllureReporterConfig.getReportDir(), fileName)
         FileOutputStream(path.toFile()).use { stream -> stream.write(screenshot) }
     }
 }

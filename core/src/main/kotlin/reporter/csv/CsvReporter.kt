@@ -17,7 +17,7 @@ package reporter.csv
 
 import action.ActionResult
 import com.opencsv.CSVWriterBuilder
-import config.ReporterConfig
+import config.reporter.CsvReporterConfig
 import reporter.Reporter
 import java.io.FileOutputStream
 import java.io.FileWriter
@@ -53,13 +53,13 @@ class CsvReporter : Reporter {
     }
 
     private fun saveScreenshot(screenshot: ByteArray, fileName: String) {
-        val path = Paths.get(ReporterConfig.getReportDir(), fileName)
+        val path = Paths.get(CsvReporterConfig.getReportDir(), fileName)
         FileOutputStream(path.toFile()).use { stream -> stream.write(screenshot) }
     }
 
     override fun quit() {
         val fileName = "$testId $testName.csv".replace(" ", "_")
-        val path = Paths.get(ReporterConfig.getReportDir(), fileName)
+        val path = Paths.get(CsvReporterConfig.getReportDir(), fileName)
         val writer = CSVWriterBuilder(FileWriter(path.toFile())).withSeparator('\t').build()
         writer.writeAll(reportData)
         writer.close()

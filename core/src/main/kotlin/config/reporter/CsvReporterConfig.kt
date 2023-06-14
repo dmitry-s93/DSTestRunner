@@ -13,24 +13,39 @@
  * limitations under the License.
  */
 
-package config
+package config.reporter
 
-import org.json.JSONObject
+import config.MainConfig
 import logger.Logger
+import org.json.JSONObject
 import utils.ResourceUtils
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 
-class ReporterConfig {
+class CsvReporterConfig {
     companion object {
-        private lateinit var reportDir: String
+        private lateinit var reportDir: Path
         private var isLoaded: Boolean = false
 
         private fun readConfig() {
             if (isLoaded) return
+            val logSource = "CsvReporterConfig"
             try {
-                Logger.debug("Reading parameters from config", "ReporterConfig")
+                Logger.debug("Reading parameters from config", logSource)
                 val config = JSONObject(ResourceUtils().getResourceByName(MainConfig.getConfiguration()))
-                val reporterConfig = config.getJSONObject("Reporter")
-                reportDir = reporterConfig.getString("reportDir")
+                if (config.has("CsvReporter")) {
+                    val reporterConfig = config.getJSONObject("CsvReporter")
+                    reportDir = if (reporterConfig.has("reportDir"))
+                        Paths.get(reporterConfig.getString("reportDir"))
+                    else
+                        getDefaultPath()
+                } else {
+                    reportDir = getDefaultPath()
+                    Logger.debug("CSV Reporter config is not specified. The default settings are used.", logSource)
+                }
+                Files.createDirectories(reportDir)
+                Logger.debug("reportDir = $reportDir", logSource)
                 isLoaded = true
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", "ReporterConfig")
@@ -38,9 +53,13 @@ class ReporterConfig {
             }
         }
 
+        private fun getDefaultPath(): Path {
+            return Paths.get(System.getProperty("user.dir"), "build", "csv-results")
+        }
+
         fun getReportDir(): String {
             if (!isLoaded) readConfig()
-            return reportDir
+            return reportDir.toString()
         }
     }
 }
