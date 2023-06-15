@@ -10,7 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value=":executor:run" />
+          <option value=":web-tests:run" />
           <option value="--args=&quot;-configuration=web-tests-config.json&quot;" />
         </list>
       </option>

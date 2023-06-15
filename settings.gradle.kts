@@ -8,4 +8,4 @@
  */
 
 rootProject.name = "DSTestRunner"
-include("executor", "core", "web-tests")
+include("core", "web-tests")
