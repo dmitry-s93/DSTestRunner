@@ -21,11 +21,16 @@ import action.ActionResult
 import action.ActionReturn
 import config.Localization
 import driver.DriverSession
+import org.apache.hc.core5.http.NameValuePair
+import org.apache.hc.core5.http.message.BasicNameValuePair
+import org.apache.hc.core5.net.URIBuilder
 import storage.PageStorage
+import storage.ValueStorage
 
 class SetPageAction(pageName: String) : ActionReturn(), Action {
     private val pageName: String
-    private val pageUrl: String?
+    private var pageUrl: String?
+    private val urlParameters: MutableList<NameValuePair> = mutableListOf()
 
     init {
         this.pageName = pageName
@@ -40,7 +45,8 @@ class SetPageAction(pageName: String) : ActionReturn(), Action {
         if (pageUrl.isNullOrEmpty())
             return fail(Localization.get("SetPageAction.PageUrlNotSpecified"))
         try {
-            DriverSession.getSession().setPage(pageUrl)
+            pageUrl = URIBuilder(pageUrl).addParameters(urlParameters).toString()
+            DriverSession.getSession().setPage(pageUrl!!)
         } catch (e: Exception) {
             return fail(Localization.get("SetPageAction.GeneralError", e.message), e.stackTraceToString())
         }
@@ -53,8 +59,18 @@ class SetPageAction(pageName: String) : ActionReturn(), Action {
         parameters["pageUrl"] = pageUrl.toString()
         return parameters
     }
+
+    /**
+     * Adds a parameter to the URL
+     */
+    fun urlParameter(param: String, value: String) {
+        urlParameters.add(BasicNameValuePair(param, ValueStorage.replace(value)))
+    }
 }
 
+/**
+ * Goes to page [pageName]
+ */
 fun setPage(pageName: String, function: (SetPageAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
     val action = SetPageAction(pageName)
