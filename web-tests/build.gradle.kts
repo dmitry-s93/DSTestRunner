@@ -12,5 +12,10 @@ repositories {
 }
 
 dependencies {
-    api(project(":core"))
+    implementation(project(":core"))
+}
+
+application {
+    // Define the main class for the application.
+    mainClass.set("MainKt")
 }

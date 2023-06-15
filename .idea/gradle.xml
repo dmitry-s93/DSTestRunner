@@ -10,7 +10,6 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/core" />
-            <option value="$PROJECT_DIR$/executor" />
             <option value="$PROJECT_DIR$/web-tests" />
           </set>
         </option>
