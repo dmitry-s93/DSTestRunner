@@ -45,7 +45,7 @@ class AllureReporterConfig {
                     Logger.debug("Allure Reporter config is not specified. The default settings are used.", logSource)
                 }
                 Files.createDirectories(reportDir)
-                Logger.debug("reportDir = $reportDir", logSource)
+                Logger.info("The test results will be saved to the \"$reportDir\" directory", logSource)
                 isLoaded = true
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", logSource)
