@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Run Web Tests" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="Example Web Tests" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -10,8 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value=":web-tests:run" />
-          <option value="--args=&quot;-configuration=web-tests-config.json&quot;" />
+          <option value=":example-web-tests:run" />
         </list>
       </option>
       <option name="vmOptions" />
