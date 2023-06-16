@@ -32,6 +32,7 @@ class MainConfig {
         private var consoleLogLevel: Int = 1
 
         fun setConfiguration(configName: String) {
+            Logger.info("The settings from the \"$configName\" file are used")
             configuration = configName
             readConfig()
         }

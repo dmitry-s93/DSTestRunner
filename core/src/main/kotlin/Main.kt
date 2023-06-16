@@ -17,18 +17,15 @@ import config.MainConfig
 import logger.Logger
 import test.TestListFactory
 import java.util.concurrent.Executors
-import kotlin.system.exitProcess
 
 
 fun main(args: Array<String>) {
     println("Program arguments: ${args.joinToString()}")
 
     val argsHashMap = parseArguments(args)
-    val configurationFile = argsHashMap["-configuration"]
-    if (configurationFile.isNullOrEmpty()) {
-        Logger.error("Configuration not specified")
-        exitProcess(-1)
-    }
+    var configurationFile = argsHashMap["-configuration"]
+    if (configurationFile.isNullOrEmpty())
+        configurationFile = "configuration.json"
     MainConfig.setConfiguration(configurationFile)
 
     Class.forName(MainConfig.getPageSource()).getDeclaredConstructor().newInstance()

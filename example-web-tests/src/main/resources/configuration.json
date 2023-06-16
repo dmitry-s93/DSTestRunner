@@ -4,7 +4,7 @@
     "threads": 5,
     "driverImpl": "driver.web.ChromeDriver",
     "reporterImpl": "reporter.allure.AllureReporter",
-    "testSource": "WebTestList",
+    "testSource": "TestList",
     "pageSource": "pages.PageList",
     "consoleLogLevel": "DEBUG"
   },
