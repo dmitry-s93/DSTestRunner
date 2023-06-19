@@ -17,12 +17,28 @@ package test.page
 
 open class PageElements {
     private var elements = HashMap<String, String>()
+    private var parentName: String = ""
+    private var parentXpath: String = ""
 
-    fun webElement(name: String, xpath: String) {
-        elements[name] = xpath
+    fun webElement(name: String, xpath: String, function: (() -> Unit)? = null) {
+        if (parentName.isEmpty())
+            elements[name] = xpath
+        else
+            elements["$parentName.$name"] = parentXpath + xpath
+        if (function != null) {
+            val currentParentName = parentName
+            val currentParentXpath = parentXpath
+            if (parentName.isNotEmpty())
+                parentName += "."
+            parentName += name
+            parentXpath += xpath
+            function()
+            parentName = currentParentName
+            parentXpath = currentParentXpath
+        }
     }
 
-    fun getElements():HashMap<String, String> {
+    fun getElements(): HashMap<String, String> {
         return elements
     }
 }

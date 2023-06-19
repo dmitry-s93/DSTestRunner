@@ -25,13 +25,10 @@ import storage.PageStorage
 import storage.ValueStorage
 
 class CheckElementValueAction(private val elementName: String, expectedValue: String) : ActionReturn(), Action {
-    private val elementLocator: String? = PageStorage.getCurrentPage()?.getElementLocator(elementName)
-    private val expectedValue: String
+    private var elementLocator: String? = PageStorage.getCurrentPage()?.getElementLocator(elementName)
+    private val expectedValue: String = ValueStorage.replace(expectedValue)
     private var elementValue: String? = null
-
-    init {
-        this.expectedValue = ValueStorage.replace(expectedValue)
-    }
+    private val locatorArguments = ArrayList<String>()
 
     override fun getName(): String {
         return Localization.get("CheckElementValueAction.DefaultName", elementName)
@@ -41,9 +38,16 @@ class CheckElementValueAction(private val elementName: String, expectedValue: St
         try {
             if (elementLocator.isNullOrEmpty())
                 return fail(Localization.get("General.ElementLocatorNotSpecified"))
-            elementValue = DriverSession.getSession().getElementValue(elementLocator)
+            elementLocator = String.format(elementLocator!!, *locatorArguments.toArray())
+            elementValue = DriverSession.getSession().getElementValue(elementLocator!!)
             if (elementValue != expectedValue)
-                return fail(Localization.get("CheckElementValueAction.ElementValueNotMatch", elementValue, expectedValue))
+                return fail(
+                    Localization.get(
+                        "CheckElementValueAction.ElementValueNotMatch",
+                        elementValue,
+                        expectedValue
+                    )
+                )
         } catch (e: Exception) {
             return fail(Localization.get("CheckElementValueAction.GeneralError", e.message), e.stackTraceToString())
         }
@@ -58,9 +62,20 @@ class CheckElementValueAction(private val elementName: String, expectedValue: St
         parameters["expectedValue"] = expectedValue
         return parameters
     }
+
+    /**
+     * Substitutes the argument into the element locator
+     */
+    fun locatorArgument(value: String) {
+        locatorArguments.add(ValueStorage.replace(value))
+    }
 }
 
-fun checkElementValue(elementName: String, expectedValue: String, function: (CheckElementValueAction.() -> Unit)? = null): ActionData {
+fun checkElementValue(
+    elementName: String,
+    expectedValue: String,
+    function: (CheckElementValueAction.() -> Unit)? = null
+): ActionData {
     val startTime = System.currentTimeMillis()
     val action = CheckElementValueAction(elementName, expectedValue)
     function?.invoke(action)

@@ -22,15 +22,11 @@ import action.ActionReturn
 import config.Localization
 import driver.DriverSession
 import storage.PageStorage
+import storage.ValueStorage
 
-class ClickAction(elementName: String) : ActionReturn(), Action {
-    private val elementName: String
-    private val elementLocator: String?
-
-    init {
-        this.elementName = elementName
-        this.elementLocator = PageStorage.getCurrentPage()?.getElementLocator(elementName)
-    }
+class ClickAction(private val elementName: String) : ActionReturn(), Action {
+    private var elementLocator: String? = PageStorage.getCurrentPage()?.getElementLocator(elementName)
+    private val locatorArguments = ArrayList<String>()
 
     override fun getName(): String {
         return Localization.get("ClickAction.DefaultName", elementName)
@@ -38,9 +34,9 @@ class ClickAction(elementName: String) : ActionReturn(), Action {
 
     override fun execute(): ActionResult {
         try {
-            if (elementLocator.isNullOrEmpty())
-                return fail(Localization.get("General.ElementLocatorNotSpecified"))
-            DriverSession.getSession().click(elementLocator)
+            if (elementLocator.isNullOrEmpty()) return fail(Localization.get("General.ElementLocatorNotSpecified"))
+            elementLocator = String.format(elementLocator!!, *locatorArguments.toArray())
+            DriverSession.getSession().click(elementLocator!!)
         } catch (e: Exception) {
             return fail(Localization.get("ClickAction.GeneralError", e.message), e.stackTraceToString())
         }
@@ -52,6 +48,13 @@ class ClickAction(elementName: String) : ActionReturn(), Action {
         parameters["elementName"] = elementName
         parameters["elementLocator"] = elementLocator.toString()
         return parameters
+    }
+
+    /**
+     * Substitutes the argument into the element locator
+     */
+    fun locatorArgument(value: String) {
+        locatorArguments.add(ValueStorage.replace(value))
     }
 }
 
