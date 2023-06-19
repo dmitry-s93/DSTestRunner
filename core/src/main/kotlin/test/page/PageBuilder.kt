@@ -31,4 +31,8 @@ open class PageBuilder {
         function()
         PageStorage.putPage(name, PageData(name, urlPath, identifier, description, elements))
     }
+
+    fun group(name: String, function: () -> Unit) {
+        function()
+    }
 }
