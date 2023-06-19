@@ -25,13 +25,10 @@ import storage.PageStorage
 import storage.ValueStorage
 
 class SetFieldValueAction(private val fieldName: String, value: String) : ActionReturn(), Action {
-    private val value: String
-    private val elementLocator: String? = PageStorage.getCurrentPage()?.getElementLocator(fieldName)
+    private val value: String = ValueStorage.replace(value)
+    private var elementLocator: String? = PageStorage.getCurrentPage()?.getElementLocator(fieldName)
     private var sequenceMode: Boolean = false
-
-    init {
-        this.value = ValueStorage.replace(value)
-    }
+    private val locatorArguments = ArrayList<String>()
 
     override fun getName(): String {
         return Localization.get("SetFieldValueAction.DefaultName", value, fieldName)
@@ -41,7 +38,8 @@ class SetFieldValueAction(private val fieldName: String, value: String) : Action
         try {
             if (elementLocator.isNullOrEmpty())
                 return fail(Localization.get("General.ElementLocatorNotSpecified"))
-            DriverSession.getSession().setValue(elementLocator, value, sequenceMode)
+            elementLocator = String.format(elementLocator!!, *locatorArguments.toArray())
+            DriverSession.getSession().setValue(elementLocator!!, value, sequenceMode)
         } catch (e: Exception) {
             return fail(Localization.get("SetFieldValueAction.GeneralError", e.message), e.stackTraceToString())
         }
@@ -59,6 +57,13 @@ class SetFieldValueAction(private val fieldName: String, value: String) : Action
 
     fun sequenceMode() {
         sequenceMode = true
+    }
+
+    /**
+     * Substitutes the argument into the element locator
+     */
+    fun locatorArgument(value: String) {
+        locatorArguments.add(ValueStorage.replace(value))
     }
 }
 

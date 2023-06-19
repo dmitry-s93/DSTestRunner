@@ -22,15 +22,11 @@ import action.ActionReturn
 import config.Localization
 import driver.DriverSession
 import storage.PageStorage
+import storage.ValueStorage
 
-class IsNotExistAction(elementName: String) : ActionReturn(), Action {
-    private val elementName: String
-    private val elementLocator: String?
-
-    init {
-        this.elementName = elementName
-        this.elementLocator = PageStorage.getCurrentPage()?.getElementLocator(elementName)
-    }
+class IsNotExistAction(private val elementName: String) : ActionReturn(), Action {
+    private var elementLocator: String? = PageStorage.getCurrentPage()?.getElementLocator(elementName)
+    private val locatorArguments = ArrayList<String>()
 
     override fun getName(): String {
         return Localization.get("IsNotExistAction.DefaultName", elementName)
@@ -40,7 +36,8 @@ class IsNotExistAction(elementName: String) : ActionReturn(), Action {
         try {
             if (elementLocator.isNullOrEmpty())
                 return fail(Localization.get("General.ElementLocatorNotSpecified"))
-            if (!DriverSession.getSession().isNotExist(elementLocator))
+            elementLocator = String.format(elementLocator!!, *locatorArguments.toArray())
+            if (!DriverSession.getSession().isNotExist(elementLocator!!))
                 return fail(Localization.get("IsNotExistAction.ElementIsPresent"))
         } catch (e: Exception) {
             return fail(Localization.get("IsNotExistAction.GeneralError", e.message), e.stackTraceToString())
@@ -53,6 +50,13 @@ class IsNotExistAction(elementName: String) : ActionReturn(), Action {
         parameters["elementName"] = elementName
         parameters["elementLocator"] = elementLocator.toString()
         return parameters
+    }
+
+    /**
+     * Substitutes the argument into the element locator
+     */
+    fun locatorArgument(value: String) {
+        locatorArguments.add(ValueStorage.replace(value))
     }
 }
 
