@@ -24,7 +24,7 @@ class WebDriverConfig {
         private lateinit var url: String
         private lateinit var remoteAddress: String
         private var pageLoadTimeout: Long = 0
-        private var implicitlyWait: Long = 0
+        private var elementTimeout: Long = 0
         private var isLoaded: Boolean = false
 
         @Synchronized
@@ -37,7 +37,7 @@ class WebDriverConfig {
                 url = webDriverConfig.getString("url")
                 remoteAddress = webDriverConfig.getString("remoteAddress")
                 pageLoadTimeout = webDriverConfig.getLong("pageLoadTimeout")
-                implicitlyWait = webDriverConfig.getLong("implicitlyWait")
+                elementTimeout = webDriverConfig.getLong("elementTimeout")
                 isLoaded = true
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", "WebDriverConfig")
@@ -60,9 +60,9 @@ class WebDriverConfig {
             return pageLoadTimeout
         }
 
-        fun getImplicitlyWait(): Long {
+        fun getElementTimeout(): Long {
             if (!isLoaded) readConfig()
-            return implicitlyWait
+            return elementTimeout
         }
     }
 }
