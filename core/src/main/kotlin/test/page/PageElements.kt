@@ -38,6 +38,10 @@ open class PageElements {
         }
     }
 
+    fun group(@Suppress("UNUSED_PARAMETER") name: String, function: () -> Unit) {
+        function()
+    }
+
     fun getElements(): HashMap<String, String> {
         return elements
     }
