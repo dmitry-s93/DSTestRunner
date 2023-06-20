@@ -16,6 +16,7 @@
 package driver.web
 
 import config.BrowserOptionsConfig
+import config.PreloaderConfig
 import config.WebDriverConfig
 import driver.Driver
 import logger.Logger
@@ -32,14 +33,16 @@ import java.time.Duration
 class ChromeDriver : Driver {
     private val driver: WebDriver
     private val pageLoadTimeout: Long = WebDriverConfig.getPageLoadTimeout()
-    private val implicitlyWait: Long = WebDriverConfig.getImplicitlyWait()
+    private val elementTimeout: Long = WebDriverConfig.getElementTimeout()
+    private val poolDelay: Long = 50
+    private val preloaderElements: List<String> = PreloaderConfig.getElements()
 
     init {
         val chromeOptions = ChromeOptions()
         chromeOptions.addArguments(BrowserOptionsConfig.getArguments())
         driver = RemoteWebDriver(URL(WebDriverConfig.getRemoteAddress()), chromeOptions)
         driver.manage().timeouts().pageLoadTimeout(Duration.ofMillis(pageLoadTimeout))
-        driver.manage().timeouts().implicitlyWait(Duration.ofMillis(implicitlyWait))
+        driver.manage().timeouts().implicitlyWait(Duration.ofMillis(0))
     }
 
     override fun click(locator: String) {
@@ -47,21 +50,29 @@ class ChromeDriver : Driver {
     }
 
     override fun checkLoadPage(url: String, identifier: String?): Boolean {
-        setImplicitlyWait(1)
         return try {
             await()
                 .atLeast(Duration.ofMillis(0))
-                .pollDelay(Duration.ofMillis(200))
+                .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(pageLoadTimeout))
                 .until {
-                    getCurrentUrl().startsWith(url) && (identifier.isNullOrEmpty() || getWebElements(identifier).isNotEmpty())
+                    getCurrentUrl().startsWith(url) && (identifier.isNullOrEmpty() || getWebElements(identifier).isNotEmpty()) && !isPreloaderDisplayed()
                 }
             true
         } catch (e: ConditionTimeoutException) {
             false
-        } finally {
-            setImplicitlyWait(implicitlyWait)
         }
+    }
+
+    private fun isPreloaderDisplayed(): Boolean {
+        preloaderElements.forEach { locator ->
+            val webElements = getWebElements(locator)
+            webElements.forEach { element ->
+                if (element.isDisplayed)
+                    return true
+            }
+        }
+        return false
     }
 
     override fun switchToWindow(url: String?): Boolean {
@@ -70,7 +81,7 @@ class ChromeDriver : Driver {
             driver.switchTo().window(windowHandle)
             if (url.isNullOrEmpty() && windowHandle != initialWindowHandle)
                 return true
-            if (url != null  && getCurrentUrl().startsWith(url))
+            if (url != null && getCurrentUrl().startsWith(url))
                 return true
         }
         setWindowHandleOrFirst(initialWindowHandle)
@@ -119,16 +130,27 @@ class ChromeDriver : Driver {
     }
 
     private fun getWebElement(locator: String): WebElement {
-        val webElement = driver.findElement(By.xpath(locator))
+        var webElement: WebElement? = null
         await()
             .atLeast(Duration.ofMillis(0))
-            .pollDelay(Duration.ofMillis(200))
-            .atMost(Duration.ofMillis(implicitlyWait))
-            .until { webElement.isDisplayed }
-        return webElement
+            .pollDelay(Duration.ofMillis(poolDelay))
+            .atMost(Duration.ofMillis(elementTimeout))
+            .until {
+                val webElements = getWebElements(locator)
+                for (element in webElements) {
+                    if (element.isDisplayed) {
+                        webElement = element
+                        return@until true
+                    }
+                }
+                return@until false
+            }
+        if (webElement != null)
+            return webElement as WebElement
+        return driver.findElement(By.xpath(locator))
     }
 
-    private fun getWebElements(locator: String): MutableList<WebElement> {
+    private fun getWebElements(locator: String): List<WebElement> {
         return driver.findElements(By.xpath(locator))
     }
 
@@ -155,42 +177,32 @@ class ChromeDriver : Driver {
     }
 
     override fun isExist(locator: String): Boolean {
-        setImplicitlyWait(1)
         return try {
             await()
                 .atLeast(Duration.ofMillis(0))
-                .pollDelay(Duration.ofMillis(200))
-                .atMost(Duration.ofMillis(implicitlyWait))
+                .pollDelay(Duration.ofMillis(poolDelay))
+                .atMost(Duration.ofMillis(elementTimeout))
                 .until { getWebElements(locator).isNotEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
             false
-        } finally {
-            setImplicitlyWait(implicitlyWait)
         }
     }
 
     override fun isNotExist(locator: String): Boolean {
-        setImplicitlyWait(1)
         return try {
             await()
                 .atLeast(Duration.ofMillis(0))
-                .pollDelay(Duration.ofMillis(200))
-                .atMost(Duration.ofMillis(implicitlyWait))
+                .pollDelay(Duration.ofMillis(poolDelay))
+                .atMost(Duration.ofMillis(elementTimeout))
                 .until { getWebElements(locator).isEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
             false
-        } finally {
-            setImplicitlyWait(implicitlyWait)
         }
     }
 
     override fun quit() {
         driver.quit()
-    }
-
-    private fun setImplicitlyWait(implicitlyWait: Long) {
-        driver.manage().timeouts().implicitlyWait(Duration.ofMillis(implicitlyWait))
     }
 }

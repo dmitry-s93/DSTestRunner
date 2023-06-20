@@ -46,7 +46,7 @@ class CheckLoadPageAction(pageName: String) : ActionReturn(), Action {
             if (!DriverSession.getSession().checkLoadPage(pageUrl, pageIdentifier)) {
                 if (!DriverSession.getSession().getCurrentUrl().startsWith(pageUrl.toString()))
                     return fail(Localization.get("CheckLoadPageAction.UrlDoesNotMatch"))
-                return fail(Localization.get("CheckLoadPageAction.IdentifierNotFound", pageIdentifier))
+                return fail(Localization.get("CheckLoadPageAction.PageDidNotLoad"))
             }
         } catch (e: Exception) {
             return fail(Localization.get("CheckLoadPageAction.GeneralError", e.message), e.stackTraceToString())

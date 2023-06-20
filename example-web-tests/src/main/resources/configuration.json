@@ -12,10 +12,13 @@
     "url": "https://www.saucedemo.com/",
     "remoteAddress": "http://localhost:4444/wd/hub",
     "pageLoadTimeout": 20000,
-    "implicitlyWait": 10000
+    "elementTimeout": 10000
   },
   "BrowserOptions": [
     "window-size=1280,1024"
+  ],
+  "PreloaderElements": [
+    "//div[contains(@class,'example-preloader')]"
   ],
   "UserList": {
     "StandardUser": {
