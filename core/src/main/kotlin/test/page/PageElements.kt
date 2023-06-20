@@ -15,27 +15,37 @@
 
 package test.page
 
+import logger.Logger
+
 open class PageElements {
     private var elements = HashMap<String, String>()
     private var parentName: String = ""
-    private var parentXpath: String = ""
+    private var parentLocator: String = ""
 
     fun webElement(name: String, xpath: String, function: (() -> Unit)? = null) {
         if (parentName.isEmpty())
-            elements[name] = xpath
+            putElement(name, xpath)
         else
-            elements["$parentName.$name"] = parentXpath + xpath
+            putElement("$parentName.$name", parentLocator + xpath)
         if (function != null) {
             val currentParentName = parentName
-            val currentParentXpath = parentXpath
+            val currentParentLocator = parentLocator
             if (parentName.isNotEmpty())
                 parentName += "."
             parentName += name
-            parentXpath += xpath
+            parentLocator += xpath
             function()
             parentName = currentParentName
-            parentXpath = currentParentXpath
+            parentLocator = currentParentLocator
         }
+    }
+
+    private fun putElement(name: String, locator: String) {
+        if (elements.containsKey(name)) {
+            Logger.warning("An element named '$name' already exists")
+            return
+        }
+        elements[name] = locator
     }
 
     fun group(@Suppress("UNUSED_PARAMETER") name: String, function: () -> Unit) {
