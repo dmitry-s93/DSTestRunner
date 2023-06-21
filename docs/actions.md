@@ -1,12 +1,12 @@
 # Available Actions
 
----
+## Page Actions
 
-## setPage
+### setPage action
 
 Goes to the specified page.
 
-### Usage
+**Usage:**
 
 ```kotlin
 step("<step_id>", setPage("<page_to_go>") {
@@ -17,7 +17,7 @@ step("<step_id>", setPage("<page_to_go>") {
 })
 ```
 
-### For example
+**For example:**
 
 ```kotlin
 // Goes to the specified page
@@ -29,19 +29,17 @@ step("02", setPage("LoginPage") {
 })
 ```
 
----
-
-## switchToWindow
+### switchToWindow action
 
 Switches to the first other window or to the window with the specified page.
 
-### Usage
+**Usage:**
 
 ```kotlin
 step("<step_id>", switchToWindow("<window_to_switch>"))
 ```
 
-### For example
+**For example:**
 
 ```kotlin
 // Switches to the first other window
@@ -50,19 +48,17 @@ step("01", switchToWindow())
 step("02", switchToWindow("LoginPage"))
 ```
 
----
-
-## closeWindow
+### closeWindow action
 
 Closes the active window or the window with the specified page.
 
-### Usage
+**Usage:**
 
 ```kotlin
 step("<step_id>", closeWindow("<window_to_close>"))
 ```
 
-### For example
+**For example:**
 
 ```kotlin
 // Closes the active window
@@ -71,19 +67,53 @@ step("01", closeWindow())
 step("02", closeWindow("LoginPage"))
 ```
 
----
+## Element Actions
 
-## importUser
+### isExist action
+
+Checks for the presence of an element. Returns fail if the element is not found on the page.
+
+**Usage:**
+
+```kotlin
+step("<step_id>", isExist("<element_to_check>"))
+```
+
+**For example:**
+
+```kotlin
+step("01", isExist("LoginButton"))
+```
+
+### isNotExist action
+
+Checks for the absence of an element. Returns fail if the element is found on the page.
+
+**Usage:**
+
+```kotlin
+step("<step_id>", isNotExist("<element_to_check>"))
+```
+
+**For example:**
+
+```kotlin
+step("01", isNotExist("LoginButton"))
+```
+
+## Other actions
+
+### importUser action
 
 Imports the user from the config into the test storage.
 
-### Usage
+**Usage:**
 
 ```kotlin
 step("<step_id>", importUser("<name_from_config>", "<prefix_to_import>"))
 ```
 
-### For example
+**For example:**
 
 In config:
 
@@ -108,39 +138,3 @@ This will add 2 entries to the test storage:
 
 - "user_login" entry with value "standard_user"
 - "user_password" entry with value "secret_sauce"
-
----
-
-## isExist
-
-Checks for the presence of an element. Returns fail if the element is not found on the page.
-
-### Usage
-
-```kotlin
-step("<step_id>", isExist("<element_to_check>"))
-```
-
-### For example
-
-```kotlin
-step("01", isExist("LoginButton"))
-```
-
----
-
-## isNotExist
-
-Checks for the absence of an element. Returns fail if the element is found on the page.
-
-### Usage
-
-```kotlin
-step("<step_id>", isNotExist("<element_to_check>"))
-```
-
-### For example
-
-```kotlin
-step("01", isNotExist("LoginButton"))
-```
