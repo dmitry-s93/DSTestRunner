@@ -108,3 +108,39 @@ This will add 2 entries to the test storage:
 
 - "user_login" entry with value "standard_user"
 - "user_password" entry with value "secret_sauce"
+
+---
+
+## isExist
+
+Checks for the presence of an element. Returns fail if the element is not found on the page.
+
+### Usage
+
+```kotlin
+step("<step_id>", isExist("<element_to_check>"))
+```
+
+### For example
+
+```kotlin
+step("01", isExist("LoginButton"))
+```
+
+---
+
+## isNotExist
+
+Checks for the absence of an element. Returns fail if the element is found on the page.
+
+### Usage
+
+```kotlin
+step("<step_id>", isNotExist("<element_to_check>"))
+```
+
+### For example
+
+```kotlin
+step("01", isNotExist("LoginButton"))
+```

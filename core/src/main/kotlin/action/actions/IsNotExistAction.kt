@@ -60,6 +60,9 @@ class IsNotExistAction(private val elementName: String) : ActionReturn(), Action
     }
 }
 
+/**
+ * Checks for the absence of the element [elementName] on the page
+ */
 fun isNotExist(elementName: String, function: (IsNotExistAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
     val action = IsNotExistAction(elementName)
