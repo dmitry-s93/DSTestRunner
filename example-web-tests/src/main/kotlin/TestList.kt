@@ -1,7 +1,7 @@
 import test.TestBuilder
 import test.TestList
-import tests.LoginAndLogoutTest
-import tests.LoginFormValidationTest
+import tests.authentication.loginAndLogout.LoginAndLogoutTest
+import tests.authentication.loginFormValidation.LoginFormValidationTest
 import kotlin.reflect.KClass
 
 @Suppress("unused")
