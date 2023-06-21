@@ -31,7 +31,7 @@ open class TestBuilder(id: String, name: String) {
     private var before: Boolean = false
     private var after: Boolean = false
 
-    var name: String = ""
+    private var name: String = ""
 
     init {
         testId = id
@@ -109,7 +109,18 @@ open class TestBuilder(id: String, name: String) {
         }
     }
 
+    /**
+     * Makes the step optional.
+     * The failure of an optional step does not prevent the test from continuing.
+     */
     fun optional() {
         required = false
+    }
+
+    /**
+     * Overrides the default step name
+     */
+    fun name(name: String) {
+        this.name = name
     }
 }
