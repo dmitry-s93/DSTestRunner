@@ -56,7 +56,7 @@ class ChromeDriver : Driver {
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(pageLoadTimeout))
                 .until {
-                    getCurrentUrl().startsWith(url) && (identifier.isNullOrEmpty() || getWebElements(identifier).isNotEmpty()) && !isPreloaderDisplayed()
+                    getCurrentUrl().startsWith(url) && (identifier.isNullOrEmpty() || getWebElements(identifier, false).isNotEmpty()) && !isPreloaderDisplayed()
                 }
             true
         } catch (e: ConditionTimeoutException) {
@@ -66,11 +66,8 @@ class ChromeDriver : Driver {
 
     private fun isPreloaderDisplayed(): Boolean {
         preloaderElements.forEach { locator ->
-            val webElements = getWebElements(locator)
-            webElements.forEach { element ->
-                if (element.isDisplayed)
-                    return true
-            }
+            if (getWebElements(locator, true).isNotEmpty())
+                return true
         }
         return false
     }
@@ -130,28 +127,35 @@ class ChromeDriver : Driver {
     }
 
     private fun getWebElement(locator: String): WebElement {
-        var webElement: WebElement? = null
+        var element: WebElement? = null
         await()
             .atLeast(Duration.ofMillis(0))
             .pollDelay(Duration.ofMillis(poolDelay))
             .atMost(Duration.ofMillis(elementTimeout))
             .until {
-                val webElements = getWebElements(locator)
-                for (element in webElements) {
-                    if (element.isDisplayed) {
-                        webElement = element
-                        return@until true
-                    }
+                val elements = getWebElements(locator, true)
+                if (elements.isNotEmpty()) {
+                    element = elements[0]
+                    return@until true
                 }
                 return@until false
             }
-        if (webElement != null)
-            return webElement as WebElement
+        if (element != null)
+            return element as WebElement
         return driver.findElement(By.xpath(locator))
     }
 
-    private fun getWebElements(locator: String): List<WebElement> {
-        return driver.findElements(By.xpath(locator))
+    private fun getWebElements(locator: String, onlyDisplayed: Boolean): List<WebElement> {
+        val elements = driver.findElements(By.xpath(locator))
+        if (onlyDisplayed) {
+            val displayedElements: MutableList<WebElement> = mutableListOf()
+            elements.forEach {
+                if (it.isDisplayed)
+                    displayedElements.add(it)
+            }
+            return displayedElements
+        }
+        return elements
     }
 
     override fun setPage(url: String) {
@@ -182,7 +186,7 @@ class ChromeDriver : Driver {
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(elementTimeout))
-                .until { getWebElements(locator).isNotEmpty() }
+                .until { getWebElements(locator, true).isNotEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
             false
@@ -195,7 +199,7 @@ class ChromeDriver : Driver {
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(elementTimeout))
-                .until { getWebElements(locator).isEmpty() }
+                .until { getWebElements(locator, true).isEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
             false
