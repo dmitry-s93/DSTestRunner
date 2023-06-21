@@ -8,8 +8,12 @@ Framework for writing and running autotests
 - Supported Browsers:
   - Google Chrome and Chromium-based
 - Support for saving results in formats:
-    - Allure Report
-    - CSV
+  - Allure Report
+  - CSV
+
+## Documentation
+
+[Available Actions](docs/actions.md)
 
 ## Examples
 

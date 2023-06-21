@@ -1,4 +1,4 @@
-package tests
+package tests.authentication.loginAndLogout
 
 import action.actions.*
 import reporter.allure.SeverityLevel
