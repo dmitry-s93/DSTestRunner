@@ -19,19 +19,15 @@ import config.WebDriverConfig
 import logger.Logger
 import java.net.URI
 
-class PageData(pageName: String, urlPath: String?, identifier: String?, description: String?, elements: HashMap<String, String>?) {
-    private val pageName: String
-    private val urlPath: String?
-    private val identifier: String?
-    private val description: String?
+class PageData(
+    private val pageName: String,
+    private val urlPath: String?,
+    private val identifier: String?,
+    private val description: String?,
     private val elements: HashMap<String, String>?
-
-    init {
-        this.pageName = pageName
-        this.urlPath = urlPath
-        this.identifier = identifier
-        this.description = description
-        this.elements = elements
+) {
+    fun getPageName(): String {
+        return pageName
     }
 
     fun getUrl(): String {

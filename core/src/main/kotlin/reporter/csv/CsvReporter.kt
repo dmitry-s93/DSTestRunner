@@ -34,7 +34,7 @@ class CsvReporter : Reporter {
     override fun setTestInfo(testId: String, testName: String) {
         this.testId = testId
         this.testName = testName
-        reportData.add(arrayOf("ID", "Name", "Result", "Error"))
+        reportData.add(arrayOf("ID", "Name", "Status", "Error"))
     }
 
     override fun addStep(
@@ -49,7 +49,7 @@ class CsvReporter : Reporter {
         val message = if (actionResult.message() == null) "" else actionResult.message().toString()
         if (actionResult.screenshot() != null)
             saveScreenshot(actionResult.screenshot()!!, "$parentId.$id $name.png".replace(" ", "_"))
-        reportData.add(arrayOf("$parentId.$id", name, actionResult.result().toString(), message))
+        reportData.add(arrayOf("$parentId.$id", name, actionResult.status().toString(), message))
     }
 
     private fun saveScreenshot(screenshot: ByteArray, fileName: String) {

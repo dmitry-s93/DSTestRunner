@@ -16,26 +16,12 @@
 package action
 
 class ActionData(
-    actionResult: ActionResult,
-    actionParameters: HashMap<String, String>,
-    actionName: String,
-    startTime: Long,
-    stopTime: Long
-) {
-    private val actionResult: ActionResult
-    private val actionParameters: HashMap<String, String>
-    private val actionName: String
-    private val startTime: Long
+    private val actionResult: ActionResult,
+    private val actionParameters: HashMap<String, String>,
+    private val actionName: String,
+    private val startTime: Long,
     private val stopTime: Long
-
-    init {
-        this.actionResult = actionResult
-        this.actionParameters = actionParameters
-        this.actionName = actionName
-        this.startTime = startTime
-        this.stopTime = stopTime
-    }
-
+) {
     fun getResult(): ActionResult {
         return actionResult
     }

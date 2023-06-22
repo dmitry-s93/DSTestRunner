@@ -18,23 +18,17 @@ package action
 import driver.DriverSession
 import logger.Logger
 
-enum class Result(val value: Int) {
-    PASSED(0),
-    BROKEN(1),
-    FAILED(2)
-}
-
 open class ActionReturn {
     open fun pass(): ActionResult {
-        return ActionResult(Result.PASSED, null)
+        return ActionResult(ActionStatus.PASSED, null)
     }
 
     open fun fail(message: String, trace: String? = null): ActionResult {
-        return ActionResult(Result.FAILED, message, trace, getScreenshot())
+        return ActionResult(ActionStatus.FAILED, message, trace, getScreenshot())
     }
 
     open fun broke(message: String, trace: String? = null): ActionResult {
-        return ActionResult(Result.BROKEN, message, trace, getScreenshot())
+        return ActionResult(ActionStatus.BROKEN, message, trace, getScreenshot())
     }
 
     private fun getScreenshot(): ByteArray? {

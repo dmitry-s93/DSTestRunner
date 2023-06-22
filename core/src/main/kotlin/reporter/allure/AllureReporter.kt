@@ -16,7 +16,7 @@
 package reporter.allure
 
 import action.ActionResult
-import action.Result
+import action.ActionStatus
 import config.reporter.AllureReporterConfig
 import org.json.JSONArray
 import org.json.JSONObject
@@ -41,7 +41,7 @@ class AllureReporter : Reporter {
     private val links = JSONArray()
     private val steps: LinkedHashMap<String, LinkedHashMap<String, JSONObject>> = LinkedHashMap()
 
-    private var testResult: Result = Result.PASSED
+    private var testStatus: ActionStatus = ActionStatus.PASSED
 
     override fun setTestInfo(testId: String, testName: String) {
         this.testId = testId
@@ -59,14 +59,14 @@ class AllureReporter : Reporter {
         stopTime: Long
     ) {
         val step = JSONObject()
-        val result = actionResult.result()
+        val status = actionResult.status()
         with(step) {
             put("name", name)
-            put("status", getStatus(result))
-            if (result == Result.FAILED || result == Result.BROKEN) {
+            put("status", getStatus(status))
+            if (status == ActionStatus.FAILED || status == ActionStatus.BROKEN) {
                 put("statusDetails", getStatusDetails(actionResult))
-                if (result > testResult)
-                    testResult = result
+                if (status > testStatus)
+                    testStatus = status
             }
             put("stage", "finished")
             put("attachments", getAttachments(actionResult))
@@ -95,7 +95,7 @@ class AllureReporter : Reporter {
             put("labels", labels)
             put("links", links)
             put("name", testName)
-            put("status", getStatus(testResult))
+            put("status", getStatus(testStatus))
             put("stage", "finished")
             put("description", description)
             put("steps", getSteps(testId))
@@ -179,11 +179,11 @@ class AllureReporter : Reporter {
         addLabel("AS_ID", value)
     }
 
-    private fun getStatus(result: Result): String {
+    private fun getStatus(result: ActionStatus): String {
         return when (result) {
-            Result.PASSED -> "passed"
-            Result.BROKEN -> "broken"
-            Result.FAILED -> "failed"
+            ActionStatus.PASSED -> "passed"
+            ActionStatus.BROKEN -> "broken"
+            ActionStatus.FAILED -> "failed"
         }
     }
 
