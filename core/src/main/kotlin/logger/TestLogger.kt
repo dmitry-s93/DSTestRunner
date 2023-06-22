@@ -25,15 +25,16 @@ class TestLogger {
             val message = actionResult.message()
 
             val ansiColor = when (result) {
-                Result.PASS -> Color.ANSI_GREEN
-                Result.FAIL -> Color.ANSI_RED
+                Result.PASSED -> Color.ANSI_BRIGHT_GREEN
+                Result.FAILED -> Color.ANSI_BRIGHT_RED
+                Result.BROKEN -> Color.ANSI_BRIGHT_YELLOW
             }
 
             var errorPart = ""
             if (message != null)
-                errorPart = "\n${Color.ANSI_RED}$message${Color.ANSI_RESET}"
+                errorPart = "\n${ansiColor}$message${Color.ANSI_RESET}"
 
-            println("${Logger.getTime()} ${Logger.getThreadId()} $ansiColor$result${Color.ANSI_RESET} --> ${Color.ANSI_CYAN}$parentId.$id $testName${Color.ANSI_RESET}$errorPart")
+            println("${Logger.getTime()} ${Logger.getThreadId()} $ansiColor$result${Color.ANSI_RESET} --> ${Color.ANSI_BRIGHT_CYAN}$parentId.$id${Color.ANSI_RESET} : ${Color.ANSI_BRIGHT_CYAN}$testName${Color.ANSI_RESET}$errorPart")
         }
     }
 }

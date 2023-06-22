@@ -42,14 +42,14 @@ class CheckLoadPageAction(pageName: String) : ActionReturn(), Action {
         try {
             PageStorage.setCurrentPage(pageName)
             if (pageUrl.isNullOrEmpty())
-                return fail(Localization.get("CheckLoadPageAction.PageUrlNotSpecified"))
+                return broke(Localization.get("CheckLoadPageAction.PageUrlNotSpecified"))
             if (!DriverSession.getSession().checkLoadPage(pageUrl, pageIdentifier)) {
                 if (!DriverSession.getSession().getCurrentUrl().startsWith(pageUrl.toString()))
                     return fail(Localization.get("CheckLoadPageAction.UrlDoesNotMatch"))
                 return fail(Localization.get("CheckLoadPageAction.PageDidNotLoad"))
             }
         } catch (e: Exception) {
-            return fail(Localization.get("CheckLoadPageAction.GeneralError", e.message), e.stackTraceToString())
+            return broke(Localization.get("CheckLoadPageAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }

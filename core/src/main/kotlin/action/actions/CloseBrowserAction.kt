@@ -32,7 +32,7 @@ class CloseBrowserAction : ActionReturn(), Action {
         try {
             DriverSession.closeSession()
         } catch (e: Exception) {
-            return fail(Localization.get("CloseBrowserAction.GeneralError", e.message), e.stackTraceToString())
+            return broke(Localization.get("CloseBrowserAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }

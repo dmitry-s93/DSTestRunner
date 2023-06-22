@@ -27,7 +27,7 @@ open class TestBuilder(id: String, name: String) {
     private val testName: String
     private var parentId: String
     private var required: Boolean = true
-    private var result = Result.PASS
+    private var result = Result.PASSED
     private var before: Boolean = false
     private var after: Boolean = false
 
@@ -58,6 +58,7 @@ open class TestBuilder(id: String, name: String) {
 
     private fun executeSteps(function: () -> Unit) {
         val thisRequired = required
+        required = true
         try {
             function()
         } catch (e: TestFailedError) {
@@ -80,9 +81,9 @@ open class TestBuilder(id: String, name: String) {
         if (!before && !after)
             ReporterSession.getSession().addStep(id, parentId, stepName, stepParams, stepResult, startTime, stopTime)
         name = ""
-        if (stepResult.result() == Result.FAIL)
-            result = Result.FAIL
-        if (required && stepResult.result() == Result.FAIL)
+        if (stepResult.result() > result)
+            result = stepResult.result()
+        if (required && (stepResult.result() == Result.FAILED || stepResult.result() == Result.BROKEN))
             throw TestFailedError()
         required = true
     }
@@ -91,9 +92,9 @@ open class TestBuilder(id: String, name: String) {
         val currentTestId = parentId
         val currentResult = result
         parentId += ".$id"
-        result = Result.PASS
+        result = Result.PASSED
         val startTime = System.currentTimeMillis()
-        val stopTime : Long
+        val stopTime: Long
         try {
             function()
         } catch (e: TestFailedError) {
@@ -103,7 +104,7 @@ open class TestBuilder(id: String, name: String) {
             parentId = currentTestId
             TestLogger.log(id, parentId, name, ActionResult(result))
             ReporterSession.getSession().addStep(id, parentId, name, HashMap(), ActionResult(result), startTime, stopTime)
-            if (result != Result.FAIL)
+            if (currentResult > result)
                 result = currentResult
             required = true
         }

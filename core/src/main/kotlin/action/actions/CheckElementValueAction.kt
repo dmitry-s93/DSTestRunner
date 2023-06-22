@@ -37,19 +37,13 @@ class CheckElementValueAction(private val elementName: String, expectedValue: St
     override fun execute(): ActionResult {
         try {
             if (elementLocator.isNullOrEmpty())
-                return fail(Localization.get("General.ElementLocatorNotSpecified"))
+                return broke(Localization.get("General.ElementLocatorNotSpecified"))
             elementLocator = String.format(elementLocator!!, *locatorArguments.toArray())
             elementValue = DriverSession.getSession().getElementValue(elementLocator!!)
             if (elementValue != expectedValue)
-                return fail(
-                    Localization.get(
-                        "CheckElementValueAction.ElementValueNotMatch",
-                        elementValue,
-                        expectedValue
-                    )
-                )
+                return fail(Localization.get("CheckElementValueAction.ElementValueNotMatch", elementValue, expectedValue))
         } catch (e: Exception) {
-            return fail(Localization.get("CheckElementValueAction.GeneralError", e.message), e.stackTraceToString())
+            return broke(Localization.get("CheckElementValueAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }
