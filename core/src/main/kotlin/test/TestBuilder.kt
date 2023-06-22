@@ -17,7 +17,7 @@ package test
 
 import action.ActionData
 import action.ActionResult
-import action.Result
+import action.ActionStatus
 import logger.TestLogger
 import reporter.ReporterSession
 import test.error.TestFailedError
@@ -27,7 +27,7 @@ open class TestBuilder(id: String, name: String) {
     private val testName: String
     private var parentId: String
     private var required: Boolean = true
-    private var result = Result.PASSED
+    private var status = ActionStatus.PASSED
     private var before: Boolean = false
     private var after: Boolean = false
 
@@ -81,18 +81,18 @@ open class TestBuilder(id: String, name: String) {
         if (!before && !after)
             ReporterSession.getSession().addStep(id, parentId, stepName, stepParams, stepResult, startTime, stopTime)
         name = ""
-        if (stepResult.result() > result)
-            result = stepResult.result()
-        if (required && (stepResult.result() == Result.FAILED || stepResult.result() == Result.BROKEN))
+        if (stepResult.status() > status)
+            status = stepResult.status()
+        if (required && (stepResult.status() == ActionStatus.FAILED || stepResult.status() == ActionStatus.BROKEN))
             throw TestFailedError()
         required = true
     }
 
     fun step(id: String, name: String, function: () -> Unit) {
         val currentTestId = parentId
-        val currentResult = result
+        val currentStatus = status
         parentId += ".$id"
-        result = Result.PASSED
+        status = ActionStatus.PASSED
         val startTime = System.currentTimeMillis()
         val stopTime: Long
         try {
@@ -102,10 +102,10 @@ open class TestBuilder(id: String, name: String) {
         } finally {
             stopTime = System.currentTimeMillis()
             parentId = currentTestId
-            TestLogger.log(id, parentId, name, ActionResult(result))
-            ReporterSession.getSession().addStep(id, parentId, name, HashMap(), ActionResult(result), startTime, stopTime)
-            if (currentResult > result)
-                result = currentResult
+            TestLogger.log(id, parentId, name, ActionResult(status))
+            ReporterSession.getSession().addStep(id, parentId, name, HashMap(), ActionResult(status), startTime, stopTime)
+            if (currentStatus > status)
+                status = currentStatus
             required = true
         }
     }

@@ -21,4 +21,5 @@ interface Action {
     fun getParameters(): HashMap<String, String>
     fun pass(): ActionResult
     fun fail(message: String, trace: String?): ActionResult
+    fun broke(message: String, trace: String?): ActionResult
 }

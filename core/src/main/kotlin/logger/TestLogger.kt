@@ -16,18 +16,18 @@
 package logger
 
 import action.ActionResult
-import action.Result
+import action.ActionStatus
 
 class TestLogger {
     companion object {
         fun log(id: String, parentId: String, testName: String, actionResult: ActionResult) {
-            val result = actionResult.result()
+            val result = actionResult.status()
             val message = actionResult.message()
 
             val ansiColor = when (result) {
-                Result.PASSED -> Color.ANSI_BRIGHT_GREEN
-                Result.FAILED -> Color.ANSI_BRIGHT_RED
-                Result.BROKEN -> Color.ANSI_BRIGHT_YELLOW
+                ActionStatus.PASSED -> Color.ANSI_BRIGHT_GREEN
+                ActionStatus.FAILED -> Color.ANSI_BRIGHT_RED
+                ActionStatus.BROKEN -> Color.ANSI_BRIGHT_YELLOW
             }
 
             var errorPart = ""

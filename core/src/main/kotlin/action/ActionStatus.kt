@@ -15,28 +15,8 @@
 
 package action
 
-class ActionResult(
-    private val status: ActionStatus = ActionStatus.FAILED,
-    private val message: String? = null,
-    private val trace: String? = null,
-    private val screenshot: ByteArray? = null
-) {
-    fun status(): ActionStatus {
-        return status
-    }
-
-    fun message(): String? {
-        return message
-    }
-
-    fun trace(): String? {
-        return trace
-    }
-
-    /**
-     * Returns a screenshot of the error
-     */
-    fun screenshot(): ByteArray? {
-        return screenshot
-    }
+enum class ActionStatus(val value: Int) {
+    PASSED(0),
+    BROKEN(1),
+    FAILED(2)
 }
