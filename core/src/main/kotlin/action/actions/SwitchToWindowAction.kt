@@ -43,7 +43,7 @@ class SwitchToWindowAction(pageName: String?) : ActionReturn(), Action {
             if (!DriverSession.getSession().switchToWindow(pageUrl))
                 return fail(Localization.get("SwitchToWindowAction.UnableToFindWindow"))
         } catch (e: Exception) {
-            return fail(Localization.get("SwitchToWindowAction.GeneralError", e.message), e.stackTraceToString())
+            return broke(Localization.get("SwitchToWindowAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }

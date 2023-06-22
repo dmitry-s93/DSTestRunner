@@ -41,7 +41,7 @@ class AllureReporter : Reporter {
     private val links = JSONArray()
     private val steps: LinkedHashMap<String, LinkedHashMap<String, JSONObject>> = LinkedHashMap()
 
-    private var testResult: Result = Result.PASS
+    private var testResult: Result = Result.PASSED
 
     override fun setTestInfo(testId: String, testName: String) {
         this.testId = testId
@@ -63,9 +63,10 @@ class AllureReporter : Reporter {
         with(step) {
             put("name", name)
             put("status", getStatus(result))
-            if (result == Result.FAIL) {
+            if (result == Result.FAILED || result == Result.BROKEN) {
                 put("statusDetails", getStatusDetails(actionResult))
-                testResult = result
+                if (result > testResult)
+                    testResult = result
             }
             put("stage", "finished")
             put("attachments", getAttachments(actionResult))
@@ -180,8 +181,9 @@ class AllureReporter : Reporter {
 
     private fun getStatus(result: Result): String {
         return when (result) {
-            Result.PASS -> "passed"
-            Result.FAIL -> "failed"
+            Result.PASSED -> "passed"
+            Result.BROKEN -> "broken"
+            Result.FAILED -> "failed"
         }
     }
 

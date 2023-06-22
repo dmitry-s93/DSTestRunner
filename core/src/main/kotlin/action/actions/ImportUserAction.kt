@@ -39,9 +39,9 @@ class ImportUserAction(name: String, prefix: String) : ActionReturn(), Action {
 
     override fun execute(): ActionResult {
         if (name.isEmpty())
-            return fail(Localization.get("ImportUserAction.NameCanNotBeEmpty"))
+            return broke(Localization.get("ImportUserAction.NameCanNotBeEmpty"))
         val userData = UserListConfig.getUser(name)
-            ?: return fail(Localization.get("ImportUserAction.UserNotFoundInConfig", name))
+            ?: return broke(Localization.get("ImportUserAction.UserNotFoundInConfig", name))
         userData.forEach { (fieldName, fieldValue) ->
             ValueStorage.setValue("${prefix}_${fieldName}", fieldValue)
             parameters["${prefix}_${fieldName}"] = fieldValue

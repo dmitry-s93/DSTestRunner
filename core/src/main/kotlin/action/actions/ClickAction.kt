@@ -35,11 +35,11 @@ class ClickAction(private val elementName: String) : ActionReturn(), Action {
     override fun execute(): ActionResult {
         try {
             if (elementLocator.isNullOrEmpty())
-                return fail(Localization.get("General.ElementLocatorNotSpecified"))
+                return broke(Localization.get("General.ElementLocatorNotSpecified"))
             elementLocator = String.format(elementLocator!!, *locatorArguments.toArray())
             DriverSession.getSession().click(elementLocator!!)
         } catch (e: Exception) {
-            return fail(Localization.get("ClickAction.GeneralError", e.message), e.stackTraceToString())
+            return broke(Localization.get("ClickAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }

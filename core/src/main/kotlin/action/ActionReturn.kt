@@ -18,22 +18,31 @@ package action
 import driver.DriverSession
 import logger.Logger
 
-enum class Result {
-    PASS, FAIL
+enum class Result(val value: Int) {
+    PASSED(0),
+    BROKEN(1),
+    FAILED(2)
 }
 
 open class ActionReturn {
     open fun pass(): ActionResult {
-        return ActionResult(Result.PASS, null)
+        return ActionResult(Result.PASSED, null)
     }
 
     open fun fail(message: String, trace: String? = null): ActionResult {
-        val screenshot = try {
+        return ActionResult(Result.FAILED, message, trace, getScreenshot())
+    }
+
+    open fun broke(message: String, trace: String? = null): ActionResult {
+        return ActionResult(Result.BROKEN, message, trace, getScreenshot())
+    }
+
+    private fun getScreenshot(): ByteArray? {
+        return try {
             DriverSession.getSession().getScreenshot()
         } catch (e: Exception) {
             Logger.error("Failed to take a screenshot of the error: ${e.message}")
             null
         }
-        return ActionResult(Result.FAIL, message, trace, screenshot)
     }
 }

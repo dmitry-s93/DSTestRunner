@@ -35,12 +35,12 @@ class IsExistAction(private val elementName: String) : ActionReturn(), Action {
     override fun execute(): ActionResult {
         try {
             if (elementLocator.isNullOrEmpty())
-                return fail(Localization.get("General.ElementLocatorNotSpecified"))
+                return broke(Localization.get("General.ElementLocatorNotSpecified"))
             elementLocator = String.format(elementLocator!!, *locatorArguments.toArray())
             if (!DriverSession.getSession().isExist(elementLocator!!))
                 return fail(Localization.get("IsExistAction.ElementIsMissing"))
         } catch (e: Exception) {
-            return fail(Localization.get("IsExistAction.GeneralError", e.message), e.stackTraceToString())
+            return broke(Localization.get("IsExistAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }

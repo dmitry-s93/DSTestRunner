@@ -37,11 +37,11 @@ class SetFieldValueAction(private val fieldName: String, value: String) : Action
     override fun execute(): ActionResult {
         try {
             if (elementLocator.isNullOrEmpty())
-                return fail(Localization.get("General.ElementLocatorNotSpecified"))
+                return broke(Localization.get("General.ElementLocatorNotSpecified"))
             elementLocator = String.format(elementLocator!!, *locatorArguments.toArray())
             DriverSession.getSession().setValue(elementLocator!!, value, sequenceMode)
         } catch (e: Exception) {
-            return fail(Localization.get("SetFieldValueAction.GeneralError", e.message), e.stackTraceToString())
+            return broke(Localization.get("SetFieldValueAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }

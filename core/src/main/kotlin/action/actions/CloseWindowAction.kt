@@ -43,7 +43,7 @@ class CloseWindowAction(pageName: String?) : ActionReturn(), Action {
             if (!DriverSession.getSession().closeWindow(pageUrl))
                 return fail(Localization.get("CloseWindowAction.UnableToFindWindow"))
         } catch (e: Exception) {
-            return fail(Localization.get("CloseWindowAction.GeneralError", e.message), e.stackTraceToString())
+            return broke(Localization.get("CloseWindowAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }

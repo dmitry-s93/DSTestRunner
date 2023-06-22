@@ -16,7 +16,7 @@
 package action
 
 class ActionResult(
-    result: Result = Result.FAIL,
+    result: Result = Result.FAILED,
     message: String? = null,
     trace: String? = null,
     screenshot: ByteArray? = null

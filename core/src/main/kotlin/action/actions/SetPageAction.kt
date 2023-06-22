@@ -43,12 +43,12 @@ class SetPageAction(pageName: String) : ActionReturn(), Action {
 
     override fun execute(): ActionResult {
         if (pageUrl.isNullOrEmpty())
-            return fail(Localization.get("SetPageAction.PageUrlNotSpecified"))
+            return broke(Localization.get("SetPageAction.PageUrlNotSpecified"))
         try {
             pageUrl = URIBuilder(pageUrl).addParameters(urlParameters).toString()
             DriverSession.getSession().setPage(pageUrl!!)
         } catch (e: Exception) {
-            return fail(Localization.get("SetPageAction.GeneralError", e.message), e.stackTraceToString())
+            return broke(Localization.get("SetPageAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }

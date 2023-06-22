@@ -37,7 +37,7 @@ class SetValueToStorageAction(name: String, value: String) : ActionReturn(), Act
 
     override fun execute(): ActionResult {
         if (name.isEmpty())
-            return fail(Localization.get("SetValueToStorageAction.NameCanNotBeEmpty"))
+            return broke(Localization.get("SetValueToStorageAction.NameCanNotBeEmpty"))
         ValueStorage.setValue(name, value)
         return pass()
     }
