@@ -23,16 +23,9 @@ import config.Localization
 import driver.DriverSession
 import storage.PageStorage
 
-class CheckLoadPageAction(pageName: String) : ActionReturn(), Action {
-    private val pageName: String
-    private val pageUrl: String?
-    private val pageIdentifier: String?
-
-    init {
-        this.pageName = pageName
-        this.pageUrl = PageStorage.getPage(pageName)?.getUrl()
-        this.pageIdentifier = PageStorage.getPage(pageName)?.getIdentifier()
-    }
+class CheckLoadPageAction(private val pageName: String) : ActionReturn(), Action {
+    private var pageUrl: String? = null
+    private var pageIdentifier: String? = null
 
     override fun getName(): String {
         return Localization.get("CheckLoadPageAction.DefaultName", pageName)
@@ -40,10 +33,15 @@ class CheckLoadPageAction(pageName: String) : ActionReturn(), Action {
 
     override fun execute(): ActionResult {
         try {
+            if (!PageStorage.isPageExist(pageName))
+                return broke(Localization.get("General.PageIsNotSpecifiedInPageList", pageName))
             PageStorage.setCurrentPage(pageName)
+            val pageData = PageStorage.getPage(pageName)
+            pageUrl = pageData!!.getUrl()
+            pageIdentifier = pageData.getIdentifier()
             if (pageUrl.isNullOrEmpty())
-                return broke(Localization.get("CheckLoadPageAction.PageUrlNotSpecified"))
-            if (!DriverSession.getSession().checkLoadPage(pageUrl, pageIdentifier)) {
+                return broke(Localization.get("General.PageUrlNotSpecified"))
+            if (!DriverSession.getSession().checkLoadPage(pageUrl!!, pageIdentifier)) {
                 if (!DriverSession.getSession().getCurrentUrl().startsWith(pageUrl.toString()))
                     return fail(Localization.get("CheckLoadPageAction.UrlDoesNotMatch"))
                 return fail(Localization.get("CheckLoadPageAction.PageDidNotLoad"))

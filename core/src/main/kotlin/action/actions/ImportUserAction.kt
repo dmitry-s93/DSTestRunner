@@ -23,15 +23,8 @@ import config.Localization
 import config.UserListConfig
 import storage.ValueStorage
 
-class ImportUserAction(name: String, prefix: String) : ActionReturn(), Action {
-    private val name: String
-    private val prefix: String
+class ImportUserAction(private val name: String, private val prefix: String) : ActionReturn(), Action {
     private val parameters: HashMap<String, String> = HashMap()
-
-    init {
-        this.name = name
-        this.prefix = prefix
-    }
 
     override fun getName(): String {
         return Localization.get("ImportUserAction.DefaultName", name)

@@ -49,9 +49,13 @@ class PageData(
     }
 
     fun getElementLocator(elementName: String): String? {
-        if (elements != null && elements.containsKey(elementName))
+        if (elements != null && isElementExist(elementName))
             return elements[elementName]
         Logger.warning("Element '$elementName' is not set in '$pageName' page")
         return null
+    }
+
+    fun isElementExist(elementName: String): Boolean {
+        return elements?.containsKey(elementName) ?: false
     }
 }

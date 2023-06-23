@@ -26,7 +26,7 @@ import storage.ValueStorage
 
 class SetFieldValueAction(private val fieldName: String, value: String) : ActionReturn(), Action {
     private val value: String = ValueStorage.replace(value)
-    private var elementLocator: String? = PageStorage.getCurrentPage()?.getElementLocator(fieldName)
+    private var elementLocator: String? = null
     private var sequenceMode: Boolean = false
     private val locatorArguments = ArrayList<String>()
 
@@ -36,6 +36,10 @@ class SetFieldValueAction(private val fieldName: String, value: String) : Action
 
     override fun execute(): ActionResult {
         try {
+            val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
+            if (!pageData.isElementExist(fieldName))
+                return broke(Localization.get("General.ElementIsNotSetOnPage", fieldName, pageData.getPageName()))
+            elementLocator = pageData.getElementLocator(fieldName)
             if (elementLocator.isNullOrEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
             elementLocator = String.format(elementLocator!!, *locatorArguments.toArray())

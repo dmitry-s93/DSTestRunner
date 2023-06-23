@@ -43,9 +43,11 @@ class PageStorage {
         }
 
         fun getCurrentPage(): PageData? {
-            if (currentPage.get() == null)
-                Logger.warning("The current page is not set")
             return currentPage.get()
+        }
+
+        fun isPageExist(name: String): Boolean {
+            return pages.containsKey(name)
         }
     }
 }
