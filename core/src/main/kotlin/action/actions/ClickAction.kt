@@ -25,7 +25,7 @@ import storage.PageStorage
 import storage.ValueStorage
 
 class ClickAction(private val elementName: String) : ActionReturn(), Action {
-    private var elementLocator: String? = PageStorage.getCurrentPage()?.getElementLocator(elementName)
+    private var elementLocator: String? = null
     private val locatorArguments = ArrayList<String>()
 
     override fun getName(): String {
@@ -34,6 +34,10 @@ class ClickAction(private val elementName: String) : ActionReturn(), Action {
 
     override fun execute(): ActionResult {
         try {
+            val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
+            if (!pageData.isElementExist(elementName))
+                return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.getPageName()))
+            elementLocator = pageData.getElementLocator(elementName)
             if (elementLocator.isNullOrEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
             elementLocator = String.format(elementLocator!!, *locatorArguments.toArray())

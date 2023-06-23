@@ -27,23 +27,21 @@ import org.apache.hc.core5.net.URIBuilder
 import storage.PageStorage
 import storage.ValueStorage
 
-class SetPageAction(pageName: String) : ActionReturn(), Action {
-    private val pageName: String
-    private var pageUrl: String?
+class SetPageAction(private val pageName: String) : ActionReturn(), Action {
+    private var pageUrl: String? = null
     private val urlParameters: MutableList<NameValuePair> = mutableListOf()
-
-    init {
-        this.pageName = pageName
-        this.pageUrl = PageStorage.getPage(pageName)?.getUrl()
-    }
 
     override fun getName(): String {
         return Localization.get("SetPageAction.DefaultName", pageName)
     }
 
     override fun execute(): ActionResult {
+        if (!PageStorage.isPageExist(pageName))
+            return broke(Localization.get("General.PageIsNotSpecifiedInPageList", pageName))
+        PageStorage.setCurrentPage(pageName)
+        pageUrl = PageStorage.getPage(pageName)?.getUrl()
         if (pageUrl.isNullOrEmpty())
-            return broke(Localization.get("SetPageAction.PageUrlNotSpecified"))
+            return broke(Localization.get("General.PageUrlNotSpecified"))
         try {
             pageUrl = URIBuilder(pageUrl).addParameters(urlParameters).toString()
             DriverSession.getSession().setPage(pageUrl!!)

@@ -23,14 +23,8 @@ import config.Localization
 import driver.DriverSession
 import storage.PageStorage
 
-class SwitchToWindowAction(pageName: String?) : ActionReturn(), Action {
-    private val pageName: String?
-    private val pageUrl: String?
-
-    init {
-        this.pageName = pageName
-        this.pageUrl = pageName?.let { PageStorage.getPage(it)?.getUrl() }
-    }
+class SwitchToWindowAction(private val pageName: String?) : ActionReturn(), Action {
+    private val pageUrl: String? = pageName?.let { PageStorage.getPage(it)?.getUrl() }
 
     override fun getName(): String {
         if (pageName.isNullOrEmpty())

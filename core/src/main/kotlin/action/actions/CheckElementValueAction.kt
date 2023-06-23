@@ -25,7 +25,7 @@ import storage.PageStorage
 import storage.ValueStorage
 
 class CheckElementValueAction(private val elementName: String, expectedValue: String) : ActionReturn(), Action {
-    private var elementLocator: String? = PageStorage.getCurrentPage()?.getElementLocator(elementName)
+    private var elementLocator: String? = null
     private val expectedValue: String = ValueStorage.replace(expectedValue)
     private var elementValue: String? = null
     private val locatorArguments = ArrayList<String>()
@@ -36,6 +36,10 @@ class CheckElementValueAction(private val elementName: String, expectedValue: St
 
     override fun execute(): ActionResult {
         try {
+            val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
+            if (!pageData.isElementExist(elementName))
+                return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.getPageName()))
+            elementLocator = pageData.getElementLocator(elementName)
             if (elementLocator.isNullOrEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
             elementLocator = String.format(elementLocator!!, *locatorArguments.toArray())

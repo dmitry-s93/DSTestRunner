@@ -23,25 +23,23 @@ import config.Localization
 import driver.DriverSession
 import storage.PageStorage
 
-class OpenBrowserAction(pageName: String) : ActionReturn(), Action {
-    private val pageName: String
-    private val pageUrl: String?
-
-    init {
-        this.pageName = pageName
-        this.pageUrl = PageStorage.getPage(pageName)?.getUrl()
-    }
+class OpenBrowserAction(private val pageName: String) : ActionReturn(), Action {
+    private var pageUrl: String? = null
 
     override fun getName(): String {
         return Localization.get("OpenBrowserAction.DefaultName", pageName)
     }
 
     override fun execute(): ActionResult {
+        if (!PageStorage.isPageExist(pageName))
+            return broke(Localization.get("General.PageIsNotSpecifiedInPageList", pageName))
+        PageStorage.setCurrentPage(pageName)
+        pageUrl = PageStorage.getPage(pageName)?.getUrl()
         if (pageUrl.isNullOrEmpty())
-            return broke(Localization.get("OpenBrowserAction.PageUrlNotSpecified"))
+            return broke(Localization.get("General.PageUrlNotSpecified"))
         try {
             DriverSession.createSession()
-            DriverSession.getSession().setPage(pageUrl)
+            DriverSession.getSession().setPage(pageUrl!!)
         } catch (e: Exception) {
             return broke(Localization.get("OpenBrowserAction.GeneralError", e.message), e.stackTraceToString())
         }
