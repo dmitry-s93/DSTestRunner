@@ -22,7 +22,9 @@ import action.ActionReturn
 import config.Localization
 import storage.ValueStorage
 
-class SetValueToStorageAction(private val name: String, private val value: String) : ActionReturn(), Action {
+class SetValueToStorageAction(private val name: String, value: String) : ActionReturn(), Action {
+    private val value = ValueStorage.replace(value)
+
     override fun getName(): String {
         return Localization.get("SetValueToStorageAction.DefaultName", value, name)
     }
