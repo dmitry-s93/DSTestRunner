@@ -138,3 +138,19 @@ This will add 2 entries to the test storage:
 
 - "user_login" entry with value "standard_user"
 - "user_password" entry with value "secret_sauce"
+
+### waitTime action
+
+Waits for the specified time (in milliseconds).
+
+**Usage:**
+
+```kotlin
+step("<step_id>", waitTime(millis))
+```
+
+**For example:**
+
+```kotlin
+step("01", waitTime(2500))
+```
