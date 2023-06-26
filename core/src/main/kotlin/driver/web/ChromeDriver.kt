@@ -147,14 +147,8 @@ class ChromeDriver : Driver {
 
     private fun getWebElements(locator: String, onlyDisplayed: Boolean): List<WebElement> {
         val elements = driver.findElements(By.xpath(locator))
-        if (onlyDisplayed) {
-            val displayedElements: MutableList<WebElement> = mutableListOf()
-            elements.forEach {
-                if (it.isDisplayed)
-                    displayedElements.add(it)
-            }
-            return displayedElements
-        }
+        if (onlyDisplayed)
+            return elements.filter { it.isDisplayed }
         return elements
     }
 
