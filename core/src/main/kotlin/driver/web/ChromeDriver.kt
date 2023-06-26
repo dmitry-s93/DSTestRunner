@@ -24,9 +24,12 @@ import org.awaitility.Awaitility.await
 import org.awaitility.core.ConditionTimeoutException
 import org.openqa.selenium.*
 import org.openqa.selenium.chrome.ChromeOptions
+import org.openqa.selenium.interactions.Actions
 import org.openqa.selenium.remote.RemoteWebDriver
+import java.awt.Point
 import java.net.URL
 import java.time.Duration
+import java.util.*
 
 
 @Suppress("unused")
@@ -45,8 +48,20 @@ class ChromeDriver : Driver {
         driver.manage().timeouts().implicitlyWait(Duration.ofMillis(0))
     }
 
-    override fun click(locator: String) {
-        getWebElement(locator).click()
+    override fun click(locator: String, points: ArrayList<Point>?) {
+        val element = getWebElement(locator)
+        if (points.isNullOrEmpty()) {
+            element.click()
+        } else {
+            with (Actions(driver)) {
+                points.forEach {
+                    moveToElement(element)
+                    moveByOffset(it.x, it.y)
+                    click()
+                }
+                perform()
+            }
+        }
     }
 
     override fun checkLoadPage(url: String, identifier: String?): Boolean {
@@ -147,14 +162,8 @@ class ChromeDriver : Driver {
 
     private fun getWebElements(locator: String, onlyDisplayed: Boolean): List<WebElement> {
         val elements = driver.findElements(By.xpath(locator))
-        if (onlyDisplayed) {
-            val displayedElements: MutableList<WebElement> = mutableListOf()
-            elements.forEach {
-                if (it.isDisplayed)
-                    displayedElements.add(it)
-            }
-            return displayedElements
-        }
+        if (onlyDisplayed)
+            return elements.filter { it.isDisplayed }
         return elements
     }
 

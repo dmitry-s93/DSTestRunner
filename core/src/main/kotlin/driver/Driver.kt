@@ -15,8 +15,11 @@
 
 package driver
 
+import java.awt.Point
+import java.util.ArrayList
+
 interface Driver {
-    fun click(locator: String)
+    fun click(locator: String, points: ArrayList<Point>? = null)
     fun checkLoadPage(url: String, identifier: String?): Boolean
     fun switchToWindow(url: String?): Boolean
     fun closeWindow(url: String?): Boolean

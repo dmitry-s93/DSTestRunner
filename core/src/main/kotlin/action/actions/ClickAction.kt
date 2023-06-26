@@ -23,10 +23,13 @@ import config.Localization
 import driver.DriverSession
 import storage.PageStorage
 import storage.ValueStorage
+import java.awt.Point
+import java.util.*
 
 class ClickAction(private val elementName: String) : ActionReturn(), Action {
     private var elementLocator: String? = null
     private val locatorArguments = ArrayList<String>()
+    private val clickPoints = ArrayList<Point>()
 
     override fun getName(): String {
         return Localization.get("ClickAction.DefaultName", elementName)
@@ -41,7 +44,7 @@ class ClickAction(private val elementName: String) : ActionReturn(), Action {
             if (elementLocator.isNullOrEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
             elementLocator = String.format(elementLocator!!, *locatorArguments.toArray())
-            DriverSession.getSession().click(elementLocator!!)
+            DriverSession.getSession().click(elementLocator!!, clickPoints)
         } catch (e: Exception) {
             return broke(Localization.get("ClickAction.GeneralError", e.message), e.stackTraceToString())
         }
@@ -52,6 +55,13 @@ class ClickAction(private val elementName: String) : ActionReturn(), Action {
         val parameters = HashMap<String, String>()
         parameters["elementName"] = elementName
         parameters["elementLocator"] = elementLocator.toString()
+        if (clickPoints.isNotEmpty()) {
+            val points = StringBuilder()
+            clickPoints.forEach {
+                points.append("[${it.x},${it.y}]")
+            }
+            parameters["clickPoints"] = points.toString()
+        }
         return parameters
     }
 
@@ -60,6 +70,14 @@ class ClickAction(private val elementName: String) : ActionReturn(), Action {
      */
     fun locatorArgument(value: String) {
         locatorArguments.add(ValueStorage.replace(value))
+    }
+
+    /**
+     * Sets the point to click inside the specified element.
+     * You must specify the offset of the coordinate relative to the center of the element.
+     */
+    fun clickPoint(xOffset: Int, yOffset: Int) {
+        clickPoints.add(Point(xOffset, yOffset))
     }
 }
 
