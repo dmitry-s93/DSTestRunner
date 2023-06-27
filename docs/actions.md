@@ -69,6 +69,22 @@ step("02", closeWindow("LoginPage"))
 
 ## Element Actions
 
+### setSelectValue action
+
+Selects the specified value from the dropdown list.
+
+**Usage:**
+
+```kotlin
+step("<step_id>", setSelectValue("<element_name>", "<value_for_selection>"))
+```
+
+**For example:**
+
+```kotlin
+step("01", setSelectValue("DayOfWeekSelect", "Tuesday"))
+```
+
 ### isExist action
 
 Checks for the presence of an element. Returns fail if the element is not found on the page.

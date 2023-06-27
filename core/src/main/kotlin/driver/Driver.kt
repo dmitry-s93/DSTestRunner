@@ -28,6 +28,7 @@ interface Driver {
     fun getScreenshot(): ByteArray
     fun setPage(url: String)
     fun setValue(locator: String, value: String, sequenceMode: Boolean = false)
+    fun setSelectValue(locator: String, value: String)
     fun isExist(locator: String): Boolean
     fun isNotExist(locator: String): Boolean
     fun quit()
