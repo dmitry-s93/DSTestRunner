@@ -26,10 +26,10 @@ import org.openqa.selenium.*
 import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.interactions.Actions
 import org.openqa.selenium.remote.RemoteWebDriver
+import org.openqa.selenium.support.ui.Select
 import java.awt.Point
 import java.net.URL
 import java.time.Duration
-import java.util.*
 
 
 @Suppress("unused")
@@ -187,6 +187,11 @@ class ChromeDriver : Driver {
             return
         }
         webElement.sendKeys(value)
+    }
+
+    override fun setSelectValue(locator: String, value: String) {
+        val select = Select(getWebElement(locator))
+        select.selectByVisibleText(value)
     }
 
     override fun isExist(locator: String): Boolean {
