@@ -143,18 +143,21 @@ class ChromeDriver : Driver {
 
     private fun getWebElement(locator: String): WebElement {
         var element: WebElement? = null
-        await()
-            .atLeast(Duration.ofMillis(0))
-            .pollDelay(Duration.ofMillis(poolDelay))
-            .atMost(Duration.ofMillis(elementTimeout))
-            .until {
-                val elements = getWebElements(locator, true)
-                if (elements.isNotEmpty()) {
-                    element = elements[0]
-                    return@until true
+        try {
+            with(await()) {
+                atLeast(Duration.ofMillis(0))
+                pollDelay(Duration.ofMillis(poolDelay))
+                atMost(Duration.ofMillis(elementTimeout))
+                until {
+                    val elements = getWebElements(locator, true)
+                    if (elements.isNotEmpty()) {
+                        element = elements[0]
+                        return@until true
+                    }
+                    return@until false
                 }
-                return@until false
             }
+        } catch (_: ConditionTimeoutException) {}
         if (element != null)
             return element as WebElement
         return driver.findElement(By.xpath(locator))
