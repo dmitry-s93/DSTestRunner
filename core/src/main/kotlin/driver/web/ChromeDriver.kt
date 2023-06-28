@@ -67,6 +67,7 @@ class ChromeDriver : Driver {
     override fun checkLoadPage(url: String, identifier: String?): Boolean {
         return try {
             await()
+                .ignoreException(StaleElementReferenceException::class.java)
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(pageLoadTimeout))
@@ -144,11 +145,12 @@ class ChromeDriver : Driver {
     private fun getWebElement(locator: String): WebElement {
         var element: WebElement? = null
         try {
-            with(await()) {
-                atLeast(Duration.ofMillis(0))
-                pollDelay(Duration.ofMillis(poolDelay))
-                atMost(Duration.ofMillis(elementTimeout))
-                until {
+            await()
+                .ignoreException(StaleElementReferenceException::class.java)
+                .atLeast(Duration.ofMillis(0))
+                .pollDelay(Duration.ofMillis(poolDelay))
+                .atMost(Duration.ofMillis(elementTimeout))
+                .until {
                     val elements = getWebElements(locator, true)
                     if (elements.isNotEmpty()) {
                         element = elements[0]
@@ -156,7 +158,6 @@ class ChromeDriver : Driver {
                     }
                     return@until false
                 }
-            }
         } catch (_: ConditionTimeoutException) {}
         if (element != null)
             return element as WebElement
@@ -200,6 +201,7 @@ class ChromeDriver : Driver {
     override fun isExist(locator: String): Boolean {
         return try {
             await()
+                .ignoreException(StaleElementReferenceException::class.java)
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(elementTimeout))
@@ -213,6 +215,7 @@ class ChromeDriver : Driver {
     override fun isNotExist(locator: String): Boolean {
         return try {
             await()
+                .ignoreException(StaleElementReferenceException::class.java)
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(elementTimeout))
