@@ -135,7 +135,11 @@ class ChromeDriver : Driver {
     }
 
     override fun getElementValue(locator: String): String {
-        return getWebElement(locator).text
+        val element = getWebElement(locator)
+        var value = element.text
+        if (value.isNullOrEmpty())
+            value = element.getAttribute("value")
+        return value ?: ""
     }
 
     override fun getScreenshot(): ByteArray {
