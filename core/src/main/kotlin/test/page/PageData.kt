@@ -24,7 +24,7 @@ class PageData(
     private val urlPath: String?,
     private val identifier: String?,
     private val description: String?,
-    private val elements: HashMap<String, String>?
+    private val elements: HashMap<String, WebElement>?
 ) {
     fun getPageName(): String {
         return pageName
@@ -48,7 +48,7 @@ class PageData(
         return description
     }
 
-    fun getElementLocator(elementName: String): String? {
+    fun getElement(elementName: String): WebElement? {
         if (elements != null && isElementExist(elementName))
             return elements[elementName]
         Logger.warning("Element '$elementName' is not set in '$pageName' page")
