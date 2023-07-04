@@ -21,7 +21,7 @@ open class PageBuilder {
     var urlPath: String? = null
     var identifier: String? = null
     var description: String? = null
-    var elements: HashMap<String, String>? = null
+    var elements: HashMap<String, WebElement>? = null
 
     fun page(name: String, function: () -> Unit) {
         urlPath = null

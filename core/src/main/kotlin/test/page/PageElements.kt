@@ -17,16 +17,36 @@ package test.page
 
 import logger.Logger
 
+class WebElement(private val locator: String, private val maxSize: Int? = null, private val pattern: String? = null) {
+    fun getLocator(): String {
+        return locator
+    }
+
+    fun getMaxSize(): Int? {
+        return maxSize
+    }
+
+    fun getPattern(): String? {
+        return pattern
+    }
+}
+
 open class PageElements {
-    private var elements = HashMap<String, String>()
+    private var elements = HashMap<String, WebElement>()
     private var parentName: String = ""
     private var parentLocator: String = ""
 
-    fun webElement(name: String, xpath: String, function: (() -> Unit)? = null) {
+    fun webElement(
+        name: String,
+        xpath: String,
+        maxSize: Int? = null,
+        pattern: String? = null,
+        function: (() -> Unit)? = null
+    ) {
         if (parentName.isEmpty())
-            putElement(name, xpath)
+            putElement(name, WebElement(xpath, maxSize, pattern))
         else
-            putElement("$parentName.$name", parentLocator + xpath)
+            putElement("$parentName.$name", WebElement(parentLocator + xpath, maxSize, pattern))
         if (function != null) {
             val currentParentName = parentName
             val currentParentLocator = parentLocator
@@ -40,19 +60,19 @@ open class PageElements {
         }
     }
 
-    private fun putElement(name: String, locator: String) {
+    private fun putElement(name: String, webElement: WebElement) {
         if (elements.containsKey(name)) {
             Logger.warning("An element named '$name' already exists")
             return
         }
-        elements[name] = locator
+        elements[name] = webElement
     }
 
     fun group(@Suppress("UNUSED_PARAMETER") name: String, function: () -> Unit) {
         function()
     }
 
-    fun getElements(): HashMap<String, String> {
+    fun getElements(): HashMap<String, WebElement> {
         return elements
     }
 }

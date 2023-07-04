@@ -39,7 +39,7 @@ class CheckElementValueAction(private val elementName: String, expectedValue: St
             val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
             if (!pageData.isElementExist(elementName))
                 return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.getPageName()))
-            elementLocator = pageData.getElementLocator(elementName)
+            elementLocator = pageData.getElement(elementName)?.getLocator()
             if (elementLocator.isNullOrEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
             elementLocator = String.format(elementLocator!!, *locatorArguments.toArray())
