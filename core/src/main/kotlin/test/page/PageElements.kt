@@ -17,13 +17,22 @@ package test.page
 
 import logger.Logger
 
-class WebElement(private val locator: String, private val maxSize: Int? = null, private val pattern: String? = null) {
+class WebElement(
+    private val locator: String,
+    private val maxSize: Int? = null,
+    private val allowedChars: String? = null,
+    private val pattern: String? = null
+) {
     fun getLocator(): String {
         return locator
     }
 
     fun getMaxSize(): Int? {
         return maxSize
+    }
+
+    fun getAllowedChars(): String? {
+        return allowedChars
     }
 
     fun getPattern(): String? {
@@ -40,13 +49,14 @@ open class PageElements {
         name: String,
         xpath: String,
         maxSize: Int? = null,
+        allowedChars: String? = null,
         pattern: String? = null,
         function: (() -> Unit)? = null
     ) {
         if (parentName.isEmpty())
-            putElement(name, WebElement(xpath, maxSize, pattern))
+            putElement(name, WebElement(xpath, maxSize, allowedChars, pattern))
         else
-            putElement("$parentName.$name", WebElement(parentLocator + xpath, maxSize, pattern))
+            putElement("$parentName.$name", WebElement(parentLocator + xpath, maxSize, allowedChars, pattern))
         if (function != null) {
             val currentParentName = parentName
             val currentParentLocator = parentLocator
