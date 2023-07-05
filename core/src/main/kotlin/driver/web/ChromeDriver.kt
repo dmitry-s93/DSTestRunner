@@ -186,7 +186,7 @@ class ChromeDriver : Driver {
 
     override fun setValue(locator: String, value: String, sequenceMode: Boolean) {
         val webElement = getWebElement(locator)
-        webElement.clear()
+        webElement.sendKeys(Keys.chord(Keys.CONTROL, "a") + Keys.DELETE)
         if (sequenceMode) {
             value.forEach {
                 webElement.sendKeys(it.toString())
