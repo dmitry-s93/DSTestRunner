@@ -24,7 +24,6 @@ import config.Localization
 import driver.DriverSession
 import storage.PageStorage
 import storage.ValueStorage
-import java.util.*
 
 
 class CheckInputFieldAction(private val elementName: String) : ActionReturn(), Action {
@@ -80,7 +79,7 @@ class CheckInputFieldAction(private val elementName: String) : ActionReturn(), A
     }
 
     private fun checkAllowedChars(): String {
-        val generatedString = RgxGen("$allowedChars{256}").generate()
+        val generatedString = removeDuplicateChars(RgxGen("$allowedChars{256}").generate())
         DriverSession.getSession().setValue(elementLocator!!, generatedString)
         val value = DriverSession.getSession().getElementValue(elementLocator!!)
         val valueLength = value.length
@@ -103,7 +102,7 @@ class CheckInputFieldAction(private val elementName: String) : ActionReturn(), A
     private fun checkNotAllowedChars(): String {
         if (allowedChars == ".")
             return ""
-        val generatedString = RgxGen("$allowedChars{256}").generateNotMatching()
+        val generatedString = removeDuplicateChars(RgxGen("$allowedChars{256}").generateNotMatching())
         DriverSession.getSession().setValue(elementLocator!!, generatedString)
         val value = DriverSession.getSession().getElementValue(elementLocator!!)
         if (value.isNotEmpty())
@@ -120,6 +119,18 @@ class CheckInputFieldAction(private val elementName: String) : ActionReturn(), A
         if (value != generatedString)
             return Localization.get("CheckFieldAction.ValueDoesNotMatchExpected", value, generatedString) + "\n"
         return ""
+    }
+
+    private fun removeDuplicateChars(string: String): String {
+        val charSet: MutableSet<Char> = LinkedHashSet()
+        for (char in string.toCharArray()) {
+            charSet.add(char)
+        }
+        val stringBuilder = StringBuilder()
+        for (char in charSet) {
+            stringBuilder.append(char)
+        }
+        return stringBuilder.toString()
     }
 
     override fun getParameters(): HashMap<String, String> {
