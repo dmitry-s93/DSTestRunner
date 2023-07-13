@@ -3,9 +3,9 @@ package tests.authentication.loginFormValidation.steps
 import action.actions.*
 import test.TestBuilder
 
-fun unsuccessfulLoginAttempts(id: String, name: String, test: Any) {
+fun unsuccessfulLoginAttempts(id: String, stepName: String, test: Any) {
     with(test as TestBuilder) {
-        step(id, name) {
+        step(id, stepName) {
             steps {
                 step("01", "Incorrect password") {
                     optional()
@@ -16,7 +16,7 @@ fun unsuccessfulLoginAttempts(id: String, name: String, test: Any) {
                         step("04", setFieldValue("PasswordEdit", "wrong_password"))
                         step("05", click("LoginButton"))
                         step("06", checkLoadPage("LoginPage") {
-                            name("Stayed on the login page")
+                            name = "Stayed on the login page"
                         })
                         step("07", checkElementValue("ErrorMessage", "{UserPasswordNotMatchMessage}"))
                     }
@@ -30,7 +30,7 @@ fun unsuccessfulLoginAttempts(id: String, name: String, test: Any) {
                         step("04", setFieldValue("PasswordEdit", "{locked_user_password}"))
                         step("05", click("LoginButton"))
                         step("06", checkLoadPage("LoginPage") {
-                            name("Stayed on the login page")
+                            name = "Stayed on the login page"
                         })
                         step("07", checkElementValue("ErrorMessage", "{UserLockedMessage}"))
                     }

@@ -3,9 +3,9 @@ package tests.authentication.loginFormValidation.steps
 import action.actions.*
 import test.TestBuilder
 
-fun inputFieldValidation(id: String, name: String, test: Any) {
+fun inputFieldValidation(id: String, stepName: String, test: Any) {
     with(test as TestBuilder) {
-        step(id, name) {
+        step(id, stepName) {
             steps {
                 step("01", "Login and password are empty") {
                     optional()
