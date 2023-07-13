@@ -57,7 +57,8 @@ class CheckElementValueAction(private val elementName: String, expectedValue: St
         parameters["elementName"] = elementName
         parameters["elementLocator"] = elementLocator.toString()
         parameters["elementValue"] = elementValue.toString()
-        parameters["expectedValue"] = expectedValue
+        if (expectedValue != elementValue)
+            parameters["expectedValue"] = expectedValue
         return parameters
     }
 

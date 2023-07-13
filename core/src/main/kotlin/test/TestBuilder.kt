@@ -31,7 +31,7 @@ open class TestBuilder(id: String, name: String) {
     private var before: Boolean = false
     private var after: Boolean = false
 
-    private var name: String = ""
+    var name: String = ""
 
     init {
         testId = id
@@ -94,13 +94,12 @@ open class TestBuilder(id: String, name: String) {
         parentId += ".$id"
         status = ActionStatus.PASSED
         val startTime = System.currentTimeMillis()
-        val stopTime: Long
         try {
             function()
         } catch (e: TestFailedError) {
             throw e
         } finally {
-            stopTime = System.currentTimeMillis()
+            val stopTime = System.currentTimeMillis()
             parentId = currentTestId
             TestLogger.log(id, parentId, name, ActionResult(status))
             ReporterSession.getSession().addStep(id, parentId, name, HashMap(), ActionResult(status), startTime, stopTime)
@@ -116,12 +115,5 @@ open class TestBuilder(id: String, name: String) {
      */
     fun optional() {
         required = false
-    }
-
-    /**
-     * Overrides the default step name
-     */
-    fun name(name: String) {
-        this.name = name
     }
 }
