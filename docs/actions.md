@@ -216,7 +216,13 @@ step("01", executeSql("TestDatabase1") {
     sql = "SELECT id FROM user WHERE first_name = 'Alex';"
     resultAlias = "UserId"
 })
+// You can specify the text of the sql query directly in the test step
 step("02", executeSql("TestDatabase2") {
     sql = "DELETE FROM documents WHERE user_id = '{UserId}';"
+})
+// Or you can create a sql file in resources/sql directory and specify its name
+step("02", executeSql("TestDatabase2") {
+    sqlFile = "delete_doc_by_user_id.sql"
+    sqlFileParameter("user_id", "{UserId}")
 })
 ```

@@ -32,6 +32,7 @@ class ExecuteSqlAction(private val databaseName: String) : ActionReturn(), Actio
     var resultAlias: String? = null
     private var result: String? = null
     private var updateCount: Int? = null
+    private var sqlFileParameters: HashMap<String, String> = HashMap()
 
     override fun getName(): String {
         return Localization.get("ExecuteSqlAction.DefaultName", databaseName)
@@ -44,7 +45,13 @@ class ExecuteSqlAction(private val databaseName: String) : ActionReturn(), Actio
             if (sql.isNullOrEmpty())
                 return broke(Localization.get("ExecuteSqlAction.SqlQueryIsEmpty"))
 
-            sql = ValueStorage.replace(sql!!)
+            if (!sqlFile.isNullOrEmpty()) {
+                sqlFileParameters.forEach {
+                    sql = sql!!.replace("{${it.key}}", it.value)
+                }
+            } else {
+                sql = ValueStorage.replace(sql!!)
+            }
 
             val database = DatabaseListConfig.getDatabase(databaseName)
                 ?: return broke(Localization.get("ExecuteSqlAction.DatabaseNotFoundInConfig", databaseName))
@@ -82,12 +89,22 @@ class ExecuteSqlAction(private val databaseName: String) : ActionReturn(), Actio
             parameters["result"] = result.toString()
         if (updateCount != null && updateCount != -1)
             parameters["updateCount"] = updateCount.toString()
+        sqlFileParameters.forEach {
+            parameters[it.key] = it.value
+        }
         return parameters
+    }
+
+    /**
+     * Specifies the parameter to replace in the sql file
+     */
+    fun sqlFileParameter(param: String, value: String) {
+        sqlFileParameters[param] = value
     }
 }
 
 /**
- * Executes an SQL query on the database [databaseName].
+ * Executes an SQL query on the database [databaseName]
  */
 fun executeSql(databaseName: String, function: (ExecuteSqlAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
