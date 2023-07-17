@@ -99,7 +99,7 @@ class ExecuteSqlAction(private val databaseName: String) : ActionReturn(), Actio
      * Specifies the parameter to replace in the sql file
      */
     fun sqlFileParameter(param: String, value: String) {
-        sqlFileParameters[param] = value
+        sqlFileParameters[param] = ValueStorage.replace(value)
     }
 }
 
