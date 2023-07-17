@@ -202,6 +202,11 @@ class ChromeDriver : Driver {
         select.selectByVisibleText(value)
     }
 
+    override fun uploadFile(locator: String, file: String) {
+        val webElement = getWebElements(locator, onlyDisplayed = false)[0]
+        webElement.sendKeys(file)
+    }
+
     override fun isExist(locator: String): Boolean {
         return try {
             await()

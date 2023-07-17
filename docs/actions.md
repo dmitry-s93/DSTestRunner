@@ -117,6 +117,22 @@ step("<step_id>", isNotExist("<element_to_check>"))
 step("01", isNotExist("LoginButton"))
 ```
 
+### uploadFile action
+
+Uploads a file in the file upload field.
+
+**Usage:**
+
+```kotlin
+step("<step_id>", uploadFile("<file_field>", "<file_path>"))
+```
+
+**For example:**
+
+```kotlin
+step("01", uploadFile("UploadImageInput", "/home/user/img/flower.png"))
+```
+
 ## Other actions
 
 ### importUser action
