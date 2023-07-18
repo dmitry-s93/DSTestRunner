@@ -20,33 +20,70 @@ import action.ActionData
 import action.ActionResult
 import action.ActionReturn
 import config.Localization
+import driver.DriverSession
+import storage.PageStorage
 import storage.ValueStorage
 
-class SetValueToStorageAction(private val name: String, value: String) : ActionReturn(), Action {
-    private val value = ValueStorage.replace(value)
+class SetValueToStorageAction(private val name: String, private var value: String?, private val elementName: String?) : ActionReturn(), Action {
+    private var elementLocator: String? = null
+    private val locatorArguments = ArrayList<String>()
 
     override fun getName(): String {
         return Localization.get("SetValueToStorageAction.DefaultName", value, name)
     }
 
     override fun execute(): ActionResult {
-        if (name.isEmpty())
-            return broke(Localization.get("SetValueToStorageAction.NameCanNotBeEmpty"))
-        ValueStorage.setValue(name, value)
-        return pass()
+        try {
+            if (name.isEmpty())
+                return broke(Localization.get("SetValueToStorageAction.NameCanNotBeEmpty"))
+            if (value == null && elementName == null)
+                return broke(Localization.get("SetValueToStorageAction.RequiredParameterNotSpecified"))
+            if (value != null)
+                value = ValueStorage.replace(value!!)
+            if (elementName != null) {
+                val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
+                if (!pageData.isElementExist(elementName))
+                    return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.getPageName()))
+                elementLocator = pageData.getElement(elementName)?.getLocator()
+                if (elementLocator.isNullOrEmpty())
+                    return broke(Localization.get("General.ElementLocatorNotSpecified"))
+                elementLocator = String.format(elementLocator!!, *locatorArguments.toArray())
+                value = DriverSession.getSession().getElementValue(elementLocator!!)
+            }
+            ValueStorage.setValue(name, value!!)
+            return pass()
+        } catch (e: Exception) {
+            return broke(Localization.get("SetValueToStorageAction.GeneralError", e.message), e.stackTraceToString())
+        }
     }
 
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
         parameters["name"] = name
-        parameters["value"] = value
+        parameters["value"] = value.toString()
+        if (elementName != null)
+            parameters["elementName"] = elementName.toString()
+        if (elementLocator != null)
+            parameters["elementLocator"] = elementLocator.toString()
         return parameters
+    }
+
+    /**
+     * Substitutes the argument into the element locator
+     */
+    fun locatorArgument(value: String) {
+        locatorArguments.add(ValueStorage.replace(value))
     }
 }
 
-fun setValueToStorage(name: String, value: String, function: (SetValueToStorageAction.() -> Unit)? = null): ActionData {
+/**
+ * Adds the value in the test storage
+ *
+ * Requires [value] or [elementName]
+ */
+fun setValueToStorage(name: String, value: String? = null, elementName: String? = null, function: (SetValueToStorageAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = SetValueToStorageAction(name, value)
+    val action = SetValueToStorageAction(name, value, elementName)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
