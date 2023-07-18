@@ -31,6 +31,8 @@ open class TestBuilder(id: String, name: String) {
     private var before: Boolean = false
     private var after: Boolean = false
 
+    private var complexStepError = false
+
     var name: String = ""
 
     init {
@@ -47,6 +49,8 @@ open class TestBuilder(id: String, name: String) {
     }
 
     fun steps(function: () -> Unit) {
+        if (complexStepError)
+            return
         executeSteps(function)
     }
 
@@ -62,8 +66,7 @@ open class TestBuilder(id: String, name: String) {
         try {
             function()
         } catch (e: TestFailedError) {
-            if (thisRequired && testId != parentId)
-                throw e
+            complexStepError = true
         } finally {
             required = thisRequired
         }
@@ -78,7 +81,7 @@ open class TestBuilder(id: String, name: String) {
         val startTime = actionData.getStartTime()
         val stopTime = actionData.getStopTime()
         TestLogger.log(id, parentId, stepName, stepResult)
-        if (!before && !after)
+        if (!(before || after) || stepResult.status() != ActionStatus.PASSED)
             ReporterSession.getSession().addStep(id, parentId, stepName, stepParams, stepResult, startTime, stopTime)
         name = ""
         if (stepResult.status() > status)
@@ -96,16 +99,20 @@ open class TestBuilder(id: String, name: String) {
         val startTime = System.currentTimeMillis()
         try {
             function()
+            if (complexStepError && required)
+                throw TestFailedError()
         } catch (e: TestFailedError) {
             throw e
         } finally {
             val stopTime = System.currentTimeMillis()
             parentId = currentTestId
             TestLogger.log(id, parentId, name, ActionResult(status))
-            ReporterSession.getSession().addStep(id, parentId, name, HashMap(), ActionResult(status), startTime, stopTime)
+            if (!(before || after) || status != ActionStatus.PASSED)
+                ReporterSession.getSession().addStep(id, parentId, name, HashMap(), ActionResult(status), startTime, stopTime)
             if (currentStatus > status)
                 status = currentStatus
             required = true
+            complexStepError = false
         }
     }
 
