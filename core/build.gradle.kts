@@ -23,7 +23,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.seleniumhq.selenium:selenium-java:4.9.0")
+    implementation("org.seleniumhq.selenium:selenium-java:4.10.0")
     // https://mvnrepository.com/artifact/org.json/json
     implementation("org.json:json:20230227")
     // https://mvnrepository.com/artifact/commons-io/commons-io
