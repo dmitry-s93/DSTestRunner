@@ -28,8 +28,10 @@ import storage.PageStorage
 import storage.ValueStorage
 
 class SetPageAction(private val pageName: String) : ActionReturn(), Action {
-    private var pageUrl: String? = null
+    @SuppressWarnings("WeakerAccess")
+    var pageUrl: String? = null
     private val urlParameters: MutableList<NameValuePair> = mutableListOf()
+    private val urlArguments: HashMap<String, String> = HashMap()
 
     override fun getName(): String {
         return Localization.get("SetPageAction.DefaultName", pageName)
@@ -39,7 +41,8 @@ class SetPageAction(private val pageName: String) : ActionReturn(), Action {
         if (!PageStorage.isPageExist(pageName))
             return broke(Localization.get("General.PageIsNotSpecifiedInPageList", pageName))
         PageStorage.setCurrentPage(pageName)
-        pageUrl = PageStorage.getPage(pageName)?.getUrl()
+        if (pageUrl == null)
+            pageUrl = PageStorage.getPage(pageName)?.getUrl(urlArguments)
         if (pageUrl.isNullOrEmpty())
             return broke(Localization.get("General.PageUrlNotSpecified"))
         try {
@@ -59,10 +62,17 @@ class SetPageAction(private val pageName: String) : ActionReturn(), Action {
     }
 
     /**
-     * Adds a parameter to the URL
+     * Adds a query parameter to the URL
      */
-    fun urlParameter(param: String, value: String) {
+    fun addUrlParameter(param: String, value: String) {
         urlParameters.add(BasicNameValuePair(param, ValueStorage.replace(value)))
+    }
+
+    /**
+     * Sets the value of the argument in the URL
+     */
+    fun setUrlArgument(arg: String, value: String) {
+        urlArguments[arg] = ValueStorage.replace(value)
     }
 }
 

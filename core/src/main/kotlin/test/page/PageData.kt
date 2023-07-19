@@ -30,9 +30,17 @@ class PageData(
         return pageName
     }
 
-    fun getUrl(): String {
-        if (urlPath != null)
-            return URI(WebDriverConfig.getUrl()).resolve(urlPath).toString()
+    fun getUrl(urlArguments: HashMap<String, String>? = null): String {
+        if (urlPath != null) {
+            var resUrlPath = urlPath
+            urlArguments?.forEach {
+                resUrlPath = resUrlPath!!.replace("{${it.key}}", it.value)
+            }
+            val argStartIndex = resUrlPath!!.indexOf("{")
+            if (argStartIndex != -1)
+                resUrlPath = resUrlPath!!.substring(0, argStartIndex)
+            return URI(WebDriverConfig.getUrl()).resolve(resUrlPath!!).toString()
+        }
         return WebDriverConfig.getUrl()
     }
 
