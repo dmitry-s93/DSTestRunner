@@ -10,10 +10,8 @@ Goes to the specified page.
 
 ```kotlin
 step("<step_id>", setPage("<page_to_go>") {
-    urlParameter("<param_name_1>", "param_value_1") // optional
-    urlParameter("<param_name_2>", "param_value_2") // optional
-    ...
-    urlParameter("<param_name_N>", "param_value_N") // optional
+    addUrlParameter("<param_name>", "<param_value>") // optional
+    setUrlArgument("<argument_name>", "<argument_value>") // optional
 })
 ```
 
@@ -24,8 +22,12 @@ step("<step_id>", setPage("<page_to_go>") {
 step("01", setPage("LoginPage"))
 // Goes to the specified page with URL parameters added
 step("02", setPage("LoginPage") {
-    urlParameter("param1", "value1")
-    urlParameter("param2", "value2")
+    addUrlParameter("param1", "value1")
+    addUrlParameter("param2", "value2")
+})
+// For example, the ProductDetailPage in the PageList has the url "http://example.com/product/{productId}"
+step("03", setPage("ProductDetailPage") {
+    setUrlArgument("productId", "123") // Replaces "{productId}" with "123"
 })
 ```
 
