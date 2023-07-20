@@ -25,9 +25,9 @@ repositories {
 dependencies {
     implementation("org.seleniumhq.selenium:selenium-java:4.10.0")
     // https://mvnrepository.com/artifact/org.json/json
-    implementation("org.json:json:20230227")
+    implementation("org.json:json:20230618")
     // https://mvnrepository.com/artifact/commons-io/commons-io
-    implementation("commons-io:commons-io:2.11.0")
+    implementation("commons-io:commons-io:2.13.0")
     // https://mvnrepository.com/artifact/org.awaitility/awaitility
     implementation("org.awaitility:awaitility:4.2.0")
     // https://mvnrepository.com/artifact/com.opencsv/opencsv
