@@ -18,9 +18,14 @@ import javax.imageio.ImageIO
 class ImageUtils {
     fun compare(id: String, parentId: String, screenData: ScreenData): Pair<ActionResult, ScreenData> {
         try {
-            val currentImageDir = Paths.get(ScreenshotConfig.getCurrentScreenshotDir(), getSessionId(), parentId.replace(".", "/"))
+            val currentScreenshotDir = ScreenshotConfig.getCurrentScreenshotDir()
+            val templateScreenshotDir = ScreenshotConfig.getTemplateScreenshotDir()
+            if (currentScreenshotDir.isEmpty() || templateScreenshotDir.isEmpty())
+                return Pair(ActionResult(ActionStatus.BROKEN, Localization.get("ScreenshotCompare.ScreenshotPathsNotSpecified")), screenData)
+
+            val currentImageDir = Paths.get(currentScreenshotDir, getSessionId(), parentId.replace(".", "/"))
             val currentImageFile = Paths.get(currentImageDir.toString(), "$id.png").toFile()
-            val templateImageFile = Paths.get(ScreenshotConfig.getTemplateScreenshotDir(), parentId.replace(".", "/"), "$id.png").toFile()
+            val templateImageFile = Paths.get(templateScreenshotDir, parentId.replace(".", "/"), "$id.png").toFile()
 
             val currentImage = screenData.getCurrentImage()
             saveImage(currentImage.image, currentImageFile)

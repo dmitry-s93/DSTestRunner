@@ -34,17 +34,19 @@ class ScreenshotConfig {
             try {
                 Logger.debug("Reading parameters from config", "ScreenshotConfig")
                 val config = JSONObject(ResourceUtils().getResourceByName(MainConfig.getConfiguration()))
-                val screenshotConfig = config.getJSONObject("Screenshot")
-                if (screenshotConfig.has("takeScreenshotOnError"))
-                    takeScreenshotOnError = screenshotConfig.getBoolean("takeScreenshotOnError")
-                if (screenshotConfig.has("saveTemplateIfMissing"))
-                    saveTemplateIfMissing = screenshotConfig.getBoolean("saveTemplateIfMissing")
-                if (screenshotConfig.has("allowableDifference"))
-                    allowableDifference = screenshotConfig.getInt("allowableDifference")
-                if (screenshotConfig.has("templateScreenshotDir"))
-                    templateScreenshotDir = screenshotConfig.getString("templateScreenshotDir")
-                if (screenshotConfig.has("currentScreenshotDir"))
-                    currentScreenshotDir = screenshotConfig.getString("currentScreenshotDir")
+                if (config.has("Screenshot")) {
+                    val screenshotConfig = config.getJSONObject("Screenshot")
+                    if (screenshotConfig.has("takeScreenshotOnError"))
+                        takeScreenshotOnError = screenshotConfig.getBoolean("takeScreenshotOnError")
+                    if (screenshotConfig.has("saveTemplateIfMissing"))
+                        saveTemplateIfMissing = screenshotConfig.getBoolean("saveTemplateIfMissing")
+                    if (screenshotConfig.has("allowableDifference"))
+                        allowableDifference = screenshotConfig.getInt("allowableDifference")
+                    if (screenshotConfig.has("templateScreenshotDir"))
+                        templateScreenshotDir = screenshotConfig.getString("templateScreenshotDir")
+                    if (screenshotConfig.has("currentScreenshotDir"))
+                        currentScreenshotDir = screenshotConfig.getString("currentScreenshotDir")
+                }
                 isLoaded = true
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", "ScreenshotConfig")
