@@ -27,6 +27,12 @@ import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.interactions.Actions
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.openqa.selenium.support.ui.Select
+import pazone.ashot.AShot
+import pazone.ashot.Screenshot
+import pazone.ashot.ShootingStrategies
+import pazone.ashot.coordinates.Coords
+import pazone.ashot.cropper.indent.IndentCropper
+import pazone.ashot.cropper.indent.IndentFilerFactory.blur
 import java.awt.Point
 import java.net.URL
 import java.time.Duration
@@ -142,8 +148,38 @@ class ChromeDriver : Driver {
         return value ?: ""
     }
 
-    override fun getScreenshot(): ByteArray {
-        return (driver as TakesScreenshot).getScreenshotAs(OutputType.BYTES)
+    override fun getScreenshot(workArea: String?, longScreenshot: Boolean, ignoredElements: Set<String>): Screenshot {
+        val strategy =
+            if (longScreenshot)
+                ShootingStrategies.viewportPasting(100)
+            else
+                ShootingStrategies.simple()
+        val screenshot = with(AShot()) {
+            shootingStrategy(strategy)
+            ignoredAreas(getIgnoredAreas(ignoredElements))
+            if (workArea != null) {
+                imageCropper(IndentCropper().addIndentFilter(blur()))
+                takeScreenshot(driver, getWebElement(workArea))
+            } else {
+                takeScreenshot(driver)
+            }
+        }
+        return screenshot
+    }
+
+    private fun getIgnoredAreas(locators: Set<String>): Set<Coords> {
+        val ignoredAreas: HashSet<Coords> = HashSet()
+        locators.forEach { locator ->
+            val webElements = getWebElements(locator, onlyDisplayed = true)
+            webElements.forEach { webElement ->
+                val x = webElement.location.x
+                val y = webElement.location.y
+                val width = webElement.size.width
+                val height = webElement.size.height
+                ignoredAreas.add(Coords(x, y, width, height))
+            }
+        }
+        return ignoredAreas
     }
 
     private fun getWebElement(locator: String): WebElement {

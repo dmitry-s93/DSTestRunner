@@ -15,6 +15,7 @@
 
 package driver
 
+import pazone.ashot.Screenshot
 import java.awt.Point
 import java.util.ArrayList
 
@@ -25,7 +26,12 @@ interface Driver {
     fun closeWindow(url: String?): Boolean
     fun getCurrentUrl(): String
     fun getElementValue(locator: String): String
-    fun getScreenshot(): ByteArray
+    fun getScreenshot(
+        workArea: String? = null,
+        longScreenshot: Boolean = false,
+        ignoredElements: Set<String> = HashSet()
+    ): Screenshot
+
     fun setPage(url: String)
     fun setValue(locator: String, value: String, sequenceMode: Boolean = false)
     fun setSelectValue(locator: String, value: String)

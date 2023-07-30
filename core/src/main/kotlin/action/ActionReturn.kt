@@ -15,8 +15,10 @@
 
 package action
 
+import config.ScreenshotConfig
 import driver.DriverSession
 import logger.Logger
+import java.awt.image.BufferedImage
 
 open class ActionReturn {
     open fun pass(): ActionResult {
@@ -31,12 +33,14 @@ open class ActionReturn {
         return ActionResult(ActionStatus.BROKEN, message, trace, getScreenshot())
     }
 
-    private fun getScreenshot(): ByteArray? {
-        return try {
-            DriverSession.getSession().getScreenshot()
+    private fun getScreenshot(): BufferedImage? {
+        try {
+            if (ScreenshotConfig.getTakeScreenshotOnError())
+                return DriverSession.getSession().getScreenshot().image
+            return null
         } catch (e: Exception) {
             Logger.error("Failed to take a screenshot of the error: ${e.message}")
-            null
+            return null
         }
     }
 }

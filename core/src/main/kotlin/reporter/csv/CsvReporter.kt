@@ -16,10 +16,11 @@
 package reporter.csv
 
 import action.ActionResult
+import action.ScreenData
 import com.opencsv.CSVWriterBuilder
 import config.reporter.CsvReporterConfig
 import reporter.Reporter
-import java.io.FileOutputStream
+import utils.ImageUtils
 import java.io.FileWriter
 import java.nio.file.Paths
 
@@ -43,18 +44,17 @@ class CsvReporter : Reporter {
         name: String,
         parameters: HashMap<String, String>,
         actionResult: ActionResult,
+        screenData: ScreenData?,
         startTime: Long,
         stopTime: Long
     ) {
-        val message = if (actionResult.message() == null) "" else actionResult.message().toString()
-        if (actionResult.screenshot() != null)
-            saveScreenshot(actionResult.screenshot()!!, "$parentId.$id $name.png".replace(" ", "_"))
-        reportData.add(arrayOf("$parentId.$id", name, actionResult.status().toString(), message))
-    }
-
-    private fun saveScreenshot(screenshot: ByteArray, fileName: String) {
-        val path = Paths.get(CsvReporterConfig.getReportDir(), fileName)
-        FileOutputStream(path.toFile()).use { stream -> stream.write(screenshot) }
+        val message = if (actionResult.getMessage() == null) "" else actionResult.getMessage().toString()
+        val screenshot = actionResult.getErrorImage()
+        if (screenshot != null) {
+            val fileName = "$parentId.$id $name.png".replace(" ", "_")
+            ImageUtils().saveImage(screenshot, Paths.get(CsvReporterConfig.getReportDir(), fileName).toFile())
+        }
+        reportData.add(arrayOf("$parentId.$id", name, actionResult.getStatus().toString(), message))
     }
 
     override fun quit() {

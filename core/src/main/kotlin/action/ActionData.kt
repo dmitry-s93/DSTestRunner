@@ -20,7 +20,8 @@ class ActionData(
     private val actionParameters: HashMap<String, String>,
     private val actionName: String,
     private val startTime: Long,
-    private val stopTime: Long
+    private val stopTime: Long,
+    private val screenData: ScreenData? = null
 ) {
     fun getResult(): ActionResult {
         return actionResult
@@ -40,5 +41,9 @@ class ActionData(
 
     fun getStopTime(): Long {
         return stopTime
+    }
+
+    fun getScreenData(): ScreenData? {
+        return screenData
     }
 }

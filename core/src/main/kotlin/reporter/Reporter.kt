@@ -16,6 +16,7 @@
 package reporter
 
 import action.ActionResult
+import action.ScreenData
 
 interface Reporter {
     fun setTestInfo(testId: String, testName: String)
@@ -25,6 +26,7 @@ interface Reporter {
         name: String,
         parameters: HashMap<String, String>,
         actionResult: ActionResult,
+        screenData: ScreenData?,
         startTime: Long,
         stopTime: Long
     )

@@ -30,6 +30,7 @@ class MainConfig {
         private lateinit var testSource: String
         private lateinit var pageSource: String
         private var consoleLogLevel: Int = 1
+        private val sessionId: String = System.currentTimeMillis().toString()
 
         fun setConfiguration(configName: String) {
             Logger.info("The settings from the \"$configName\" file are used")
@@ -89,6 +90,10 @@ class MainConfig {
 
         fun getConsoleLogLevel(): Int {
             return consoleLogLevel
+        }
+
+        fun getSessionId(): String {
+            return sessionId
         }
     }
 }

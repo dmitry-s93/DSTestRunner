@@ -21,8 +21,8 @@ import action.ActionStatus
 class TestLogger {
     companion object {
         fun log(id: String, parentId: String, testName: String, actionResult: ActionResult) {
-            val result = actionResult.status()
-            val message = actionResult.message()
+            val result = actionResult.getStatus()
+            val message = actionResult.getMessage()
 
             val ansiColor = when (result) {
                 ActionStatus.PASSED -> Color.ANSI_BRIGHT_GREEN

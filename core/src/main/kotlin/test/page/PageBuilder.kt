@@ -22,14 +22,18 @@ open class PageBuilder {
     var identifier: String? = null
     var description: String? = null
     var elements: HashMap<String, WebElement>? = null
+    var workArea: String? = null
+    var ignoredElements: Set<String> = HashSet()
 
     fun page(name: String, function: () -> Unit) {
         urlPath = null
         identifier = null
         description = null
         elements = null
+        workArea = null
+        ignoredElements = HashSet()
         function()
-        PageStorage.putPage(name, PageData(name, urlPath, identifier, description, elements))
+        PageStorage.putPage(name, PageData(name, urlPath, identifier, description, elements, workArea, ignoredElements))
     }
 
     fun group(name: String, function: () -> Unit) {

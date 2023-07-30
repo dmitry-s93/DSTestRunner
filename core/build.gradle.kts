@@ -38,4 +38,6 @@ dependencies {
     implementation("org.postgresql:postgresql:42.6.0")
     // https://mvnrepository.com/artifact/com.github.curious-odd-man/rgxgen
     implementation("com.github.curious-odd-man:rgxgen:1.4")
+    // https://github.com/pazone/ashot
+    implementation(files("libs/ashot-1.6.0-5430e42.jar"))
 }
