@@ -21,6 +21,7 @@ import action.ActionStatus
 import logger.TestLogger
 import reporter.ReporterSession
 import test.error.TestFailedError
+import utils.ImageUtils
 
 open class TestBuilder(id: String, name: String) {
     private val testId: String
@@ -76,17 +77,27 @@ open class TestBuilder(id: String, name: String) {
         var stepName = name
         if (stepName.isEmpty())
             stepName = actionData.getName()
-        val stepResult = actionData.getResult()
+        var stepResult = actionData.getResult()
         val stepParams = actionData.getParameters()
+        var screenData = actionData.getScreenData()
         val startTime = actionData.getStartTime()
-        val stopTime = actionData.getStopTime()
+        var stopTime = actionData.getStopTime()
+        if (!(before || after) || stepResult.getStatus() != ActionStatus.PASSED) {
+            if (screenData != null && stepResult.getStatus() == ActionStatus.PASSED) {
+                required = false
+                val (compareStepResult, compareScreenData) = ImageUtils().compare(id, parentId, screenData)
+                stepName += " \uD83D\uDDBC"
+                stepResult = compareStepResult
+                screenData = compareScreenData
+                stopTime = System.currentTimeMillis()
+            }
+            ReporterSession.getSession().addStep(id, parentId, stepName, stepParams, stepResult, screenData, startTime, stopTime)
+        }
         TestLogger.log(id, parentId, stepName, stepResult)
-        if (!(before || after) || stepResult.status() != ActionStatus.PASSED)
-            ReporterSession.getSession().addStep(id, parentId, stepName, stepParams, stepResult, startTime, stopTime)
         name = ""
-        if (stepResult.status() > status)
-            status = stepResult.status()
-        if (required && (stepResult.status() == ActionStatus.FAILED || stepResult.status() == ActionStatus.BROKEN))
+        if (stepResult.getStatus() > status)
+            status = stepResult.getStatus()
+        if (required && (stepResult.getStatus() == ActionStatus.FAILED || stepResult.getStatus() == ActionStatus.BROKEN))
             throw TestFailedError()
         required = true
     }
@@ -108,7 +119,7 @@ open class TestBuilder(id: String, name: String) {
             parentId = currentTestId
             TestLogger.log(id, parentId, name, ActionResult(status))
             if (!(before || after) || status != ActionStatus.PASSED)
-                ReporterSession.getSession().addStep(id, parentId, name, HashMap(), ActionResult(status), startTime, stopTime)
+                ReporterSession.getSession().addStep(id, parentId, name, HashMap(), ActionResult(status), null, startTime, stopTime)
             if (currentStatus > status)
                 status = currentStatus
             required = true

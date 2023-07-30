@@ -17,13 +17,16 @@ package reporter.allure
 
 import action.ActionResult
 import action.ActionStatus
+import action.ScreenData
+import config.Localization
 import config.reporter.AllureReporterConfig
 import org.json.JSONArray
 import org.json.JSONObject
 import reporter.Reporter
 import reporter.ReporterSession
+import utils.ImageUtils
 import utils.StringUtils
-import java.io.FileOutputStream
+import java.awt.image.BufferedImage
 import java.io.FileWriter
 import java.nio.charset.Charset
 import java.nio.file.Paths
@@ -55,11 +58,24 @@ class AllureReporter : Reporter {
         name: String,
         parameters: HashMap<String, String>,
         actionResult: ActionResult,
+        screenData: ScreenData?,
         startTime: Long,
         stopTime: Long
     ) {
         val step = JSONObject()
-        val status = actionResult.status()
+        val status = actionResult.getStatus()
+        val attachments = screenData?.let { getScreenDataAttachments(it) } ?: getErrorImageAttachment(actionResult)
+        if (screenData != null) {
+            val currentImagePath = screenData.currentImagePath
+            val templateImagePath = screenData.templateImagePath
+            val markedImagePath = screenData.markedImagePath
+            if (currentImagePath != null)
+                parameters["currentImagePath"] = currentImagePath
+            if (templateImagePath != null)
+                parameters["templateImagePath"] = templateImagePath
+            if (markedImagePath != null)
+                parameters["markedImagePath"] = markedImagePath
+        }
         with(step) {
             put("name", name)
             put("status", getStatus(status))
@@ -69,7 +85,7 @@ class AllureReporter : Reporter {
                     testStatus = status
             }
             put("stage", "finished")
-            put("attachments", getAttachments(actionResult))
+            put("attachments", attachments)
             put("parameters", getParameters(parameters))
             put("start", startTime)
             put("stop", stopTime)
@@ -193,8 +209,8 @@ class AllureReporter : Reporter {
             put("known", false)
             put("muted", false)
             put("flaky", false)
-            put("message", result.message())
-            put("trace", result.trace())
+            put("message", result.getMessage())
+            put("trace", result.getTrace())
         }
         return statusDetails
     }
@@ -212,27 +228,37 @@ class AllureReporter : Reporter {
         return jsonArray
     }
 
-    private fun getAttachments(actionResult: ActionResult): JSONArray {
+    private fun getErrorImageAttachment(actionResult: ActionResult): JSONArray {
         val attachments = JSONArray()
-        val screenshot = actionResult.screenshot()
-        if (screenshot != null) {
-            val uuid = UUID.randomUUID()
-            val fileName = "$uuid-attachment.png"
-            attachments.put(
-                with(JSONObject()) {
-                    put("name", "Screenshot")
-                    put("source", fileName)
-                    put("type", "image/png")
-                }
-            )
-            saveScreenshot(screenshot, fileName)
-        }
+        val errorImage = actionResult.getErrorImage()
+        if (errorImage != null)
+            attachments.put(attachImage(Localization.get("AllureReporter.ErrorScreenshot"), errorImage))
         return attachments
     }
 
-    private fun saveScreenshot(screenshot: ByteArray, fileName: String) {
-        val path = Paths.get(AllureReporterConfig.getReportDir(), fileName)
-        FileOutputStream(path.toFile()).use { stream -> stream.write(screenshot) }
+    private fun getScreenDataAttachments(screenData: ScreenData): JSONArray {
+        val attachments = JSONArray()
+        val currentImage = screenData.getCurrentImage()
+        val templateImage = screenData.templateImage
+        val markedImage = screenData.markedImage
+        attachments.put(attachImage(Localization.get("AllureReporter.CurrentScreenshot"), currentImage.image))
+        if (templateImage != null)
+            attachments.put(attachImage(Localization.get("AllureReporter.ReferenceScreenshot"), templateImage))
+        if (markedImage != null)
+            attachments.put(attachImage(Localization.get("AllureReporter.MarkedScreenshot"), markedImage))
+        return attachments
+    }
+
+    private fun attachImage(name: String, image: BufferedImage): JSONObject? {
+        val uuid = UUID.randomUUID()
+        val fileName = "$uuid-attachment.png"
+        ImageUtils().saveImage(image, Paths.get(AllureReporterConfig.getReportDir(), fileName).toFile())
+        val jsonObject = with(JSONObject()) {
+            put("name", name)
+            put("source", fileName)
+            put("type", "image/png")
+        }
+        return jsonObject
     }
 }
 

@@ -15,10 +15,7 @@
 
 package action.actions
 
-import action.Action
-import action.ActionData
-import action.ActionResult
-import action.ActionReturn
+import action.*
 import config.Localization
 import driver.DriverSession
 import storage.PageStorage
@@ -26,6 +23,9 @@ import storage.PageStorage
 class CheckLoadPageAction(private val pageName: String) : ActionReturn(), Action {
     private var pageUrl: String? = null
     private var pageIdentifier: String? = null
+    private var takeScreenshot: Boolean = false
+    private var longScreenshot: Boolean = true
+    private var screenData: ScreenData? = null
 
     override fun getName(): String {
         return Localization.get("CheckLoadPageAction.DefaultName", pageName)
@@ -46,6 +46,14 @@ class CheckLoadPageAction(private val pageName: String) : ActionReturn(), Action
                     return fail(Localization.get("CheckLoadPageAction.UrlDoesNotMatch"))
                 return fail(Localization.get("CheckLoadPageAction.PageDidNotLoad"))
             }
+            if (takeScreenshot) {
+                val screenshot = DriverSession.getSession().getScreenshot(
+                    workArea = pageData.getWorkArea(),
+                    longScreenshot = longScreenshot,
+                    ignoredElements = pageData.getIgnoredElements()
+                )
+                screenData = ScreenData(screenshot)
+            }
         } catch (e: Exception) {
             return broke(Localization.get("CheckLoadPageAction.GeneralError", e.message), e.stackTraceToString())
         }
@@ -59,6 +67,15 @@ class CheckLoadPageAction(private val pageName: String) : ActionReturn(), Action
         parameters["pageIdentifier"] = pageIdentifier.toString()
         return parameters
     }
+
+    fun getScreenData(): ScreenData? {
+        return screenData
+    }
+
+    fun takeScreenshot(takeScreenshot: Boolean = true, longScreenshot: Boolean = true) {
+        this.takeScreenshot = takeScreenshot
+        this.longScreenshot = longScreenshot
+    }
 }
 
 fun checkLoadPage(pageName: String, function: (CheckLoadPageAction.() -> Unit)? = null): ActionData {
@@ -68,6 +85,7 @@ fun checkLoadPage(pageName: String, function: (CheckLoadPageAction.() -> Unit)? 
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()
+    val screenData = action.getScreenData()
     val stopTime = System.currentTimeMillis()
-    return ActionData(result, parameters, name, startTime, stopTime)
+    return ActionData(result, parameters, name, startTime, stopTime, screenData = screenData)
 }

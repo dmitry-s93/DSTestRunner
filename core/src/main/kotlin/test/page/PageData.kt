@@ -24,7 +24,9 @@ class PageData(
     private val urlPath: String?,
     private val identifier: String?,
     private val description: String?,
-    private val elements: HashMap<String, WebElement>?
+    private val elements: HashMap<String, WebElement>?,
+    private val workArea: String?,
+    private val ignoredElements: Set<String>
 ) {
     fun getPageName(): String {
         return pageName
@@ -65,5 +67,13 @@ class PageData(
 
     fun isElementExist(elementName: String): Boolean {
         return elements?.containsKey(elementName) ?: false
+    }
+
+    fun getWorkArea(): String? {
+        return workArea
+    }
+
+    fun getIgnoredElements(): Set<String> {
+        return ignoredElements
     }
 }

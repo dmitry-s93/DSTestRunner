@@ -15,28 +15,30 @@
 
 package action
 
+import java.awt.image.BufferedImage
+
 class ActionResult(
     private val status: ActionStatus = ActionStatus.FAILED,
     private val message: String? = null,
     private val trace: String? = null,
-    private val screenshot: ByteArray? = null
+    private val errorImage: BufferedImage? = null
 ) {
-    fun status(): ActionStatus {
+    fun getStatus(): ActionStatus {
         return status
     }
 
-    fun message(): String? {
+    fun getMessage(): String? {
         return message
     }
 
-    fun trace(): String? {
+    fun getTrace(): String? {
         return trace
     }
 
     /**
      * Returns a screenshot of the error
      */
-    fun screenshot(): ByteArray? {
-        return screenshot
+    fun getErrorImage(): BufferedImage? {
+        return errorImage
     }
 }
