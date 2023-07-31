@@ -5,6 +5,7 @@ Framework for writing and running autotests
 ## Features
 
 - Easy writing of autotests
+- Screenshot comparison
 - Supported Browsers:
   - Google Chrome and Chromium-based
 - Support for saving results in formats:
