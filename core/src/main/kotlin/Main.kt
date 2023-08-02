@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+import config.ConfigLoader
 import config.MainConfig
 import logger.Logger
 import test.TestListFactory
@@ -26,13 +27,13 @@ fun main(args: Array<String>) {
     var configurationFile = argsHashMap["-configuration"]
     if (configurationFile.isNullOrEmpty())
         configurationFile = "configuration.json"
-    MainConfig.setConfiguration(configurationFile)
+    ConfigLoader().loadConfiguration(configurationFile)
 
-    Class.forName(MainConfig.getPageSource()).getDeclaredConstructor().newInstance()
+    Class.forName(MainConfig.pageSource).getDeclaredConstructor().newInstance()
 
-    val executor = Executors.newFixedThreadPool(MainConfig.getThreads())
+    val executor = Executors.newFixedThreadPool(MainConfig.threads)
 
-    val testList = TestListFactory().getTestSource(MainConfig.getTestSource()).getTestList()
+    val testList = TestListFactory().getTestSource(MainConfig.testSource).getTestList()
     testList.forEach {
         val worker: Runnable = WorkerThread(it)
         executor.execute(worker)

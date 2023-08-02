@@ -17,30 +17,27 @@ package config
 
 import logger.Logger
 import org.json.JSONObject
-import utils.ResourceUtils
 
 class DatabaseListConfig {
     companion object {
         private var databases: HashMap<String, DataBase> = HashMap()
-        private var isLoaded: Boolean = false
 
         @Synchronized
-        private fun readConfig() {
-            if (isLoaded) return
+        fun load(config: JSONObject) {
             try {
-                Logger.debug("Reading databases from config", "DatabaseListConfig")
-                val config = JSONObject(ResourceUtils().getResourceByName(MainConfig.getConfiguration()))
-                config.getJSONObject("DatabaseList").toMap().forEach { (name, data) ->
-                    data as HashMap<*, *>
-                    databases[name] = DataBase(
-                        data["url"].toString(),
-                        data["username"].toString(),
-                        data["password"].toString(),
-                        data["description"].toString()
-                    )
-                    Logger.debug("Database loaded from config: \"$name\"", "DatabaseListConfig")
+                if (config.has("DatabaseList")) {
+                    Logger.debug("Reading databases from config", "DatabaseListConfig")
+                    config.getJSONObject("DatabaseList").toMap().forEach { (name, data) ->
+                        data as HashMap<*, *>
+                        databases[name] = DataBase(
+                            data["url"].toString(),
+                            data["username"].toString(),
+                            data["password"].toString(),
+                            data["description"].toString()
+                        )
+                        Logger.debug("Database loaded from config: \"$name\"", "DatabaseListConfig")
+                    }
                 }
-                isLoaded = true
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", "DatabaseListConfig")
                 throw e
@@ -48,7 +45,6 @@ class DatabaseListConfig {
         }
 
         fun getDatabase(name: String): DataBase? {
-            if (!isLoaded) readConfig()
             return databases[name]
         }
     }

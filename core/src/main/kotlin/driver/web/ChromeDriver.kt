@@ -41,15 +41,15 @@ import java.time.Duration
 @Suppress("unused")
 class ChromeDriver : Driver {
     private val driver: WebDriver
-    private val pageLoadTimeout: Long = WebDriverConfig.getPageLoadTimeout()
-    private val elementTimeout: Long = WebDriverConfig.getElementTimeout()
+    private val pageLoadTimeout: Long = WebDriverConfig.pageLoadTimeout
+    private val elementTimeout: Long = WebDriverConfig.elementTimeout
     private val poolDelay: Long = 50
-    private val preloaderElements: List<String> = PreloaderConfig.getElements()
+    private val preloaderElements: List<String> = PreloaderConfig.elements
 
     init {
         val chromeOptions = ChromeOptions()
-        chromeOptions.addArguments(BrowserOptionsConfig.getArguments())
-        driver = RemoteWebDriver(URL(WebDriverConfig.getRemoteAddress()), chromeOptions)
+        chromeOptions.addArguments(BrowserOptionsConfig.arguments)
+        driver = RemoteWebDriver(URL(WebDriverConfig.remoteAddress), chromeOptions)
         driver.manage().timeouts().pageLoadTimeout(Duration.ofMillis(pageLoadTimeout))
         driver.manage().timeouts().implicitlyWait(Duration.ofMillis(0))
     }

@@ -18,34 +18,28 @@ package config
 import logger.LogLevel
 import logger.Logger
 import org.json.JSONObject
-import utils.ResourceUtils
 
 class MainConfig {
     companion object {
-        private lateinit var name: String
-        private lateinit var configuration: String
-        private var threads: Int = 0
-        private lateinit var driverImpl: String
-        private lateinit var reporterImpl: String
-        private lateinit var testSource: String
-        private lateinit var pageSource: String
-        private var consoleLogLevel: Int = 1
-        private val sessionId: String = System.currentTimeMillis().toString()
-
-        fun setConfiguration(configName: String) {
-            Logger.info("The settings from the \"$configName\" file are used")
-            configuration = configName
-            readConfig()
-        }
-
-        fun getConfiguration(): String {
-            return configuration
-        }
+        var name: String = ""
+            private set
+        var threads: Int = 0
+            private set
+        var driverImpl: String = ""
+            private set
+        var reporterImpl: String = ""
+            private set
+        var testSource: String = ""
+            private set
+        var pageSource: String = ""
+            private set
+        var consoleLogLevel: Int = 1
+            private set
+        val sessionId: String = System.currentTimeMillis().toString()
 
         @Synchronized
-        private fun readConfig() {
+        fun load(config: JSONObject) {
             try {
-                val config = JSONObject(ResourceUtils().getResourceByName(configuration))
                 val mainConfig = config.getJSONObject("Main")
                 name = mainConfig.getString("name")
                 threads = mainConfig.getInt("threads")
@@ -62,38 +56,11 @@ class MainConfig {
                         "MainConfig"
                     )
                 }
+                Logger.info("Session ID: $sessionId")
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", "MainConfig")
                 throw e
             }
-        }
-
-        fun getThreads(): Int {
-            return threads
-        }
-
-        fun getDriverImpl(): String {
-            return driverImpl
-        }
-
-        fun getReporterImpl(): String {
-            return reporterImpl
-        }
-
-        fun getTestSource(): String {
-            return testSource
-        }
-
-        fun getPageSource(): String {
-            return pageSource
-        }
-
-        fun getConsoleLogLevel(): Int {
-            return consoleLogLevel
-        }
-
-        fun getSessionId(): String {
-            return sessionId
         }
     }
 }

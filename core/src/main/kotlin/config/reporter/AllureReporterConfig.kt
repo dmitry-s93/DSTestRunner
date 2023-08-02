@@ -15,38 +15,33 @@
 
 package config.reporter
 
-import config.MainConfig
-import org.json.JSONObject
 import logger.Logger
-import utils.ResourceUtils
+import org.json.JSONObject
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
 class AllureReporterConfig {
     companion object {
-        private lateinit var reportDir: Path
-        private var isLoaded: Boolean = false
+        private lateinit var _reportDir: Path
 
-        private fun readConfig() {
-            if (isLoaded) return
+        @Synchronized
+        fun load(config: JSONObject) {
             val logSource = "AllureReporterConfig"
             try {
                 Logger.debug("Reading parameters from config", logSource)
-                val config = JSONObject(ResourceUtils().getResourceByName(MainConfig.getConfiguration()))
                 if (config.has("AllureReporter")) {
                     val reporterConfig = config.getJSONObject("AllureReporter")
-                    reportDir = if (reporterConfig.has("reportDir"))
+                    _reportDir = if (reporterConfig.has("reportDir"))
                         Paths.get(reporterConfig.getString("reportDir"))
                     else
                         getDefaultPath()
                 } else {
-                    reportDir = getDefaultPath()
+                    _reportDir = getDefaultPath()
                     Logger.debug("Allure Reporter config is not specified. The default settings are used.", logSource)
                 }
-                Files.createDirectories(reportDir)
-                Logger.info("The test results will be saved to the \"$reportDir\" directory", logSource)
-                isLoaded = true
+                Files.createDirectories(_reportDir)
+                Logger.info("The test results will be saved to the \"$_reportDir\" directory", logSource)
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", logSource)
                 throw e
@@ -57,9 +52,7 @@ class AllureReporterConfig {
             return Paths.get(System.getProperty("user.dir"), "build", "allure-results")
         }
 
-        fun getReportDir(): String {
-            if (!isLoaded) readConfig()
-            return reportDir.toString()
-        }
+        val reportDir: String
+            get() = _reportDir.toString()
     }
 }

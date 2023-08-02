@@ -26,7 +26,7 @@ class ReporterSession {
         @Synchronized
         fun createSession() {
             try {
-                reporterSession.set(ReporterFactory().createReporter(MainConfig.getReporterImpl()))
+                reporterSession.set(ReporterFactory().createReporter(MainConfig.reporterImpl))
             } catch (e: Exception) {
                 Logger.error("Failed to create reporter session\n${e.cause}", "createSession")
             }

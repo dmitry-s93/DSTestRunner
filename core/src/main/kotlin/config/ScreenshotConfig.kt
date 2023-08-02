@@ -15,26 +15,27 @@
 
 package config
 
-import org.json.JSONObject
 import logger.Logger
-import utils.ResourceUtils
+import org.json.JSONObject
 
 class ScreenshotConfig {
     companion object {
-        private var takeScreenshotOnError: Boolean = true
-        private var saveTemplateIfMissing: Boolean = false
-        private var allowableDifference: Int = 20
-        private var templateScreenshotDir: String = ""
-        private var currentScreenshotDir: String = ""
-        private var isLoaded: Boolean = false
+        var takeScreenshotOnError: Boolean = true
+            private set
+        var saveTemplateIfMissing: Boolean = false
+            private set
+        var allowableDifference: Int = 20
+            private set
+        var templateScreenshotDir: String = ""
+            private set
+        var currentScreenshotDir: String = ""
+            private set
 
         @Synchronized
-        private fun readConfig() {
-            if (isLoaded) return
+        fun load(config: JSONObject) {
             try {
-                Logger.debug("Reading parameters from config", "ScreenshotConfig")
-                val config = JSONObject(ResourceUtils().getResourceByName(MainConfig.getConfiguration()))
                 if (config.has("Screenshot")) {
+                    Logger.debug("Reading parameters from config", "ScreenshotConfig")
                     val screenshotConfig = config.getJSONObject("Screenshot")
                     if (screenshotConfig.has("takeScreenshotOnError"))
                         takeScreenshotOnError = screenshotConfig.getBoolean("takeScreenshotOnError")
@@ -47,36 +48,10 @@ class ScreenshotConfig {
                     if (screenshotConfig.has("currentScreenshotDir"))
                         currentScreenshotDir = screenshotConfig.getString("currentScreenshotDir")
                 }
-                isLoaded = true
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", "ScreenshotConfig")
                 throw e
             }
-        }
-
-        fun getTakeScreenshotOnError(): Boolean {
-            if (!isLoaded) readConfig()
-            return takeScreenshotOnError
-        }
-
-        fun getSaveTemplateIfMissing(): Boolean {
-            if (!isLoaded) readConfig()
-            return saveTemplateIfMissing
-        }
-
-        fun getTemplateScreenshotDir(): String {
-            if (!isLoaded) readConfig()
-            return templateScreenshotDir
-        }
-
-        fun getCurrentScreenshotDir(): String {
-            if (!isLoaded) readConfig()
-            return currentScreenshotDir
-        }
-
-        fun getAllowableDifference(): Int {
-            if (!isLoaded) readConfig()
-            return allowableDifference
         }
     }
 }

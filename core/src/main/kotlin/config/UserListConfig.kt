@@ -17,29 +17,25 @@ package config
 
 import logger.Logger
 import org.json.JSONObject
-import utils.ResourceUtils
 
 class UserListConfig {
     companion object {
         private var users: HashMap<String, HashMap<String, String>> = HashMap()
-        private var isLoaded: Boolean = false
 
         @Synchronized
-        private fun readConfig() {
-            if (isLoaded) return
+        fun load(config: JSONObject) {
             try {
-                Logger.debug("Reading users from config", "UserListConfig")
-                val config = JSONObject(ResourceUtils().getResourceByName(MainConfig.getConfiguration()))
-                config.getJSONObject("UserList").toMap().forEach { (name, data) ->
-                    val userData: HashMap<String, String> = HashMap()
-                    (data as HashMap<*, *>).forEach { (fieldName, fieldValue) ->
-                        userData[fieldName.toString()] = fieldValue.toString()
+                if (config.has("UserList")) {
+                    Logger.debug("Reading users from config", "UserListConfig")
+                    config.getJSONObject("UserList").toMap().forEach { (name, data) ->
+                        val userData: HashMap<String, String> = HashMap()
+                        (data as HashMap<*, *>).forEach { (fieldName, fieldValue) ->
+                            userData[fieldName.toString()] = fieldValue.toString()
+                        }
+                        users[name] = userData
+                        Logger.debug("User loaded from config: \"$name\"", "UserListConfig")
                     }
-                    users[name] = userData
-                    Logger.debug("User loaded from config: \"$name\"", "UserListConfig")
                 }
-
-                isLoaded = true
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", "UserListConfig")
                 throw e
@@ -47,7 +43,6 @@ class UserListConfig {
         }
 
         fun getUser(name: String): HashMap<String, String>? {
-            if (!isLoaded) readConfig()
             return users[name]
         }
     }

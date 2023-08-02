@@ -15,38 +15,33 @@
 
 package config.reporter
 
-import config.MainConfig
 import logger.Logger
 import org.json.JSONObject
-import utils.ResourceUtils
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
 class CsvReporterConfig {
     companion object {
-        private lateinit var reportDir: Path
-        private var isLoaded: Boolean = false
+        private lateinit var _reportDir: Path
 
-        private fun readConfig() {
-            if (isLoaded) return
+        @Synchronized
+        fun load(config: JSONObject) {
             val logSource = "CsvReporterConfig"
             try {
                 Logger.debug("Reading parameters from config", logSource)
-                val config = JSONObject(ResourceUtils().getResourceByName(MainConfig.getConfiguration()))
                 if (config.has("CsvReporter")) {
                     val reporterConfig = config.getJSONObject("CsvReporter")
-                    reportDir = if (reporterConfig.has("reportDir"))
+                    _reportDir = if (reporterConfig.has("reportDir"))
                         Paths.get(reporterConfig.getString("reportDir"))
                     else
                         getDefaultPath()
                 } else {
-                    reportDir = getDefaultPath()
+                    _reportDir = getDefaultPath()
                     Logger.debug("CSV Reporter config is not specified. The default settings are used.", logSource)
                 }
-                Files.createDirectories(reportDir)
-                Logger.debug("reportDir = $reportDir", logSource)
-                isLoaded = true
+                Files.createDirectories(_reportDir)
+                Logger.debug("reportDir = $_reportDir", logSource)
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", "ReporterConfig")
                 throw e
@@ -57,9 +52,7 @@ class CsvReporterConfig {
             return Paths.get(System.getProperty("user.dir"), "build", "csv-results")
         }
 
-        fun getReportDir(): String {
-            if (!isLoaded) readConfig()
-            return reportDir.toString()
-        }
+        val reportDir: String
+            get() = _reportDir.toString()
     }
 }

@@ -26,7 +26,7 @@ class DriverSession {
         @Synchronized
         fun createSession() {
             try {
-                driverSession.set(DriverFactory().createDriver(MainConfig.getDriverImpl()))
+                driverSession.set(DriverFactory().createDriver(MainConfig.driverImpl))
             } catch (e: Exception) {
                 Logger.error("Failed to create driver session\n${e.cause}", "createSession")
             }

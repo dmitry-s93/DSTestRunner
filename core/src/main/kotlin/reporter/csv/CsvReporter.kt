@@ -52,14 +52,14 @@ class CsvReporter : Reporter {
         val screenshot = actionResult.getErrorImage()
         if (screenshot != null) {
             val fileName = "$parentId.$id $name.png".replace(" ", "_")
-            ImageUtils().saveImage(screenshot, Paths.get(CsvReporterConfig.getReportDir(), fileName).toFile())
+            ImageUtils().saveImage(screenshot, Paths.get(CsvReporterConfig.reportDir, fileName).toFile())
         }
         reportData.add(arrayOf("$parentId.$id", name, actionResult.getStatus().toString(), message))
     }
 
     override fun quit() {
         val fileName = "$testId $testName.csv".replace(" ", "_")
-        val path = Paths.get(CsvReporterConfig.getReportDir(), fileName)
+        val path = Paths.get(CsvReporterConfig.reportDir, fileName)
         val writer = CSVWriterBuilder(FileWriter(path.toFile())).withSeparator('\t').build()
         writer.writeAll(reportData)
         writer.close()

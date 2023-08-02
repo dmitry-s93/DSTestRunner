@@ -17,35 +17,25 @@ package config
 
 import logger.Logger
 import org.json.JSONObject
-import utils.ResourceUtils
 
 class BrowserOptionsConfig {
     companion object {
-        private lateinit var arguments: MutableList<String>
-        private var isLoaded: Boolean = false
+        var arguments: MutableList<String> = mutableListOf()
+            private set
 
         @Synchronized
-        private fun readConfig() {
-            if (isLoaded) return
+        fun load(config: JSONObject) {
             try {
-                Logger.debug("Reading parameters from config", "BrowserOptionsConfig")
-                arguments = mutableListOf()
-                val config = JSONObject(ResourceUtils().getResourceByName(MainConfig.getConfiguration()))
                 if (config.has("BrowserOptions")) {
+                    Logger.debug("Reading parameters from config", "BrowserOptionsConfig")
                     config.getJSONArray("BrowserOptions").forEach {
                         arguments.add(it.toString())
                     }
                 }
-                isLoaded = true
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", "BrowserOptionsConfig")
                 throw e
             }
-        }
-
-        fun getArguments(): List<String> {
-            if (!isLoaded) readConfig()
-            return arguments
         }
     }
 }

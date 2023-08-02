@@ -119,7 +119,7 @@ class AllureReporter : Reporter {
             put("stop", stopTime)
         }
         val fileName = "$uuid-result.json"
-        val path = Paths.get(AllureReporterConfig.getReportDir(), fileName)
+        val path = Paths.get(AllureReporterConfig.reportDir, fileName)
         val file = FileWriter(path.toFile(), Charset.forName("UTF-8"))
         file.write(result.toString())
         file.flush()
@@ -252,7 +252,7 @@ class AllureReporter : Reporter {
     private fun attachImage(name: String, image: BufferedImage): JSONObject? {
         val uuid = UUID.randomUUID()
         val fileName = "$uuid-attachment.png"
-        ImageUtils().saveImage(image, Paths.get(AllureReporterConfig.getReportDir(), fileName).toFile())
+        ImageUtils().saveImage(image, Paths.get(AllureReporterConfig.reportDir, fileName).toFile())
         val jsonObject = with(JSONObject()) {
             put("name", name)
             put("source", fileName)

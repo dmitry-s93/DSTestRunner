@@ -15,54 +15,33 @@
 
 package config
 
-import org.json.JSONObject
 import logger.Logger
-import utils.ResourceUtils
+import org.json.JSONObject
 
 class WebDriverConfig {
     companion object {
-        private lateinit var url: String
-        private lateinit var remoteAddress: String
-        private var pageLoadTimeout: Long = 0
-        private var elementTimeout: Long = 0
-        private var isLoaded: Boolean = false
+        var url: String = ""
+            private set
+        var remoteAddress: String = ""
+            private set
+        var pageLoadTimeout: Long = 0
+            private set
+        var elementTimeout: Long = 0
+            private set
 
         @Synchronized
-        private fun readConfig() {
-            if (isLoaded) return
+        fun load(config: JSONObject) {
             try {
                 Logger.debug("Reading parameters from config", "WebDriverConfig")
-                val config = JSONObject(ResourceUtils().getResourceByName(MainConfig.getConfiguration()))
                 val webDriverConfig = config.getJSONObject("WebDriver")
                 url = webDriverConfig.getString("url")
                 remoteAddress = webDriverConfig.getString("remoteAddress")
                 pageLoadTimeout = webDriverConfig.getLong("pageLoadTimeout")
                 elementTimeout = webDriverConfig.getLong("elementTimeout")
-                isLoaded = true
-            } catch (e: org.json.JSONException) {
+            } catch (e: Exception) {
                 Logger.error("An error occurred while reading the config", "WebDriverConfig")
                 throw e
             }
-        }
-
-        fun getUrl(): String {
-            if (!isLoaded) readConfig()
-            return url
-        }
-
-        fun getRemoteAddress(): String {
-            if (!isLoaded) readConfig()
-            return remoteAddress
-        }
-
-        fun getPageLoadTimeout(): Long {
-            if (!isLoaded) readConfig()
-            return pageLoadTimeout
-        }
-
-        fun getElementTimeout(): Long {
-            if (!isLoaded) readConfig()
-            return elementTimeout
         }
     }
 }
