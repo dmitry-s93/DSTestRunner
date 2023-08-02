@@ -4,7 +4,7 @@ import action.ActionResult
 import action.ActionStatus
 import action.ScreenData
 import config.Localization
-import config.MainConfig.Companion.getSessionId
+import config.MainConfig
 import config.ScreenshotConfig
 import pazone.ashot.Screenshot
 import pazone.ashot.comparison.ImageDiffer
@@ -18,15 +18,15 @@ import javax.imageio.ImageIO
 class ImageUtils {
     fun compare(id: String, parentId: String, screenData: ScreenData): Pair<ActionResult, ScreenData> {
         try {
-            val currentScreenshotDir = ScreenshotConfig.getCurrentScreenshotDir()
-            val templateScreenshotDir = ScreenshotConfig.getTemplateScreenshotDir()
+            val currentScreenshotDir = ScreenshotConfig.currentScreenshotDir
+            val templateScreenshotDir = ScreenshotConfig.templateScreenshotDir
             if (currentScreenshotDir.isEmpty() || templateScreenshotDir.isEmpty())
                 return Pair(ActionResult(ActionStatus.BROKEN, Localization.get("ScreenshotCompare.ScreenshotPathsNotSpecified")), screenData)
 
             val relativeDirPath = parentId.replace(".", "/")
             val templateImageRelativePath = Paths.get(relativeDirPath, "$id.png")
-            val currentImageRelativePath = Paths.get(getSessionId(), relativeDirPath, "$id.png")
-            val markedImageRelativePath = Paths.get(getSessionId(), relativeDirPath, "${id}_marked.png")
+            val currentImageRelativePath = Paths.get(MainConfig.sessionId, relativeDirPath, "$id.png")
+            val markedImageRelativePath = Paths.get(MainConfig.sessionId, relativeDirPath, "${id}_marked.png")
 
             val currentImageFile = Paths.get(currentScreenshotDir, currentImageRelativePath.toString()).toFile()
             val templateImageFile = Paths.get(templateScreenshotDir, templateImageRelativePath.toString()).toFile()
@@ -40,7 +40,7 @@ class ImageUtils {
                 templateImage.coordsToCompare = currentImage.coordsToCompare
                 templateImage.ignoredAreas = currentImage.ignoredAreas
                 val imageDiff = ImageDiffer().makeDiff(currentImage, templateImage)
-                if (imageDiff.hasDiff() && imageDiff.diffSize > ScreenshotConfig.getAllowableDifference()) {
+                if (imageDiff.hasDiff() && imageDiff.diffSize > ScreenshotConfig.allowableDifference) {
                     screenData.templateImage = templateImage.image
                     screenData.templateImagePath = templateImageRelativePath.toString()
 
@@ -53,7 +53,7 @@ class ImageUtils {
                     return Pair(ActionResult(ActionStatus.BROKEN, Localization.get("ScreenshotCompare.CurrentScreenshotNotMatchReference")), screenData)
                 }
             } else {
-                if (ScreenshotConfig.getSaveTemplateIfMissing()) {
+                if (ScreenshotConfig.saveTemplateIfMissing) {
                     saveImage(currentImage.image, templateImageFile)
                     screenData.templateImagePath = templateImageRelativePath.toString()
                     return Pair(ActionResult(ActionStatus.BROKEN, Localization.get("ScreenshotCompare.ReferenceScreenshotMissingWithSave")), screenData)

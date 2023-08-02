@@ -17,34 +17,25 @@ package config
 
 import logger.Logger
 import org.json.JSONObject
-import utils.ResourceUtils
 
 class PreloaderConfig {
     companion object {
-        private var elements: MutableList<String> = mutableListOf()
-        private var isLoaded: Boolean = false
+        var elements: MutableList<String> = mutableListOf()
+            private set
 
         @Synchronized
-        private fun readConfig() {
-            if (isLoaded) return
+        fun load(config: JSONObject) {
             try {
-                Logger.debug("Reading parameters from config", "PreloaderConfig")
-                val config = JSONObject(ResourceUtils().getResourceByName(MainConfig.getConfiguration()))
                 if (config.has("PreloaderElements")) {
+                    Logger.debug("Reading parameters from config", "PreloaderConfig")
                     config.getJSONArray("PreloaderElements").forEach { element ->
                         elements.add(element.toString())
                     }
                 }
-                isLoaded = true
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", "PreloaderConfig")
                 throw e
             }
-        }
-
-        fun getElements(): List<String> {
-            if (!isLoaded) readConfig()
-            return elements
         }
     }
 }

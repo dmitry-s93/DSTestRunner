@@ -35,7 +35,7 @@ open class ActionReturn {
 
     private fun getScreenshot(): BufferedImage? {
         try {
-            if (ScreenshotConfig.getTakeScreenshotOnError())
+            if (ScreenshotConfig.takeScreenshotOnError)
                 return DriverSession.getSession().getScreenshot().image
             return null
         } catch (e: Exception) {

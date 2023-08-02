@@ -41,9 +41,9 @@ class PageData(
             val argStartIndex = resUrlPath!!.indexOf("{")
             if (argStartIndex != -1)
                 resUrlPath = resUrlPath!!.substring(0, argStartIndex)
-            return URI(WebDriverConfig.getUrl()).resolve(resUrlPath!!).toString()
+            return URI(WebDriverConfig.url).resolve(resUrlPath!!).toString()
         }
-        return WebDriverConfig.getUrl()
+        return WebDriverConfig.url
     }
 
     fun getUrlPath(): String? {

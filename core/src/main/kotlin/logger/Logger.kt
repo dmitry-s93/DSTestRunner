@@ -38,7 +38,7 @@ class Logger {
         }
 
         private fun printLog(logText: String, logLevel: LogLevel, logSource: String?) {
-            if (MainConfig.getConsoleLogLevel() > logLevel.value)
+            if (MainConfig.consoleLogLevel > logLevel.value)
                 return
 
             val ansiColor = when (logLevel) {
