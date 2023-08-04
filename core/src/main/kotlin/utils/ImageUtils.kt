@@ -16,17 +16,17 @@ import javax.imageio.ImageIO
 
 
 class ImageUtils {
-    fun compare(id: String, parentId: String, screenData: ScreenData): Pair<ActionResult, ScreenData> {
+    fun compare(stepId: String, testId: String, parentId: String, screenData: ScreenData): Pair<ActionResult, ScreenData> {
         try {
             val currentScreenshotDir = ScreenshotConfig.currentScreenshotDir
             val templateScreenshotDir = ScreenshotConfig.templateScreenshotDir
             if (currentScreenshotDir.isEmpty() || templateScreenshotDir.isEmpty())
                 return Pair(ActionResult(ActionStatus.BROKEN, Localization.get("ScreenshotCompare.ScreenshotPathsNotSpecified")), screenData)
 
-            val relativeDirPath = parentId.replace(".", "/")
-            val templateImageRelativePath = Paths.get(relativeDirPath, "$id.png")
-            val currentImageRelativePath = Paths.get(MainConfig.sessionId, relativeDirPath, "$id.png")
-            val markedImageRelativePath = Paths.get(MainConfig.sessionId, relativeDirPath, "${id}_marked.png")
+            val fileName = "${parentId.replace(".", "_")}_${stepId}"
+            val templateImageRelativePath = Paths.get(testId, "${fileName}.png")
+            val currentImageRelativePath = Paths.get(MainConfig.sessionId, testId, "${fileName}.png")
+            val markedImageRelativePath = Paths.get(MainConfig.sessionId, testId, "${fileName}_marked.png")
 
             val currentImageFile = Paths.get(currentScreenshotDir, currentImageRelativePath.toString()).toFile()
             val templateImageFile = Paths.get(templateScreenshotDir, templateImageRelativePath.toString()).toFile()

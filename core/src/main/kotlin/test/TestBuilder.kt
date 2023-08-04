@@ -85,7 +85,7 @@ open class TestBuilder(id: String, name: String) {
         if (!(before || after) || stepResult.getStatus() != ActionStatus.PASSED) {
             if (screenData != null && stepResult.getStatus() == ActionStatus.PASSED) {
                 required = false
-                val (compareStepResult, compareScreenData) = ImageUtils().compare(id, parentId, screenData)
+                val (compareStepResult, compareScreenData) = ImageUtils().compare(id, testId, parentId, screenData)
                 stepName += " \uD83D\uDDBC"
                 stepResult = compareStepResult
                 screenData = compareScreenData
