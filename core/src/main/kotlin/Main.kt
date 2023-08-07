@@ -28,10 +28,13 @@ fun main(args: Array<String>) {
     if (configurationFile.isNullOrEmpty())
         configurationFile = "configuration.json"
     ConfigLoader().loadConfiguration(configurationFile)
-
     Class.forName(MainConfig.pageSource).getDeclaredConstructor().newInstance()
 
-    val executor = Executors.newFixedThreadPool(MainConfig.threads)
+    var threadCount = argsHashMap["-threads"]?.toInt()
+    if (threadCount == null)
+        threadCount = MainConfig.threads
+
+    val executor = Executors.newFixedThreadPool(threadCount)
 
     val testList = TestListFactory().getTestSource(MainConfig.testSource).getTestList()
     testList.forEach {
