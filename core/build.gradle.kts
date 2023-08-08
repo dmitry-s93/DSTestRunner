@@ -23,7 +23,8 @@ repositories {
 }
 
 dependencies {
-    implementation("org.seleniumhq.selenium:selenium-java:4.10.0")
+    // https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java
+    implementation("org.seleniumhq.selenium:selenium-java:4.11.0")
     // https://mvnrepository.com/artifact/org.json/json
     implementation("org.json:json:20230618")
     // https://mvnrepository.com/artifact/commons-io/commons-io
@@ -31,7 +32,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.awaitility/awaitility
     implementation("org.awaitility:awaitility:4.2.0")
     // https://mvnrepository.com/artifact/com.opencsv/opencsv
-    implementation("com.opencsv:opencsv:5.7.1")
+    implementation("com.opencsv:opencsv:5.8")
     // https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5
     implementation("org.apache.httpcomponents.client5:httpclient5:5.2.1")
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
