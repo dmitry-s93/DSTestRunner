@@ -15,15 +15,13 @@
 
 import logger.Logger
 import reporter.ReporterSession
-import test.TestBuilder
-import kotlin.reflect.KClass
 
 
-class WorkerThread(private val test: KClass<out TestBuilder>) : Runnable {
+class WorkerThread(private val testClassName: String) : Runnable {
     override fun run() {
         Logger.info("Thread started: ${Thread.currentThread().name}")
         ReporterSession.createSession()
-        val testClass = Class.forName(test.java.name)
+        val testClass = Class.forName(testClassName)
         testClass.getDeclaredConstructor().newInstance()
         ReporterSession.closeSession()
         Logger.info("Thread ended: ${Thread.currentThread().name}")
