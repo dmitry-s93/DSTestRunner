@@ -28,15 +28,16 @@ Framework for writing and running autotests
 ./gradlew :<module_name>:run --args="<arguments>"
 ```
 
-Available arguments:
+Available arguments (optional):
 
-- -threads — number of simultaneously running tests
 - -configuration — configuration file name
+- -threads — number of simultaneously running tests
+- -tests — comma separated list of tests to run
 
 #### Example
 
 ```shell
-./gradlew :example-web-tests:run --args="-threads=12 -configuration=configuration.json"
+./gradlew :example-web-tests:run --args="-configuration=configuration.json -threads=12 -tests=LoginAndLogoutTest,LoginFormValidationTest"
 ```
 
 ## Examples

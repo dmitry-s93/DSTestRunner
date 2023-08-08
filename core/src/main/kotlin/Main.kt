@@ -16,8 +16,10 @@
 import config.ConfigLoader
 import config.MainConfig
 import logger.Logger
+import test.TestBuilder
 import test.TestListFactory
 import java.util.concurrent.Executors
+import kotlin.reflect.KClass
 
 
 fun main(args: Array<String>) {
@@ -36,16 +38,33 @@ fun main(args: Array<String>) {
 
     val executor = Executors.newFixedThreadPool(threadCount)
 
-    val testList = TestListFactory().getTestSource(MainConfig.testSource).getTestList()
+    val specifiedTests = argsHashMap["-tests"]?.split(",")
+    val testList = getTestList(specifiedTests)
+
+    Logger.info("Number of tests to run: ${testList.size}")
+
     testList.forEach {
-        val worker: Runnable = WorkerThread(it)
+        val worker: Runnable = WorkerThread(it.qualifiedName!!)
         executor.execute(worker)
     }
 
     executor.shutdown()
-    while (!executor.isTerminated) {
-    }
+    while (!executor.isTerminated) {}
     Logger.info("Finished all threads")
+}
+
+fun getTestList(specifiedTests: List<String>?): List<KClass<out TestBuilder>> {
+    val fullTestList = TestListFactory().getTestSource(MainConfig.testSource).getTestList()
+    if (specifiedTests == null)
+        return fullTestList
+    val resTestList: MutableList<KClass<out TestBuilder>> = ArrayList()
+    specifiedTests.forEach { test ->
+        fullTestList.forEach {
+            if (it.simpleName == test)
+                resTestList.add(it)
+        }
+    }
+    return resTestList
 }
 
 fun parseArguments(args: Array<String>): HashMap<String, String> {
