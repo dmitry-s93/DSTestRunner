@@ -31,12 +31,12 @@ interface Driver {
         longScreenshot: Boolean = false,
         ignoredElements: Set<String> = HashSet()
     ): Screenshot
-
     fun setPage(url: String)
     fun setValue(locator: String, value: String, sequenceMode: Boolean = false)
     fun setSelectValue(locator: String, value: String)
     fun uploadFile(locator: String, file: String)
     fun isExist(locator: String): Boolean
     fun isNotExist(locator: String): Boolean
+    fun executeJavaScript(script: String, vararg args: Any?): Any?
     fun quit()
 }

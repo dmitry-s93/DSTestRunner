@@ -271,6 +271,11 @@ class ChromeDriver : Driver {
         }
     }
 
+    override fun executeJavaScript(script: String, vararg args: Any?): Any? {
+        val js = driver as JavascriptExecutor
+        return js.executeScript(script, *args)
+    }
+
     override fun quit() {
         driver.quit()
     }
