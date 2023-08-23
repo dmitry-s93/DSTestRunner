@@ -149,6 +149,10 @@ class ChromeDriver : Driver {
     }
 
     override fun getScreenshot(workArea: String?, longScreenshot: Boolean, ignoredElements: Set<String>): Screenshot {
+        executeJavaScript("""
+            window.scrollTo(0, 0);
+            document.activeElement.blur();
+        """.trimIndent())
         val strategy =
             if (longScreenshot)
                 ShootingStrategies.viewportPasting(100)
