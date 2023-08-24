@@ -15,6 +15,7 @@
     "takeScreenshotOnError": true,
     "saveTemplateIfMissing": true,
     "allowableDifference": 20,
+    "waitTimeBeforeTakingScreenshot": 0,
     "templateScreenshotDir": "/home/user/Screenshots/template",
     "currentScreenshotDir": "/home/user/Screenshots/current"
   },
