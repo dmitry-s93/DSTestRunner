@@ -30,6 +30,8 @@ class ScreenshotConfig {
             private set
         var currentScreenshotDir: String = ""
             private set
+        var waitTimeBeforeTakingScreenshot: Long = 0
+            private set
 
         @Synchronized
         fun load(config: JSONObject) {
@@ -47,6 +49,8 @@ class ScreenshotConfig {
                         templateScreenshotDir = screenshotConfig.getString("templateScreenshotDir")
                     if (screenshotConfig.has("currentScreenshotDir"))
                         currentScreenshotDir = screenshotConfig.getString("currentScreenshotDir")
+                    if (screenshotConfig.has("waitTimeBeforeTakingScreenshot"))
+                        waitTimeBeforeTakingScreenshot = screenshotConfig.getLong("waitTimeBeforeTakingScreenshot")
                 }
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", "ScreenshotConfig")

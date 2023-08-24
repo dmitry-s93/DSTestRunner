@@ -17,6 +17,7 @@ package driver.web
 
 import config.BrowserOptionsConfig
 import config.PreloaderConfig
+import config.ScreenshotConfig
 import config.WebDriverConfig
 import driver.Driver
 import logger.Logger
@@ -153,6 +154,9 @@ class ChromeDriver : Driver {
             window.scrollTo(0, 0);
             document.activeElement.blur();
         """.trimIndent())
+        val waitTime = ScreenshotConfig.waitTimeBeforeTakingScreenshot
+        if (waitTime > 0)
+            Thread.sleep(waitTime)
         val strategy =
             if (longScreenshot)
                 ShootingStrategies.viewportPasting(100)
