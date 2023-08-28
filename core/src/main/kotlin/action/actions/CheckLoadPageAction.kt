@@ -18,16 +18,18 @@ package action.actions
 import action.*
 import config.Localization
 import driver.DriverSession
+import logger.Logger
 import storage.PageStorage
+import storage.ValueStorage
+import java.util.*
+
 
 class CheckLoadPageAction(private val pageName: String) : ActionReturn(), Action {
     private var pageUrl: String? = null
     private var pageIdentifier: String? = null
-    private var takeScreenshot: Boolean = false
-    private var longScreenshot: Boolean = true
-    private var elementScreenshot: String? = null
     private var screenData: ScreenData? = null
-    private var workArea: String? = null
+    private var screenshotAreas: MutableList<String> = mutableListOf()
+    private var takeScreenshotClass: TakeScreenshot? = null
 
     override fun getName(): String {
         return Localization.get("CheckLoadPageAction.DefaultName", pageName)
@@ -48,16 +50,22 @@ class CheckLoadPageAction(private val pageName: String) : ActionReturn(), Action
                     return fail(Localization.get("CheckLoadPageAction.UrlDoesNotMatch"))
                 return fail(Localization.get("CheckLoadPageAction.PageDidNotLoad"))
             }
-            if (takeScreenshot) {
-                if (elementScreenshot != null) {
-                    if (!pageData.isElementExist(elementScreenshot!!))
-                        return broke(Localization.get("General.ElementIsNotSetOnPage", elementScreenshot, pageName))
-                    workArea = pageData.getElement(elementScreenshot!!)?.getLocator()
+            if (takeScreenshotClass != null) {
+                val longScreenshot = takeScreenshotClass!!.longScreenshot
+                val elements = takeScreenshotClass!!.elements
+                if (elements.isNotEmpty()) {
+                    elements.forEach { (elementName, locatorArguments) ->
+                        val locator = pageData.getElement(elementName)?.getLocator()
+                        if (locator != null)
+                            screenshotAreas.add(String.format(locator, locatorArguments))
+                        else
+                            Logger.warning(Localization.get("General.ElementIsNotSetOnPage", elementName, pageName))
+                    }
                 }
-                if (workArea == null)
-                    workArea = pageData.getWorkArea()
+                if (screenshotAreas.isEmpty())
+                    pageData.getWorkArea()?.let { screenshotAreas.add(it) }
                 val screenshot = DriverSession.getSession().getScreenshot(
-                    workArea = workArea,
+                    screenshotAreas = screenshotAreas,
                     longScreenshot = longScreenshot,
                     ignoredElements = pageData.getIgnoredElements()
                 )
@@ -74,10 +82,8 @@ class CheckLoadPageAction(private val pageName: String) : ActionReturn(), Action
         parameters["pageName"] = pageName
         parameters["pageUrl"] = pageUrl.toString()
         parameters["pageIdentifier"] = pageIdentifier.toString()
-        if (elementScreenshot != null)
-            parameters["elementScreenshot"] = elementScreenshot.toString()
-        if (workArea != null)
-            parameters["workArea"] = workArea.toString()
+        if (screenshotAreas.isNotEmpty())
+            parameters["workArea"] = screenshotAreas.toString()
         return parameters
     }
 
@@ -89,15 +95,32 @@ class CheckLoadPageAction(private val pageName: String) : ActionReturn(), Action
      * Takes a screenshot of the page.
      *
      * [takeScreenshot] - determines whether a screenshot should be taken.
-     *
-     * [longScreenshot] - determines whether to scroll the page when taking a screenshot.
-     *
-     * [element] - element name (only if you need a screenshot of a specific element).
      */
-    fun takeScreenshot(takeScreenshot: Boolean = true, longScreenshot: Boolean = true, element: String? = null) {
-        this.takeScreenshot = takeScreenshot
-        this.longScreenshot = longScreenshot
-        this.elementScreenshot = element
+    fun takeScreenshot(takeScreenshot: Boolean = true, function: (TakeScreenshot.() -> Unit)? = null) {
+        if (takeScreenshot) {
+            takeScreenshotClass = TakeScreenshot()
+            function?.invoke(takeScreenshotClass!!)
+        }
+    }
+
+    class TakeScreenshot {
+        var longScreenshot: Boolean = true
+        val elements = HashMap<String, List<String>>()
+
+        /**
+         * Specifies the element to take a screenshot.
+         *
+         * [elementName] - element name.
+         *
+         * [locatorArguments] -  arguments to Substitute in the Locator String.
+         */
+        fun elementScreenshot(elementName: String, vararg locatorArguments: String) {
+            val arguments: MutableList<String> = mutableListOf()
+            locatorArguments.forEach {
+                arguments.add(ValueStorage.replace(it))
+            }
+            elements[elementName] = arguments
+        }
     }
 }
 

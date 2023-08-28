@@ -27,9 +27,9 @@ interface Driver {
     fun getCurrentUrl(): String
     fun getElementValue(locator: String): String
     fun getScreenshot(
-        workArea: String? = null,
         longScreenshot: Boolean = false,
-        ignoredElements: Set<String> = HashSet()
+        ignoredElements: Set<String> = HashSet(),
+        screenshotAreas: List<String> = arrayListOf()
     ): Screenshot
     fun setPage(url: String)
     fun setValue(locator: String, value: String, sequenceMode: Boolean = false)
