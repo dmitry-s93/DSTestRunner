@@ -25,7 +25,9 @@ class CheckLoadPageAction(private val pageName: String) : ActionReturn(), Action
     private var pageIdentifier: String? = null
     private var takeScreenshot: Boolean = false
     private var longScreenshot: Boolean = true
+    private var elementScreenshot: String? = null
     private var screenData: ScreenData? = null
+    private var workArea: String? = null
 
     override fun getName(): String {
         return Localization.get("CheckLoadPageAction.DefaultName", pageName)
@@ -47,8 +49,15 @@ class CheckLoadPageAction(private val pageName: String) : ActionReturn(), Action
                 return fail(Localization.get("CheckLoadPageAction.PageDidNotLoad"))
             }
             if (takeScreenshot) {
+                if (elementScreenshot != null) {
+                    if (!pageData.isElementExist(elementScreenshot!!))
+                        return broke(Localization.get("General.ElementIsNotSetOnPage", elementScreenshot, pageName))
+                    workArea = pageData.getElement(elementScreenshot!!)?.getLocator()
+                }
+                if (workArea == null)
+                    workArea = pageData.getWorkArea()
                 val screenshot = DriverSession.getSession().getScreenshot(
-                    workArea = pageData.getWorkArea(),
+                    workArea = workArea,
                     longScreenshot = longScreenshot,
                     ignoredElements = pageData.getIgnoredElements()
                 )
@@ -65,6 +74,10 @@ class CheckLoadPageAction(private val pageName: String) : ActionReturn(), Action
         parameters["pageName"] = pageName
         parameters["pageUrl"] = pageUrl.toString()
         parameters["pageIdentifier"] = pageIdentifier.toString()
+        if (elementScreenshot != null)
+            parameters["elementScreenshot"] = elementScreenshot.toString()
+        if (workArea != null)
+            parameters["workArea"] = workArea.toString()
         return parameters
     }
 
@@ -72,9 +85,19 @@ class CheckLoadPageAction(private val pageName: String) : ActionReturn(), Action
         return screenData
     }
 
-    fun takeScreenshot(takeScreenshot: Boolean = true, longScreenshot: Boolean = true) {
+    /**
+     * Takes a screenshot of the page.
+     *
+     * [takeScreenshot] - determines whether a screenshot should be taken.
+     *
+     * [longScreenshot] - determines whether to scroll the page when taking a screenshot.
+     *
+     * [element] - element name (only if you need a screenshot of a specific element).
+     */
+    fun takeScreenshot(takeScreenshot: Boolean = true, longScreenshot: Boolean = true, element: String? = null) {
         this.takeScreenshot = takeScreenshot
         this.longScreenshot = longScreenshot
+        this.elementScreenshot = element
     }
 }
 
