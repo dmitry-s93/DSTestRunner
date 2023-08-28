@@ -149,7 +149,7 @@ class ChromeDriver : Driver {
         return value ?: ""
     }
 
-    override fun getScreenshot(workArea: String?, longScreenshot: Boolean, ignoredElements: Set<String>): Screenshot {
+    override fun getScreenshot(longScreenshot: Boolean, ignoredElements: Set<String>, screenshotAreas: List<String>): Screenshot {
         executeJavaScript("""
             window.scrollTo(0, 0);
             document.activeElement.blur();
@@ -165,9 +165,13 @@ class ChromeDriver : Driver {
         val screenshot = with(AShot()) {
             shootingStrategy(strategy)
             ignoredAreas(getIgnoredAreas(ignoredElements))
-            if (workArea != null) {
+            if (screenshotAreas.isNotEmpty()) {
+                val webElements: MutableList<WebElement> = mutableListOf()
+                screenshotAreas.forEach { locator ->
+                    webElements.add(getWebElement(locator))
+                }
                 imageCropper(IndentCropper().addIndentFilter(blur()))
-                takeScreenshot(driver, getWebElement(workArea))
+                takeScreenshot(driver, webElements)
             } else {
                 takeScreenshot(driver)
             }
