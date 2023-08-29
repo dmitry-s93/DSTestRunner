@@ -1,5 +1,7 @@
 # Configuration example
 
+### Sample Configuration for Web Tests
+
 ```json
 {
   "Main": {
@@ -16,8 +18,8 @@
     "saveTemplateIfMissing": true,
     "allowableDifference": 20,
     "waitTimeBeforeTakingScreenshot": 0,
-    "templateScreenshotDir": "/home/user/Screenshots/template",
-    "currentScreenshotDir": "/home/user/Screenshots/current"
+    "templateScreenshotDir": "/home/user/Screenshots/Web/template",
+    "currentScreenshotDir": "/home/user/Screenshots/Web/current"
   },
   "WebDriver": {
     "url": "https://www.example.com/",
@@ -32,6 +34,66 @@
   "PreloaderElements": [
     "//div[contains(@class,'example-preloader')]"
   ],
+  "DatabaseList": {
+    "TestDatabase1": {
+      "url": "jdbc:postgresql://db_host_1:5432/db_1",
+      "username": "db_user_1",
+      "password": "db_password_1",
+      "description": "Test database 1"
+    },
+    "TestDatabase2": {
+      "url": "jdbc:postgresql://db_host_2:5432/db_2",
+      "username": "db_user_2",
+      "password": "db_password_2",
+      "description": "Test database 2"
+    }
+  },
+  "UserList": {
+    "User1": {
+      "login": "user_login_1",
+      "password": "user_password_1"
+    },
+    "User2": {
+      "login": "user_login_2",
+      "password": "user_password_2"
+    }
+  }
+}
+```
+
+### Sample Configuration for Android Tests
+
+```json
+{
+  "Main": {
+    "name": "AndroidTest",
+    "threads": 1,
+    "driverImpl": "driver.mobile.AndroidAppiumDriver",
+    "reporterImpl": "reporter.allure.AllureReporter",
+    "testSource": "TestList",
+    "pageSource": "pages.PageList",
+    "consoleLogLevel": "DEBUG"
+  },
+  "Screenshot": {
+    "takeScreenshotOnError": true,
+    "saveTemplateIfMissing": true,
+    "allowableDifference": 20,
+    "waitTimeBeforeTakingScreenshot": 0,
+    "templateScreenshotDir": "/home/user/Screenshots/Android/template",
+    "currentScreenshotDir": "/home/user/Screenshots/Android/current"
+  },
+  "AppiumDriver": {
+    "remoteAddress": "http://localhost:4723/wd/hub",
+    "pageLoadTimeout": 20000,
+    "elementTimeout": 10000,
+    "DesiredCapabilities": {
+      "deviceName": "Android_13",
+      "platformName": "Android",
+      "platformVersion": "13.0",
+      "udid": "emulator-5554",
+      "app": "/home/user/Android/apk/some-app.apk"
+    }
+  },
   "DatabaseList": {
     "TestDatabase1": {
       "url": "jdbc:postgresql://db_host_1:5432/db_1",
