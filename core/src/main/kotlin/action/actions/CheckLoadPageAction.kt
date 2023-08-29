@@ -57,7 +57,7 @@ class CheckLoadPageAction(private val pageName: String) : ActionReturn(), Action
                     elements.forEach { (elementName, locatorArguments) ->
                         val locator = pageData.getElement(elementName)?.getLocator()
                         if (locator != null)
-                            screenshotAreas.add(String.format(locator, locatorArguments))
+                            screenshotAreas.add(String.format(locator, *locatorArguments.toTypedArray()))
                         else
                             Logger.warning(Localization.get("General.ElementIsNotSetOnPage", elementName, pageName))
                     }
