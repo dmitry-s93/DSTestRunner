@@ -29,7 +29,10 @@ class ConfigLoader {
             val config = JSONObject(ResourceUtils().getResourceByName(configName))
 
             MainConfig.load(config)
-            WebDriverConfig.load(config)
+            if (MainConfig.driverImpl.contains("driver.web"))
+                WebDriverConfig.load(config)
+            if (MainConfig.driverImpl.contains("driver.mobile"))
+                AppiumDriverConfig.load(config)
             ScreenshotConfig.load(config)
             BrowserOptionsConfig.load(config)
             PreloaderConfig.load(config)

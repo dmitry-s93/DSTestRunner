@@ -41,4 +41,6 @@ dependencies {
     implementation("com.github.curious-odd-man:rgxgen:1.4")
     // https://github.com/pazone/ashot
     implementation(files("libs/ashot-1.6.0-5430e42.jar"))
+    // https://mvnrepository.com/artifact/io.appium/java-client
+    implementation("io.appium:java-client:8.5.1")
 }
