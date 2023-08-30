@@ -150,11 +150,12 @@ class ChromeDriver : Driver {
     }
 
     override fun getScreenshot(longScreenshot: Boolean, ignoredElements: Set<String>, screenshotAreas: List<String>): Screenshot {
+        ScreenshotConfig.executeJavaScriptBeforeScreenshot?.let { executeJavaScript(it) }
         executeJavaScript("""
             window.scrollTo(0, 0);
             document.activeElement.blur();
         """.trimIndent())
-        val waitTime = ScreenshotConfig.waitTimeBeforeTakingScreenshot
+        val waitTime = ScreenshotConfig.waitTimeBeforeScreenshot
         if (waitTime > 0)
             Thread.sleep(waitTime)
         val strategy =
@@ -176,6 +177,7 @@ class ChromeDriver : Driver {
                 takeScreenshot(driver)
             }
         }
+        ScreenshotConfig.executeJavaScriptAfterScreenshot?.let { executeJavaScript(it) }
         return screenshot
     }
 

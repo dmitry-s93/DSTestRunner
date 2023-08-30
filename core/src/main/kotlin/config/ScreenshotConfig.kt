@@ -17,6 +17,7 @@ package config
 
 import logger.Logger
 import org.json.JSONObject
+import utils.ResourceUtils
 
 class ScreenshotConfig {
     companion object {
@@ -30,7 +31,11 @@ class ScreenshotConfig {
             private set
         var currentScreenshotDir: String = ""
             private set
-        var waitTimeBeforeTakingScreenshot: Long = 0
+        var waitTimeBeforeScreenshot: Long = 0
+            private set
+        var executeJavaScriptBeforeScreenshot: String? = null
+            private set
+        var executeJavaScriptAfterScreenshot: String? = null
             private set
 
         @Synchronized
@@ -49,8 +54,16 @@ class ScreenshotConfig {
                         templateScreenshotDir = screenshotConfig.getString("templateScreenshotDir")
                     if (screenshotConfig.has("currentScreenshotDir"))
                         currentScreenshotDir = screenshotConfig.getString("currentScreenshotDir")
-                    if (screenshotConfig.has("waitTimeBeforeTakingScreenshot"))
-                        waitTimeBeforeTakingScreenshot = screenshotConfig.getLong("waitTimeBeforeTakingScreenshot")
+                    if (screenshotConfig.has("waitTimeBeforeScreenshot"))
+                        waitTimeBeforeScreenshot = screenshotConfig.getLong("waitTimeBeforeScreenshot")
+                    if (screenshotConfig.has("executeJavaScriptBeforeScreenshot")) {
+                        val jsFile = screenshotConfig.getString("executeJavaScriptBeforeScreenshot")
+                        executeJavaScriptBeforeScreenshot = ResourceUtils().getResourceByName(jsFile)
+                    }
+                    if (screenshotConfig.has("executeJavaScriptAfterScreenshot")) {
+                        val jsFile = screenshotConfig.getString("executeJavaScriptAfterScreenshot")
+                        executeJavaScriptAfterScreenshot = ResourceUtils().getResourceByName(jsFile)
+                    }
                 }
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", "ScreenshotConfig")

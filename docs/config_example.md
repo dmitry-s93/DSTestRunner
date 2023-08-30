@@ -17,7 +17,9 @@
     "takeScreenshotOnError": true,
     "saveTemplateIfMissing": true,
     "allowableDifference": 20,
-    "waitTimeBeforeTakingScreenshot": 0,
+    "waitTimeBeforeScreenshot": 0,
+    "executeJavaScriptBeforeScreenshot": "js/before_screenshot.js",
+    "executeJavaScriptAfterScreenshot": "js/after_screenshot.js",
     "templateScreenshotDir": "/home/user/Screenshots/Web/template",
     "currentScreenshotDir": "/home/user/Screenshots/Web/current"
   },
@@ -78,7 +80,7 @@
     "takeScreenshotOnError": true,
     "saveTemplateIfMissing": true,
     "allowableDifference": 20,
-    "waitTimeBeforeTakingScreenshot": 0,
+    "waitTimeBeforeScreenshot": 0,
     "templateScreenshotDir": "/home/user/Screenshots/Android/template",
     "currentScreenshotDir": "/home/user/Screenshots/Android/current"
   },
