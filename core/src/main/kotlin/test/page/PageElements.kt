@@ -17,7 +17,12 @@ package test.page
 
 import logger.Logger
 
-class WebElement(
+enum class LocatorType(val value: String) {
+    XPATH("xpath:"),
+    CSS_SELECTOR("cssSelector:");
+}
+
+class Element(
     private val locator: String,
     private val maxSize: Int? = null,
     private val allowedChars: String? = null,
@@ -41,48 +46,56 @@ class WebElement(
 }
 
 open class PageElements {
-    private var elements = HashMap<String, WebElement>()
+    private var elements = HashMap<String, Element>()
     private var parentName: String = ""
     private var parentLocator: String = ""
 
     fun webElement(
         name: String,
-        xpath: String,
+        locator: String,
+        locatorType: LocatorType = LocatorType.XPATH,
         maxSize: Int? = null,
         allowedChars: String? = null,
         pattern: String? = null,
         function: (() -> Unit)? = null
     ) {
         if (parentName.isEmpty())
-            putElement(name, WebElement(xpath, maxSize, allowedChars, pattern))
+            putElement(name, Element(locatorType.value + locator, maxSize, allowedChars, pattern))
         else
-            putElement("$parentName.$name", WebElement(parentLocator + xpath, maxSize, allowedChars, pattern))
+            putElement(
+                "$parentName.$name",
+                Element(locatorType.value + parentLocator + locator, maxSize, allowedChars, pattern)
+            )
         if (function != null) {
+            if (locatorType != LocatorType.XPATH) {
+                Logger.warning("Nested elements are supported only when using XPath", name)
+                return
+            }
             val currentParentName = parentName
             val currentParentLocator = parentLocator
             if (parentName.isNotEmpty())
                 parentName += "."
             parentName += name
-            parentLocator += xpath
+            parentLocator += locator
             function()
             parentName = currentParentName
             parentLocator = currentParentLocator
         }
     }
 
-    private fun putElement(name: String, webElement: WebElement) {
+    private fun putElement(name: String, element: Element) {
         if (elements.containsKey(name)) {
             Logger.warning("An element named '$name' already exists")
             return
         }
-        elements[name] = webElement
+        elements[name] = element
     }
 
     fun group(@Suppress("UNUSED_PARAMETER") name: String, function: () -> Unit) {
         function()
     }
 
-    fun getElements(): HashMap<String, WebElement> {
+    fun getElements(): HashMap<String, Element> {
         return elements
     }
 }
