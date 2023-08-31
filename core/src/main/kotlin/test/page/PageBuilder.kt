@@ -20,20 +20,22 @@ import storage.PageStorage
 open class PageBuilder {
     var urlPath: String? = null
     var identifier: String? = null
+    var identifierType: LocatorType = LocatorType.XPATH
     var description: String? = null
-    var elements: HashMap<String, WebElement>? = null
+    var elements: HashMap<String, Element>? = null
     var workArea: String? = null
     var ignoredElements: Set<String> = HashSet()
 
     fun page(name: String, function: () -> Unit) {
         urlPath = null
         identifier = null
+        identifierType = LocatorType.XPATH
         description = null
         elements = null
         workArea = null
         ignoredElements = HashSet()
         function()
-        PageStorage.putPage(name, PageData(name, urlPath, identifier, description, elements, workArea, ignoredElements))
+        PageStorage.putPage(name, PageData(name, urlPath, identifierType.value + identifier, description, elements, workArea, ignoredElements))
     }
 
     fun group(name: String, function: () -> Unit) {

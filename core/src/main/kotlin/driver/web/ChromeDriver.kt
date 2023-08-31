@@ -34,6 +34,7 @@ import pazone.ashot.ShootingStrategies
 import pazone.ashot.coordinates.Coords
 import pazone.ashot.cropper.indent.IndentCropper
 import pazone.ashot.cropper.indent.IndentFilerFactory.blur
+import test.page.LocatorType
 import java.awt.Point
 import java.net.URL
 import java.time.Duration
@@ -215,14 +216,22 @@ class ChromeDriver : Driver {
         } catch (_: ConditionTimeoutException) {}
         if (element != null)
             return element as WebElement
-        return driver.findElement(By.xpath(locator))
+        return driver.findElement(byDetect(locator))
     }
 
     private fun getWebElements(locator: String, onlyDisplayed: Boolean): List<WebElement> {
-        val elements = driver.findElements(By.xpath(locator))
+        val elements = driver.findElements(byDetect(locator))
         if (onlyDisplayed)
             return elements.filter { it.isDisplayed }
         return elements
+    }
+
+    private fun byDetect(locator: String): By {
+        if (locator.startsWith(LocatorType.XPATH.value))
+            return By.xpath(locator.substring(LocatorType.XPATH.value.length))
+        if (locator.startsWith(LocatorType.CSS_SELECTOR.value))
+            return By.cssSelector(locator.substring(LocatorType.CSS_SELECTOR.value.length))
+        return By.xpath(locator)
     }
 
     override fun setPage(url: String) {
