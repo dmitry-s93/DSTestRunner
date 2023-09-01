@@ -17,10 +17,11 @@ package config
 
 import logger.Logger
 import org.json.JSONObject
+import test.element.Locator
 
 class PreloaderConfig {
     companion object {
-        var elements: MutableList<String> = mutableListOf()
+        var elements: MutableList<Locator> = mutableListOf()
             private set
 
         @Synchronized
@@ -29,7 +30,7 @@ class PreloaderConfig {
                 if (config.has("PreloaderElements")) {
                     Logger.debug("Reading parameters from config", "PreloaderConfig")
                     config.getJSONArray("PreloaderElements").forEach { element ->
-                        elements.add(element.toString())
+                        elements.add(Locator(element.toString()))
                     }
                 }
             } catch (e: org.json.JSONException) {

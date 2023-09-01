@@ -23,9 +23,10 @@ import config.Localization
 import driver.DriverSession
 import storage.PageStorage
 import storage.ValueStorage
+import test.element.Locator
 
 class CheckElementValueAction(private val elementName: String, expectedValue: String) : ActionReturn(), Action {
-    private var elementLocator: String? = null
+    private var elementLocator: Locator? = null
     private val expectedValue: String = ValueStorage.replace(expectedValue)
     private var elementValue: String? = null
     private val locatorArguments = ArrayList<String>()
@@ -39,10 +40,9 @@ class CheckElementValueAction(private val elementName: String, expectedValue: St
             val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
             if (!pageData.isElementExist(elementName))
                 return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.getPageName()))
-            elementLocator = pageData.getElement(elementName)?.getLocator()
-            if (elementLocator.isNullOrEmpty())
+            elementLocator = pageData.getElement(elementName)?.getLocator()?.withReplaceArgs(*locatorArguments.toArray())
+            if (elementLocator == null || elementLocator!!.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
-            elementLocator = String.format(elementLocator!!, *locatorArguments.toArray())
             elementValue = DriverSession.getSession().getElementValue(elementLocator!!)
             if (elementValue != expectedValue)
                 return fail(Localization.get("CheckElementValueAction.ElementValueNotMatch", elementValue, expectedValue))
@@ -55,7 +55,7 @@ class CheckElementValueAction(private val elementName: String, expectedValue: St
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
         parameters["elementName"] = elementName
-        parameters["elementLocator"] = elementLocator.toString()
+        parameters["elementLocator"] = elementLocator?.value.toString()
         parameters["elementValue"] = elementValue.toString()
         if (expectedValue != elementValue)
             parameters["expectedValue"] = expectedValue

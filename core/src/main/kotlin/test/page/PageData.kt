@@ -17,16 +17,17 @@ package test.page
 
 import config.WebDriverConfig
 import logger.Logger
+import test.element.Locator
 import java.net.URI
 
 class PageData(
     private val pageName: String,
     private val urlPath: String?,
-    private val identifier: String?,
+    private val identifier: Locator?,
     private val description: String?,
     private val elements: HashMap<String, Element>?,
-    private val workArea: String?,
-    private val ignoredElements: Set<String>
+    private val workArea: Locator?,
+    private val ignoredElements: Set<Locator>
 ) {
     fun getPageName(): String {
         return pageName
@@ -50,7 +51,7 @@ class PageData(
         return urlPath
     }
 
-    fun getIdentifier(): String? {
+    fun getIdentifier(): Locator? {
         return identifier
     }
 
@@ -69,11 +70,11 @@ class PageData(
         return elements?.containsKey(elementName) ?: false
     }
 
-    fun getWorkArea(): String? {
+    fun getWorkArea(): Locator? {
         return workArea
     }
 
-    fun getIgnoredElements(): Set<String> {
+    fun getIgnoredElements(): Set<Locator> {
         return ignoredElements
     }
 }

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package action.actions
+package action.actions.web
 
 import action.Action
 import action.ActionData
@@ -21,27 +21,35 @@ import action.ActionResult
 import action.ActionReturn
 import config.Localization
 import driver.DriverSession
+import org.apache.hc.core5.http.NameValuePair
+import org.apache.hc.core5.http.message.BasicNameValuePair
+import org.apache.hc.core5.net.URIBuilder
 import storage.PageStorage
+import storage.ValueStorage
 
-class OpenBrowserAction(private val pageName: String) : ActionReturn(), Action {
-    private var pageUrl: String? = null
+class SetPageAction(private val pageName: String) : ActionReturn(), Action {
+    @SuppressWarnings("WeakerAccess")
+    var pageUrl: String? = null
+    private val urlParameters: MutableList<NameValuePair> = mutableListOf()
+    private val urlArguments: HashMap<String, String> = HashMap()
 
     override fun getName(): String {
-        return Localization.get("OpenBrowserAction.DefaultName", pageName)
+        return Localization.get("SetPageAction.DefaultName", pageName)
     }
 
     override fun execute(): ActionResult {
         if (!PageStorage.isPageExist(pageName))
             return broke(Localization.get("General.PageIsNotSpecifiedInPageList", pageName))
         PageStorage.setCurrentPage(pageName)
-        pageUrl = PageStorage.getPage(pageName)?.getUrl()
+        if (pageUrl == null)
+            pageUrl = PageStorage.getPage(pageName)?.getUrl(urlArguments)
         if (pageUrl.isNullOrEmpty())
             return broke(Localization.get("General.PageUrlNotSpecified"))
         try {
-            DriverSession.createSession()
+            pageUrl = URIBuilder(pageUrl).addParameters(urlParameters).toString()
             DriverSession.getSession().setPage(pageUrl!!)
         } catch (e: Exception) {
-            return broke(Localization.get("OpenBrowserAction.GeneralError", e.message), e.stackTraceToString())
+            return broke(Localization.get("SetPageAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }
@@ -52,11 +60,28 @@ class OpenBrowserAction(private val pageName: String) : ActionReturn(), Action {
         parameters["pageUrl"] = pageUrl.toString()
         return parameters
     }
+
+    /**
+     * Adds a query parameter to the URL
+     */
+    fun addUrlParameter(param: String, value: String) {
+        urlParameters.add(BasicNameValuePair(param, ValueStorage.replace(value)))
+    }
+
+    /**
+     * Sets the value of the argument in the URL
+     */
+    fun setUrlArgument(arg: String, value: String) {
+        urlArguments[arg] = ValueStorage.replace(value)
+    }
 }
 
-fun openBrowser(pageName: String, function: (OpenBrowserAction.() -> Unit)? = null): ActionData {
+/**
+ * Goes to page [pageName]
+ */
+fun setPage(pageName: String, function: (SetPageAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = OpenBrowserAction(pageName)
+    val action = SetPageAction(pageName)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()

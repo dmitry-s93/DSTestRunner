@@ -16,27 +16,28 @@
 package driver
 
 import pazone.ashot.Screenshot
+import test.element.Locator
 import java.awt.Point
 import java.util.ArrayList
 
 interface Driver {
-    fun click(locator: String, points: ArrayList<Point>? = null)
-    fun checkLoadPage(url: String, identifier: String?): Boolean
+    fun click(locator: Locator, points: ArrayList<Point>? = null)
+    fun checkLoadPage(url: String, identifier: Locator?): Boolean
     fun switchToWindow(url: String?): Boolean
     fun closeWindow(url: String?): Boolean
     fun getCurrentUrl(): String
-    fun getElementValue(locator: String): String
+    fun getElementValue(locator: Locator): String
     fun getScreenshot(
         longScreenshot: Boolean = false,
-        ignoredElements: Set<String> = HashSet(),
-        screenshotAreas: List<String> = arrayListOf()
+        ignoredElements: Set<Locator> = HashSet(),
+        screenshotAreas: List<Locator> = arrayListOf()
     ): Screenshot
     fun setPage(url: String)
-    fun setValue(locator: String, value: String, sequenceMode: Boolean = false)
-    fun setSelectValue(locator: String, value: String)
-    fun uploadFile(locator: String, file: String)
-    fun isExist(locator: String): Boolean
-    fun isNotExist(locator: String): Boolean
+    fun setValue(locator: Locator, value: String, sequenceMode: Boolean = false)
+    fun setSelectValue(locator: Locator, value: String)
+    fun uploadFile(locator: Locator, file: String)
+    fun isExist(locator: Locator): Boolean
+    fun isNotExist(locator: Locator): Boolean
     fun executeJavaScript(script: String, vararg args: Any?): Any?
     fun quit()
 }

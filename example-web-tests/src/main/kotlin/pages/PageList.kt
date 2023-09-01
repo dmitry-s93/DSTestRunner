@@ -2,6 +2,7 @@ package pages
 
 import pages.saucedemo.InventoryPage
 import pages.saucedemo.LoginPage
+import test.element.Locator
 import test.page.PageBuilder
 
 @Suppress("unused")
@@ -9,20 +10,24 @@ class PageList : PageBuilder() {
     init {
         page("LoginPage") {
             urlPath = ""
-            identifier = "//input[@id='login-button']"
+            identifier = Locator("//input[@id='login-button']")
             description = "Login page"
             elements = LoginPage().getElements()
         }
         group("Products") {
             page("InventoryPage") {
                 urlPath = "inventory.html"
-                identifier = "//span[@class='title' and text()='Products']"
+                identifier = Locator("//span[@class='title' and text()='Products']")
                 description = "Product List Page"
                 elements = InventoryPage().getElements()
+                ignoredElements = setOf(
+                    Locator("//span[@class='title' and text()='Products']"),
+                    Locator("//span[@class='title' and text()='Products']")
+                )
             }
             page("InventoryItemPage") {
                 urlPath = "inventory-item.html"
-                identifier = "//button[@id='back-to-products']']"
+                identifier = Locator("//button[@id='back-to-products']']")
                 description = "Product detail page"
             }
         }

@@ -1,6 +1,11 @@
 package tests.authentication.loginAndLogout
 
-import action.actions.*
+import action.actions.checkLoadPage
+import action.actions.click
+import action.actions.importUser
+import action.actions.setFieldValue
+import action.actions.web.closeBrowser
+import action.actions.web.openBrowser
 import reporter.allure.SeverityLevel
 import reporter.allure.allure
 import test.TestBuilder

@@ -24,10 +24,11 @@ import config.Localization
 import driver.DriverSession
 import storage.PageStorage
 import storage.ValueStorage
+import test.element.Locator
 
 
 class CheckInputFieldAction(private val elementName: String) : ActionReturn(), Action {
-    private var elementLocator: String? = null
+    private var elementLocator: Locator? = null
     private val locatorArguments = ArrayList<String>()
 
     var maxSize: Int? = null
@@ -44,10 +45,9 @@ class CheckInputFieldAction(private val elementName: String) : ActionReturn(), A
             if (!pageData.isElementExist(elementName))
                 return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.getPageName()))
             val webElement = pageData.getElement(elementName)
-            elementLocator = webElement?.getLocator()
-            if (elementLocator.isNullOrEmpty())
+            elementLocator = webElement?.getLocator()?.withReplaceArgs(*locatorArguments.toArray())
+            if (elementLocator == null || elementLocator!!.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
-            elementLocator = String.format(elementLocator!!, *locatorArguments.toArray())
 
             if (maxSize == null) maxSize = webElement?.getMaxSize()
             if (pattern == null) pattern = webElement?.getPattern()
@@ -136,7 +136,7 @@ class CheckInputFieldAction(private val elementName: String) : ActionReturn(), A
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
         parameters["elementName"] = elementName
-        parameters["elementLocator"] = elementLocator.toString()
+        parameters["elementLocator"] = elementLocator?.value.toString()
         if (maxSize != null)
             parameters["maxSize"] = maxSize.toString()
         if (pattern != null)

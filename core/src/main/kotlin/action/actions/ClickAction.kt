@@ -23,11 +23,12 @@ import config.Localization
 import driver.DriverSession
 import storage.PageStorage
 import storage.ValueStorage
+import test.element.Locator
 import java.awt.Point
 import java.util.*
 
 class ClickAction(private val elementName: String) : ActionReturn(), Action {
-    private var elementLocator: String? = null
+    private var elementLocator: Locator? = null
     private val locatorArguments = ArrayList<String>()
     private val clickPoints = ArrayList<Point>()
 
@@ -40,10 +41,9 @@ class ClickAction(private val elementName: String) : ActionReturn(), Action {
             val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
             if (!pageData.isElementExist(elementName))
                 return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.getPageName()))
-            elementLocator = pageData.getElement(elementName)?.getLocator()
-            if (elementLocator.isNullOrEmpty())
+            elementLocator = pageData.getElement(elementName)?.getLocator()?.withReplaceArgs(*locatorArguments.toArray())
+            if (elementLocator == null || elementLocator!!.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
-            elementLocator = String.format(elementLocator!!, *locatorArguments.toArray())
             DriverSession.getSession().click(elementLocator!!, clickPoints)
         } catch (e: Exception) {
             return broke(Localization.get("ClickAction.GeneralError", e.message), e.stackTraceToString())
@@ -54,7 +54,7 @@ class ClickAction(private val elementName: String) : ActionReturn(), Action {
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
         parameters["elementName"] = elementName
-        parameters["elementLocator"] = elementLocator.toString()
+        parameters["elementLocator"] = elementLocator?.value.toString()
         if (clickPoints.isNotEmpty()) {
             val points = StringBuilder()
             clickPoints.forEach {

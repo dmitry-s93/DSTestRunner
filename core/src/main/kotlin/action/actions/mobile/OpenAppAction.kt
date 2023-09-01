@@ -41,6 +41,9 @@ class OpenAppAction : ActionReturn(), Action {
     }
 }
 
+/**
+ * Starts the driver session and opens the mobile application
+ */
 fun openApp(function: (OpenAppAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
     val action = OpenAppAction()

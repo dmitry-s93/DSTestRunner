@@ -1,6 +1,9 @@
 package tests.authentication.loginFormValidation
 
-import action.actions.*
+import action.actions.importUser
+import action.actions.setValueToStorage
+import action.actions.web.closeBrowser
+import action.actions.web.openBrowser
 import reporter.allure.SeverityLevel
 import reporter.allure.allure
 import test.TestBuilder
