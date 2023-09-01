@@ -20,10 +20,6 @@ class PageList : PageBuilder() {
                 identifier = Locator("//span[@class='title' and text()='Products']")
                 description = "Product List Page"
                 elements = InventoryPage().getElements()
-                ignoredElements = setOf(
-                    Locator("//span[@class='title' and text()='Products']"),
-                    Locator("//span[@class='title' and text()='Products']")
-                )
             }
             page("InventoryItemPage") {
                 urlPath = "inventory-item.html"
