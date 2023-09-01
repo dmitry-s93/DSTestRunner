@@ -16,19 +16,16 @@
 package test.page
 
 import logger.Logger
-
-enum class LocatorType(val value: String) {
-    XPATH("xpath:"),
-    CSS_SELECTOR("cssSelector:");
-}
+import test.element.Locator
+import test.element.LocatorType
 
 class Element(
-    private val locator: String,
+    private val locator: Locator,
     private val maxSize: Int? = null,
     private val allowedChars: String? = null,
     private val pattern: String? = null
 ) {
-    fun getLocator(): String {
+    fun getLocator(): Locator {
         return locator
     }
 
@@ -60,11 +57,11 @@ open class PageElements {
         function: (() -> Unit)? = null
     ) {
         if (parentName.isEmpty())
-            putElement(name, Element(locatorType.value + locator, maxSize, allowedChars, pattern))
+            putElement(name, Element(Locator(locator, locatorType), maxSize, allowedChars, pattern))
         else
             putElement(
                 "$parentName.$name",
-                Element(locatorType.value + parentLocator + locator, maxSize, allowedChars, pattern)
+                Element(Locator(parentLocator + locator, locatorType), maxSize, allowedChars, pattern)
             )
         if (function != null) {
             if (locatorType != LocatorType.XPATH) {

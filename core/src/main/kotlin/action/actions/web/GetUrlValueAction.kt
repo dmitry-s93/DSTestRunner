@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package action.actions
+package action.actions.web
 
 import action.Action
 import action.ActionData

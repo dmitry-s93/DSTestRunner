@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package action.actions
+package action.actions.web
 
 import action.Action
 import action.ActionData
@@ -23,21 +23,21 @@ import config.Localization
 import driver.DriverSession
 import storage.PageStorage
 
-class SwitchToWindowAction(private val pageName: String?) : ActionReturn(), Action {
+class CloseWindowAction(private val pageName: String?) : ActionReturn(), Action {
     private val pageUrl: String? = pageName?.let { PageStorage.getPage(it)?.getUrl() }
 
     override fun getName(): String {
         if (pageName.isNullOrEmpty())
-            return Localization.get("SwitchToWindowAction.DefaultName")
-        return Localization.get("SwitchToWindowAction.DefaultNameWithPage", pageName)
+            return Localization.get("CloseWindowAction.DefaultName")
+        return Localization.get("CloseWindowAction.DefaultNameWithPage", pageName)
     }
 
     override fun execute(): ActionResult {
         try {
-            if (!DriverSession.getSession().switchToWindow(pageUrl))
-                return fail(Localization.get("SwitchToWindowAction.UnableToFindWindow"))
+            if (!DriverSession.getSession().closeWindow(pageUrl))
+                return fail(Localization.get("CloseWindowAction.UnableToFindWindow"))
         } catch (e: Exception) {
-            return broke(Localization.get("SwitchToWindowAction.GeneralError", e.message), e.stackTraceToString())
+            return broke(Localization.get("CloseWindowAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }
@@ -53,13 +53,13 @@ class SwitchToWindowAction(private val pageName: String?) : ActionReturn(), Acti
 }
 
 /**
- * Switches to the window with page [pageName]
+ * Closes the window with page [pageName]
  *
- * Switches to the first other window (if [pageName] is not specified)
+ * Closes the active window (if [pageName] is not specified)
  */
-fun switchToWindow(pageName: String?, function: (SwitchToWindowAction.() -> Unit)? = null): ActionData {
+fun closeWindow(pageName: String? = null, function: (CloseWindowAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = SwitchToWindowAction(pageName)
+    val action = CloseWindowAction(pageName)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()

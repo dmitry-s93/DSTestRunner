@@ -23,10 +23,11 @@ import config.Localization
 import driver.DriverSession
 import storage.PageStorage
 import storage.ValueStorage
+import test.element.Locator
 
 class SetSelectValueAction(private val elementName: String, value: String) : ActionReturn(), Action {
     private val value: String = ValueStorage.replace(value)
-    private var elementLocator: String? = null
+    private var elementLocator: Locator? = null
     private val locatorArguments = ArrayList<String>()
 
     override fun getName(): String {
@@ -38,10 +39,9 @@ class SetSelectValueAction(private val elementName: String, value: String) : Act
             val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
             if (!pageData.isElementExist(elementName))
                 return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.getPageName()))
-            elementLocator = pageData.getElement(elementName)?.getLocator()
-            if (elementLocator.isNullOrEmpty())
+            elementLocator = pageData.getElement(elementName)?.getLocator()?.withReplaceArgs(*locatorArguments.toArray())
+            if (elementLocator == null || elementLocator!!.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
-            elementLocator = String.format(elementLocator!!, *locatorArguments.toArray())
             DriverSession.getSession().setSelectValue(elementLocator!!, value)
         } catch (e: Exception) {
             return broke(Localization.get("SetSelectValueAction.GeneralError", e.message), e.stackTraceToString())
@@ -52,7 +52,7 @@ class SetSelectValueAction(private val elementName: String, value: String) : Act
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
         parameters["elementName"] = elementName
-        parameters["elementLocator"] = elementLocator.toString()
+        parameters["elementLocator"] = elementLocator?.value.toString()
         parameters["value"] = value
         return parameters
     }

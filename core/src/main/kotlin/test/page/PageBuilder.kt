@@ -16,26 +16,25 @@
 package test.page
 
 import storage.PageStorage
+import test.element.Locator
 
 open class PageBuilder {
     var urlPath: String? = null
-    var identifier: String? = null
-    var identifierType: LocatorType = LocatorType.XPATH
+    var identifier: Locator? = null
     var description: String? = null
     var elements: HashMap<String, Element>? = null
-    var workArea: String? = null
-    var ignoredElements: Set<String> = HashSet()
+    var workArea: Locator? = null
+    var ignoredElements: Set<Locator> = HashSet()
 
     fun page(name: String, function: () -> Unit) {
         urlPath = null
         identifier = null
-        identifierType = LocatorType.XPATH
         description = null
         elements = null
         workArea = null
         ignoredElements = HashSet()
         function()
-        PageStorage.putPage(name, PageData(name, urlPath, identifierType.value + identifier, description, elements, workArea, ignoredElements))
+        PageStorage.putPage(name, PageData(name, urlPath, identifier, description, elements, workArea, ignoredElements))
     }
 
     fun group(name: String, function: () -> Unit) {

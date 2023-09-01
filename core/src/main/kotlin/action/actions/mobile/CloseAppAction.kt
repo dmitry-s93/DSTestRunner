@@ -42,6 +42,9 @@ class CloseAppAction : ActionReturn(), Action {
     }
 }
 
+/**
+ * Closes the mobile app and ends the driver sessionvnc
+ */
 fun closeApp(function: (CloseAppAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
     val action = CloseAppAction()

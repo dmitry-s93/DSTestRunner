@@ -23,9 +23,10 @@ import config.Localization
 import driver.DriverSession
 import storage.PageStorage
 import storage.ValueStorage
+import test.element.Locator
 
 class SetValueToStorageAction(private val name: String, private var value: String?, private val elementName: String?) : ActionReturn(), Action {
-    private var elementLocator: String? = null
+    private var elementLocator: Locator? = null
     private val locatorArguments = ArrayList<String>()
 
     override fun getName(): String {
@@ -44,10 +45,9 @@ class SetValueToStorageAction(private val name: String, private var value: Strin
                 val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
                 if (!pageData.isElementExist(elementName))
                     return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.getPageName()))
-                elementLocator = pageData.getElement(elementName)?.getLocator()
-                if (elementLocator.isNullOrEmpty())
+                elementLocator = pageData.getElement(elementName)?.getLocator()?.withReplaceArgs(*locatorArguments.toArray())
+                if (elementLocator == null || elementLocator!!.value.isEmpty())
                     return broke(Localization.get("General.ElementLocatorNotSpecified"))
-                elementLocator = String.format(elementLocator!!, *locatorArguments.toArray())
                 value = DriverSession.getSession().getElementValue(elementLocator!!)
             }
             ValueStorage.setValue(name, value!!)

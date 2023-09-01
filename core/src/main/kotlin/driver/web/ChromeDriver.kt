@@ -34,7 +34,8 @@ import pazone.ashot.ShootingStrategies
 import pazone.ashot.coordinates.Coords
 import pazone.ashot.cropper.indent.IndentCropper
 import pazone.ashot.cropper.indent.IndentFilerFactory.blur
-import test.page.LocatorType
+import test.element.Locator
+import test.element.LocatorType
 import java.awt.Point
 import java.net.URL
 import java.time.Duration
@@ -46,7 +47,7 @@ class ChromeDriver : Driver {
     private val pageLoadTimeout: Long = WebDriverConfig.pageLoadTimeout
     private val elementTimeout: Long = WebDriverConfig.elementTimeout
     private val poolDelay: Long = 50
-    private val preloaderElements: List<String> = PreloaderConfig.elements
+    private val preloaderElements: List<Locator> = PreloaderConfig.elements
 
     init {
         val chromeOptions = ChromeOptions()
@@ -56,7 +57,7 @@ class ChromeDriver : Driver {
         driver.manage().timeouts().implicitlyWait(Duration.ofMillis(0))
     }
 
-    override fun click(locator: String, points: ArrayList<Point>?) {
+    override fun click(locator: Locator, points: ArrayList<Point>?) {
         val element = getWebElement(locator)
         if (points.isNullOrEmpty()) {
             element.click()
@@ -72,7 +73,7 @@ class ChromeDriver : Driver {
         }
     }
 
-    override fun checkLoadPage(url: String, identifier: String?): Boolean {
+    override fun checkLoadPage(url: String, identifier: Locator?): Boolean {
         return try {
             await()
                 .ignoreException(StaleElementReferenceException::class.java)
@@ -80,7 +81,7 @@ class ChromeDriver : Driver {
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(pageLoadTimeout))
                 .until {
-                    getCurrentUrl().startsWith(url) && (identifier.isNullOrEmpty() || getWebElements(identifier, false).isNotEmpty()) && !isPreloaderDisplayed()
+                    getCurrentUrl().startsWith(url) && (identifier == null || getWebElements(identifier, false).isNotEmpty()) && !isPreloaderDisplayed()
                 }
             true
         } catch (e: ConditionTimeoutException) {
@@ -142,7 +143,7 @@ class ChromeDriver : Driver {
         return driver.currentUrl
     }
 
-    override fun getElementValue(locator: String): String {
+    override fun getElementValue(locator: Locator): String {
         val element = getWebElement(locator)
         var value = element.text
         if (value.isNullOrEmpty())
@@ -150,7 +151,7 @@ class ChromeDriver : Driver {
         return value ?: ""
     }
 
-    override fun getScreenshot(longScreenshot: Boolean, ignoredElements: Set<String>, screenshotAreas: List<String>): Screenshot {
+    override fun getScreenshot(longScreenshot: Boolean, ignoredElements: Set<Locator>, screenshotAreas: List<Locator>): Screenshot {
         ScreenshotConfig.executeJavaScriptBeforeScreenshot?.let { executeJavaScript(it) }
         executeJavaScript("""
             window.scrollTo(0, 0);
@@ -182,7 +183,7 @@ class ChromeDriver : Driver {
         return screenshot
     }
 
-    private fun getIgnoredAreas(locators: Set<String>): Set<Coords> {
+    private fun getIgnoredAreas(locators: Set<Locator>): Set<Coords> {
         val ignoredAreas: HashSet<Coords> = HashSet()
         locators.forEach { locator ->
             val webElements = getWebElements(locator, onlyDisplayed = true)
@@ -197,7 +198,7 @@ class ChromeDriver : Driver {
         return ignoredAreas
     }
 
-    private fun getWebElement(locator: String): WebElement {
+    private fun getWebElement(locator: Locator): WebElement {
         var element: WebElement? = null
         try {
             await()
@@ -219,19 +220,19 @@ class ChromeDriver : Driver {
         return driver.findElement(byDetect(locator))
     }
 
-    private fun getWebElements(locator: String, onlyDisplayed: Boolean): List<WebElement> {
+    private fun getWebElements(locator: Locator, onlyDisplayed: Boolean): List<WebElement> {
         val elements = driver.findElements(byDetect(locator))
         if (onlyDisplayed)
             return elements.filter { it.isDisplayed }
         return elements
     }
 
-    private fun byDetect(locator: String): By {
-        if (locator.startsWith(LocatorType.XPATH.value))
-            return By.xpath(locator.substring(LocatorType.XPATH.value.length))
-        if (locator.startsWith(LocatorType.CSS_SELECTOR.value))
-            return By.cssSelector(locator.substring(LocatorType.CSS_SELECTOR.value.length))
-        return By.xpath(locator)
+    private fun byDetect(locator: Locator): By {
+        return when(locator.type) {
+            LocatorType.XPATH -> By.xpath(locator.value)
+            LocatorType.CSS_SELECTOR -> By.cssSelector(locator.value)
+            null -> By.xpath(locator.value)
+        }
     }
 
     override fun setPage(url: String) {
@@ -243,7 +244,7 @@ class ChromeDriver : Driver {
         }
     }
 
-    override fun setValue(locator: String, value: String, sequenceMode: Boolean) {
+    override fun setValue(locator: Locator, value: String, sequenceMode: Boolean) {
         val webElement = getWebElement(locator)
         webElement.sendKeys(Keys.chord(Keys.CONTROL, "a") + Keys.DELETE)
         if (sequenceMode) {
@@ -256,17 +257,17 @@ class ChromeDriver : Driver {
         webElement.sendKeys(value)
     }
 
-    override fun setSelectValue(locator: String, value: String) {
+    override fun setSelectValue(locator: Locator, value: String) {
         val select = Select(getWebElement(locator))
         select.selectByVisibleText(value)
     }
 
-    override fun uploadFile(locator: String, file: String) {
+    override fun uploadFile(locator: Locator, file: String) {
         val webElement = getWebElements(locator, onlyDisplayed = false)[0]
         webElement.sendKeys(file)
     }
 
-    override fun isExist(locator: String): Boolean {
+    override fun isExist(locator: Locator): Boolean {
         return try {
             await()
                 .ignoreException(StaleElementReferenceException::class.java)
@@ -280,7 +281,7 @@ class ChromeDriver : Driver {
         }
     }
 
-    override fun isNotExist(locator: String): Boolean {
+    override fun isNotExist(locator: Locator): Boolean {
         return try {
             await()
                 .ignoreException(StaleElementReferenceException::class.java)

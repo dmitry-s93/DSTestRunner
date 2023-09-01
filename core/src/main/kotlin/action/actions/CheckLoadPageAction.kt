@@ -21,14 +21,15 @@ import driver.DriverSession
 import logger.Logger
 import storage.PageStorage
 import storage.ValueStorage
+import test.element.Locator
 import java.util.*
 
 
 class CheckLoadPageAction(private val pageName: String) : ActionReturn(), Action {
     private var pageUrl: String? = null
-    private var pageIdentifier: String? = null
+    private var pageIdentifier: Locator? = null
     private var screenData: ScreenData? = null
-    private var screenshotAreas: MutableList<String> = mutableListOf()
+    private var screenshotAreas: MutableList<Locator> = mutableListOf()
     private var takeScreenshotClass: TakeScreenshot? = null
 
     override fun getName(): String {
@@ -55,9 +56,9 @@ class CheckLoadPageAction(private val pageName: String) : ActionReturn(), Action
                 val elements = takeScreenshotClass!!.elements
                 if (elements.isNotEmpty()) {
                     elements.forEach { (elementName, locatorArguments) ->
-                        val locator = pageData.getElement(elementName)?.getLocator()
+                        val locator = pageData.getElement(elementName)?.getLocator()?.withReplaceArgs(*locatorArguments.toTypedArray())
                         if (locator != null)
-                            screenshotAreas.add(String.format(locator, *locatorArguments.toTypedArray()))
+                            screenshotAreas.add(locator)
                         else
                             Logger.warning(Localization.get("General.ElementIsNotSetOnPage", elementName, pageName))
                     }
@@ -81,7 +82,7 @@ class CheckLoadPageAction(private val pageName: String) : ActionReturn(), Action
         val parameters = HashMap<String, String>()
         parameters["pageName"] = pageName
         parameters["pageUrl"] = pageUrl.toString()
-        parameters["pageIdentifier"] = pageIdentifier.toString()
+        parameters["pageIdentifier"] = pageIdentifier?.value.toString()
         if (screenshotAreas.isNotEmpty())
             parameters["workArea"] = screenshotAreas.toString()
         return parameters

@@ -23,11 +23,12 @@ import config.Localization
 import driver.DriverSession
 import storage.PageStorage
 import storage.ValueStorage
+import test.element.Locator
 import java.io.File
 
 class UploadFileAction(private val fieldName: String, filePath: String) : ActionReturn(), Action {
     private val file: String = ValueStorage.replace(filePath)
-    private var elementLocator: String? = null
+    private var elementLocator: Locator? = null
     private val locatorArguments = ArrayList<String>()
 
     override fun getName(): String {
@@ -39,10 +40,9 @@ class UploadFileAction(private val fieldName: String, filePath: String) : Action
             val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
             if (!pageData.isElementExist(fieldName))
                 return broke(Localization.get("General.ElementIsNotSetOnPage", fieldName, pageData.getPageName()))
-            elementLocator = pageData.getElement(fieldName)?.getLocator()
-            if (elementLocator.isNullOrEmpty())
+            elementLocator = pageData.getElement(fieldName)?.getLocator()?.withReplaceArgs(*locatorArguments.toArray())
+            if (elementLocator == null || elementLocator!!.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
-            elementLocator = String.format(elementLocator!!, *locatorArguments.toArray())
             DriverSession.getSession().uploadFile(elementLocator!!, file)
         } catch (e: Exception) {
             return broke(Localization.get("UploadFileAction.GeneralError", e.message), e.stackTraceToString())
@@ -53,7 +53,7 @@ class UploadFileAction(private val fieldName: String, filePath: String) : Action
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
         parameters["elementName"] = fieldName
-        parameters["elementLocator"] = elementLocator.toString()
+        parameters["elementLocator"] = elementLocator?.value.toString()
         parameters["file"] = file
         return parameters
     }
