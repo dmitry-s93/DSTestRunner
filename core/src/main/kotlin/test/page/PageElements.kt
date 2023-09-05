@@ -80,6 +80,18 @@ open class PageElements {
         }
     }
 
+    fun mobileElement(
+        name: String,
+        locator: String,
+        locatorType: LocatorType = LocatorType.XPATH,
+        maxSize: Int? = null,
+        allowedChars: String? = null,
+        pattern: String? = null,
+        function: (() -> Unit)? = null
+    ) {
+        webElement(name, locator, locatorType, maxSize, allowedChars, pattern, function)
+    }
+
     private fun putElement(name: String, element: Element) {
         if (elements.containsKey(name)) {
             Logger.warning("An element named '$name' already exists")

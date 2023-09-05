@@ -42,12 +42,15 @@ class CheckLoadPageAction(private val pageName: String) : ActionReturn(), Action
                 return broke(Localization.get("General.PageIsNotSpecifiedInPageList", pageName))
             PageStorage.setCurrentPage(pageName)
             val pageData = PageStorage.getPage(pageName)
-            pageUrl = pageData!!.getUrl()
+            val urlPath = pageData!!.getUrlPath()
+            if (urlPath != null) {
+                pageUrl = pageData.getUrl()
+                if (pageUrl.isNullOrEmpty())
+                    return broke(Localization.get("General.PageUrlNotSpecified"))
+            }
             pageIdentifier = pageData.getIdentifier()
-            if (pageUrl.isNullOrEmpty())
-                return broke(Localization.get("General.PageUrlNotSpecified"))
-            if (!DriverSession.getSession().checkLoadPage(pageUrl!!, pageIdentifier)) {
-                if (!DriverSession.getSession().getCurrentUrl().startsWith(pageUrl.toString()))
+            if (!DriverSession.getSession().checkLoadPage(pageUrl, pageIdentifier)) {
+                if (!pageUrl.isNullOrEmpty() && !DriverSession.getSession().getCurrentUrl().startsWith(pageUrl.toString()))
                     return fail(Localization.get("CheckLoadPageAction.UrlDoesNotMatch"))
                 return fail(Localization.get("CheckLoadPageAction.PageDidNotLoad"))
             }
@@ -81,7 +84,8 @@ class CheckLoadPageAction(private val pageName: String) : ActionReturn(), Action
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
         parameters["pageName"] = pageName
-        parameters["pageUrl"] = pageUrl.toString()
+        if (pageUrl != null)
+            parameters["pageUrl"] = pageUrl.toString()
         parameters["pageIdentifier"] = pageIdentifier?.value.toString()
         if (screenshotAreas.isNotEmpty())
             parameters["workArea"] = screenshotAreas.toString()
