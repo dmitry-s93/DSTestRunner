@@ -17,10 +17,26 @@
 package driver.mobile
 
 import config.AppiumDriverConfig
+import config.PreloaderConfig
+import config.ScreenshotConfig
 import driver.Driver
+import io.appium.java_client.AppiumBy.ByAccessibilityId
+import io.appium.java_client.AppiumBy.ByAndroidUIAutomator
 import io.appium.java_client.android.AndroidDriver
+import org.awaitility.Awaitility
+import org.awaitility.core.ConditionTimeoutException
+import org.openqa.selenium.By
+import org.openqa.selenium.StaleElementReferenceException
+import org.openqa.selenium.WebElement
+import org.openqa.selenium.interactions.Actions
+import pazone.ashot.AShot
 import pazone.ashot.Screenshot
+import pazone.ashot.ShootingStrategies
+import pazone.ashot.coordinates.Coords
+import pazone.ashot.cropper.indent.IndentCropper
+import pazone.ashot.cropper.indent.IndentFilerFactory
 import test.element.Locator
+import test.element.LocatorType
 import java.awt.Point
 import java.net.URL
 import java.time.Duration
@@ -29,6 +45,10 @@ import java.time.Duration
 @Suppress("unused")
 class AndroidAppiumDriver : Driver {
     private val driver: AndroidDriver
+    private val pageLoadTimeout: Long = AppiumDriverConfig.pageLoadTimeout
+    private val elementTimeout: Long = AppiumDriverConfig.elementTimeout
+    private val poolDelay: Long = 50
+    private val preloaderElements: List<Locator> = PreloaderConfig.elements
 
     init {
         driver = AndroidDriver(URL(AppiumDriverConfig.remoteAddress), AppiumDriverConfig.desiredCapabilities)
@@ -36,39 +56,156 @@ class AndroidAppiumDriver : Driver {
     }
 
     override fun click(locator: Locator, points: ArrayList<Point>?) {
-        TODO("Not yet implemented")
+        val element = getWebElement(locator)
+        if (points.isNullOrEmpty()) {
+            element.click()
+        } else {
+            with (Actions(driver)) {
+                points.forEach {
+                    moveToElement(element)
+                    moveByOffset(it.x, it.y)
+                    click()
+                }
+                perform()
+            }
+        }
     }
 
-    override fun checkLoadPage(url: String, identifier: Locator?): Boolean {
-        TODO("Not yet implemented")
+    override fun checkLoadPage(url: String?, identifier: Locator?): Boolean {
+        return try {
+            Awaitility.await()
+                .ignoreException(StaleElementReferenceException::class.java)
+                .atLeast(Duration.ofMillis(0))
+                .pollDelay(Duration.ofMillis(poolDelay))
+                .atMost(Duration.ofMillis(pageLoadTimeout))
+                .until {
+                    (identifier == null || getWebElements(identifier, false).isNotEmpty()) && !isPreloaderDisplayed()
+                }
+            true
+        } catch (e: ConditionTimeoutException) {
+            false
+        }
+    }
+
+    private fun isPreloaderDisplayed(): Boolean {
+        preloaderElements.forEach { locator ->
+            if (getWebElements(locator, true).isNotEmpty())
+                return true
+        }
+        return false
     }
 
     override fun switchToWindow(url: String?): Boolean {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("Operation not supported")
     }
 
     override fun closeWindow(url: String?): Boolean {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("Operation not supported")
     }
 
     override fun getCurrentUrl(): String {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("Operation not supported")
     }
 
     override fun getElementValue(locator: Locator): String {
-        TODO("Not yet implemented")
+        return getWebElement(locator).text
     }
 
     override fun getScreenshot(longScreenshot: Boolean, ignoredElements: Set<Locator>, screenshotAreas: List<Locator>): Screenshot {
-        TODO("Not yet implemented")
+        val waitTime = ScreenshotConfig.waitTimeBeforeScreenshot
+        if (waitTime > 0)
+            Thread.sleep(waitTime)
+        val screenshot = with(AShot()) {
+            shootingStrategy(ShootingStrategies.simple())
+            ignoredAreas(getIgnoredAreas(ignoredElements))
+            if (screenshotAreas.isNotEmpty()) {
+                val webElements: MutableList<WebElement> = mutableListOf()
+                screenshotAreas.forEach { locator ->
+                    webElements.add(getWebElement(locator))
+                }
+                imageCropper(IndentCropper().addIndentFilter(IndentFilerFactory.blur()))
+                takeScreenshot(driver, webElements)
+            } else {
+                takeScreenshot(driver)
+            }
+        }
+        return screenshot
+    }
+
+    private fun getIgnoredAreas(locators: Set<Locator>): Set<Coords> {
+        val ignoredAreas: HashSet<Coords> = HashSet()
+        locators.forEach { locator ->
+            val webElements = getWebElements(locator, onlyDisplayed = true)
+            webElements.forEach { webElement ->
+                val x = webElement.location.x
+                val y = webElement.location.y
+                val width = webElement.size.width
+                val height = webElement.size.height
+                ignoredAreas.add(Coords(x, y, width, height))
+            }
+        }
+        return ignoredAreas
+    }
+
+    private fun getWebElement(locator: Locator): WebElement {
+        var element: WebElement? = null
+        try {
+            Awaitility.await()
+                .ignoreException(StaleElementReferenceException::class.java)
+                .atLeast(Duration.ofMillis(0))
+                .pollDelay(Duration.ofMillis(poolDelay))
+                .atMost(Duration.ofMillis(elementTimeout))
+                .until {
+                    val elements = getWebElements(locator, true)
+                    if (elements.isNotEmpty()) {
+                        element = elements[0]
+                        return@until true
+                    }
+                    return@until false
+                }
+        } catch (_: ConditionTimeoutException) {}
+        if (element != null)
+            return element as WebElement
+        return driver.findElement(byDetect(locator))
+    }
+
+    private fun getWebElements(locator: Locator, onlyDisplayed: Boolean): List<WebElement> {
+        val elements = driver.findElements(byDetect(locator))
+        if (onlyDisplayed)
+            return elements.filter { it.isDisplayed }
+        return elements
+    }
+
+    private fun byDetect(locator: Locator): By {
+        return when(locator.type) {
+            LocatorType.XPATH -> By.xpath(locator.value)
+            LocatorType.CSS_SELECTOR -> By.cssSelector(locator.value)
+            LocatorType.CLASS_NAME -> By.ByClassName(locator.value)
+            LocatorType.ID -> By.id(locator.value)
+            LocatorType.ACCESSIBILITY_ID -> ByAccessibilityId(locator.value)
+            LocatorType.ANDROID_UI_AUTOMATOR -> ByAndroidUIAutomator(locator.value)
+            null -> By.xpath(locator.value)
+        }
     }
 
     override fun setPage(url: String) {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("Operation not supported")
     }
 
     override fun setValue(locator: Locator, value: String, sequenceMode: Boolean) {
-        TODO("Not yet implemented")
+        val webElement = getWebElement(locator)
+        webElement.clear()
+        if (sequenceMode) {
+            webElement.click()
+            value.forEach {
+                Actions(driver).sendKeys(it.toString()).perform()
+                Thread.sleep(50)
+            }
+            driver.hideKeyboard()
+            return
+        }
+        webElement.sendKeys(value)
+        driver.hideKeyboard()
     }
 
     override fun setSelectValue(locator: Locator, value: String) {
@@ -76,21 +213,40 @@ class AndroidAppiumDriver : Driver {
     }
 
     override fun uploadFile(locator: Locator, file: String) {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("Operation not supported")
     }
 
     override fun isExist(locator: Locator): Boolean {
-        TODO("Not yet implemented")
+        return try {
+            Awaitility.await()
+                .ignoreException(StaleElementReferenceException::class.java)
+                .atLeast(Duration.ofMillis(0))
+                .pollDelay(Duration.ofMillis(poolDelay))
+                .atMost(Duration.ofMillis(elementTimeout))
+                .until { getWebElements(locator, true).isNotEmpty() }
+            true
+        } catch (e: ConditionTimeoutException) {
+            false
+        }
     }
 
     override fun isNotExist(locator: Locator): Boolean {
-        TODO("Not yet implemented")
+        return try {
+            Awaitility.await()
+                .ignoreException(StaleElementReferenceException::class.java)
+                .atLeast(Duration.ofMillis(0))
+                .pollDelay(Duration.ofMillis(poolDelay))
+                .atMost(Duration.ofMillis(elementTimeout))
+                .until { getWebElements(locator, true).isEmpty() }
+            true
+        } catch (e: ConditionTimeoutException) {
+            false
+        }
     }
 
     override fun executeJavaScript(script: String, vararg args: Any?): Any? {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("Operation not supported")
     }
-
 
     override fun quit() {
         driver.quit()

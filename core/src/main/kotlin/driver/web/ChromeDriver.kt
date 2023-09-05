@@ -73,7 +73,7 @@ class ChromeDriver : Driver {
         }
     }
 
-    override fun checkLoadPage(url: String, identifier: Locator?): Boolean {
+    override fun checkLoadPage(url: String?, identifier: Locator?): Boolean {
         return try {
             await()
                 .ignoreException(StaleElementReferenceException::class.java)
@@ -81,7 +81,7 @@ class ChromeDriver : Driver {
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(pageLoadTimeout))
                 .until {
-                    getCurrentUrl().startsWith(url) && (identifier == null || getWebElements(identifier, false).isNotEmpty()) && !isPreloaderDisplayed()
+                    (url == null || getCurrentUrl().startsWith(url)) && (identifier == null || getWebElements(identifier, false).isNotEmpty()) && !isPreloaderDisplayed()
                 }
             true
         } catch (e: ConditionTimeoutException) {
@@ -231,7 +231,10 @@ class ChromeDriver : Driver {
         return when(locator.type) {
             LocatorType.XPATH -> By.xpath(locator.value)
             LocatorType.CSS_SELECTOR -> By.cssSelector(locator.value)
+            LocatorType.CLASS_NAME -> By.ByClassName(locator.value)
+            LocatorType.ID -> By.id(locator.value)
             null -> By.xpath(locator.value)
+            else -> throw UnsupportedOperationException("Locator type not supported: ${locator.type.value}")
         }
     }
 

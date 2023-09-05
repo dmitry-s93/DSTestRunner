@@ -29,6 +29,7 @@ class DriverSession {
                 driverSession.set(DriverFactory().createDriver(MainConfig.driverImpl))
             } catch (e: Exception) {
                 Logger.error("Failed to create driver session\n${e.cause}", "createSession")
+                throw e
             }
         }
 

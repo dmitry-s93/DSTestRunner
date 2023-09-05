@@ -22,7 +22,7 @@ import java.util.ArrayList
 
 interface Driver {
     fun click(locator: Locator, points: ArrayList<Point>? = null)
-    fun checkLoadPage(url: String, identifier: Locator?): Boolean
+    fun checkLoadPage(url: String?, identifier: Locator?): Boolean
     fun switchToWindow(url: String?): Boolean
     fun closeWindow(url: String?): Boolean
     fun getCurrentUrl(): String
