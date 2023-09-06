@@ -26,6 +26,7 @@ import io.appium.java_client.android.AndroidDriver
 import org.awaitility.Awaitility
 import org.awaitility.core.ConditionTimeoutException
 import org.openqa.selenium.By
+import org.openqa.selenium.OutputType
 import org.openqa.selenium.StaleElementReferenceException
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.interactions.Actions
@@ -38,8 +39,11 @@ import pazone.ashot.cropper.indent.IndentFilerFactory
 import test.element.Locator
 import test.element.LocatorType
 import java.awt.Point
+import java.awt.image.BufferedImage
+import java.io.ByteArrayInputStream
 import java.net.URL
 import java.time.Duration
+import javax.imageio.ImageIO
 
 
 @Suppress("unused")
@@ -115,30 +119,64 @@ class AndroidAppiumDriver : Driver {
         val waitTime = ScreenshotConfig.waitTimeBeforeScreenshot
         if (waitTime > 0)
             Thread.sleep(waitTime)
-        val screenshot = with(AShot()) {
-            shootingStrategy(ShootingStrategies.simple())
-            ignoredAreas(getIgnoredAreas(ignoredElements))
-            if (screenshotAreas.isNotEmpty()) {
-                val webElements: MutableList<WebElement> = mutableListOf()
-                screenshotAreas.forEach { locator ->
-                    webElements.add(getWebElement(locator))
-                }
+        val screenshot: Screenshot
+        if (screenshotAreas.isNotEmpty()) {
+            val webElements: MutableList<WebElement> = mutableListOf()
+            screenshotAreas.forEach { locator ->
+                webElements.add(getWebElement(locator))
+            }
+            screenshot = with(AShot()) {
+                shootingStrategy(ShootingStrategies.simple())
                 imageCropper(IndentCropper().addIndentFilter(IndentFilerFactory.blur()))
                 takeScreenshot(driver, webElements)
-            } else {
-                takeScreenshot(driver)
             }
+        } else {
+            val appArea = getAppArea()
+            screenshot = Screenshot(cropImage(takeScreenshot(), appArea))
+            screenshot.originShift = appArea
         }
+        screenshot.ignoredAreas = getIgnoredAreas(ignoredElements, screenshot.originShift)
         return screenshot
     }
 
-    private fun getIgnoredAreas(locators: Set<Locator>): Set<Coords> {
+    private fun takeScreenshot(): BufferedImage {
+        val inputStream = ByteArrayInputStream(driver.getScreenshotAs(OutputType.BYTES))
+        return ImageIO.read(inputStream)
+    }
+
+    private fun cropImage(image: BufferedImage, coords: Coords): BufferedImage {
+        return image.getSubimage(coords.x, coords.y, coords.width, coords.height)
+    }
+
+    private fun getAppArea(): Coords {
+        val statusBar = driver.systemBars["statusBar"]
+        val statusBarVisible = statusBar?.get("visible") as Boolean
+        val windowSize = driver.manage().window().size
+        val windowPosition = driver.manage().window().position
+
+        val x = windowPosition.x
+        var y = windowPosition.y
+        val width = windowSize.width
+        var height = windowSize.height
+
+        if (statusBarVisible) {
+            val statusBarHeight = (statusBar["height"] as Long).toInt()
+            if (y < statusBarHeight) {
+                y += statusBarHeight
+                height -= y
+            }
+        }
+
+        return Coords(x, y, width, height)
+    }
+
+    private fun getIgnoredAreas(locators: Set<Locator>, originShift: Coords): Set<Coords> {
         val ignoredAreas: HashSet<Coords> = HashSet()
         locators.forEach { locator ->
             val webElements = getWebElements(locator, onlyDisplayed = true)
             webElements.forEach { webElement ->
-                val x = webElement.location.x
-                val y = webElement.location.y
+                val x = webElement.location.x - originShift.x
+                val y = webElement.location.y - originShift.y
                 val width = webElement.size.width
                 val height = webElement.size.height
                 ignoredAreas.add(Coords(x, y, width, height))
