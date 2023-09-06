@@ -47,7 +47,7 @@ open class PageElements {
     private var parentName: String = ""
     private var parentLocator: String = ""
 
-    fun webElement(
+    fun element(
         name: String,
         locator: String,
         locatorType: LocatorType = LocatorType.XPATH,
@@ -78,18 +78,6 @@ open class PageElements {
             parentName = currentParentName
             parentLocator = currentParentLocator
         }
-    }
-
-    fun mobileElement(
-        name: String,
-        locator: String,
-        locatorType: LocatorType = LocatorType.XPATH,
-        maxSize: Int? = null,
-        allowedChars: String? = null,
-        pattern: String? = null,
-        function: (() -> Unit)? = null
-    ) {
-        webElement(name, locator, locatorType, maxSize, allowedChars, pattern, function)
     }
 
     private fun putElement(name: String, element: Element) {
