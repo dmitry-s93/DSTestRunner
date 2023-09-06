@@ -70,11 +70,14 @@ class CheckInputFieldAction(private val elementName: String) : ActionReturn(), A
     private fun checkFieldSize(): String {
         if (maxSize == null)
             return ""
-        val generatedString = RgxGen("$allowedChars{${maxSize!! * 2}}").generate()
+        val genCharsCount = maxSize!! * 2
+        val generatedString = RgxGen("$allowedChars{$genCharsCount}").generate()
         DriverSession.getSession().setValue(elementLocator!!, generatedString)
         val value = DriverSession.getSession().getElementValue(elementLocator!!)
-        if (value.length != maxSize)
-            return Localization.get("CheckFieldAction.ValueLengthIsNotAsExpected", value.length, maxSize) + "\n"
+        if (value.length != maxSize) {
+            val currentSize = if (value.length == genCharsCount) "≥${value.length}" else value.length
+            return Localization.get("CheckFieldAction.ValueLengthIsNotAsExpected", currentSize, maxSize) + "\n"
+        }
         return ""
     }
 
