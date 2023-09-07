@@ -115,7 +115,7 @@ class AndroidAppiumDriver : Driver {
         return getWebElement(locator).text
     }
 
-    override fun getScreenshot(longScreenshot: Boolean, ignoredElements: Set<Locator>, screenshotAreas: List<Locator>): Screenshot {
+    override fun getScreenshot(longScreenshot: Boolean, ignoredElements: Set<Locator>, screenshotAreas: Set<Locator>): Screenshot {
         val waitTime = ScreenshotConfig.waitTimeBeforeScreenshot
         if (waitTime > 0)
             Thread.sleep(waitTime)

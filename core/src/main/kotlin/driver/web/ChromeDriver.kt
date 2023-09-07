@@ -151,7 +151,7 @@ class ChromeDriver : Driver {
         return value ?: ""
     }
 
-    override fun getScreenshot(longScreenshot: Boolean, ignoredElements: Set<Locator>, screenshotAreas: List<Locator>): Screenshot {
+    override fun getScreenshot(longScreenshot: Boolean, ignoredElements: Set<Locator>, screenshotAreas: Set<Locator>): Screenshot {
         ScreenshotConfig.executeJavaScriptBeforeScreenshot?.let { executeJavaScript(it) }
         executeJavaScript("""
             window.scrollTo(0, 0);
