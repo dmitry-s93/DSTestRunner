@@ -30,7 +30,7 @@ interface Driver {
     fun getScreenshot(
         longScreenshot: Boolean = false,
         ignoredElements: Set<Locator> = HashSet(),
-        screenshotAreas: List<Locator> = arrayListOf()
+        screenshotAreas: Set<Locator> = HashSet()
     ): Screenshot
     fun setPage(url: String)
     fun setValue(locator: Locator, value: String, sequenceMode: Boolean = false)
