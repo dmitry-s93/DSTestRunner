@@ -16,6 +16,7 @@
 
 package driver.mobile
 
+import com.google.common.collect.ImmutableMap
 import config.AppiumDriverConfig
 import config.PreloaderConfig
 import config.ScreenshotConfig
@@ -116,6 +117,7 @@ class AndroidAppiumDriver : Driver {
     }
 
     override fun getScreenshot(longScreenshot: Boolean, ignoredElements: Set<Locator>, screenshotAreas: Set<Locator>): Screenshot {
+        hideKeyboard()
         val waitTime = ScreenshotConfig.waitTimeBeforeScreenshot
         if (waitTime > 0)
             Thread.sleep(waitTime)
@@ -235,15 +237,20 @@ class AndroidAppiumDriver : Driver {
         webElement.clear()
         if (sequenceMode) {
             webElement.click()
-            value.forEach {
-                Actions(driver).sendKeys(it.toString()).perform()
-                Thread.sleep(50)
-            }
-            driver.hideKeyboard()
+            driver.executeScript("mobile: type", ImmutableMap.of("text", value));
+            hideKeyboard()
             return
         }
         webElement.sendKeys(value)
-        driver.hideKeyboard()
+    }
+
+    private fun hideKeyboard() {
+        try {
+            if (driver.isKeyboardShown)
+                driver.hideKeyboard()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     override fun setSelectValue(locator: Locator, value: String) {
