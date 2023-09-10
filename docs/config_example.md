@@ -85,15 +85,19 @@
     "currentScreenshotDir": "/home/user/Screenshots/Android/current"
   },
   "AppiumDriver": {
-    "remoteAddress": "http://localhost:4723/wd/hub",
+    "remoteAddress": "http://localhost:4723",
     "pageLoadTimeout": 20000,
     "elementTimeout": 10000,
     "DesiredCapabilities": {
-      "deviceName": "Android_13",
-      "platformName": "Android",
-      "platformVersion": "13.0",
-      "udid": "emulator-5554",
-      "app": "/home/user/Android/apk/some-app.apk"
+      "appium:deviceName": "Android_13",
+      "appium:platformName": "Android",
+      "appium:platformVersion": "13.0",
+      "appium:udid": "emulator-5554",
+      "appium:app": "/home/user/Android/apk/some-app.apk",
+      "appium:automationName": "UIAutomator2",
+      "appium:fullReset": true,
+      "appium:enableMultiWindows": true,
+      "appium:newCommandTimeout": 90
     }
   },
   "DatabaseList": {
