@@ -16,6 +16,7 @@
 
 package driver.mobile
 
+import action.helper.Direction
 import com.google.common.collect.ImmutableMap
 import config.AppiumDriverConfig
 import config.PreloaderConfig
@@ -24,6 +25,7 @@ import driver.Driver
 import io.appium.java_client.AppiumBy.ByAccessibilityId
 import io.appium.java_client.AppiumBy.ByAndroidUIAutomator
 import io.appium.java_client.android.AndroidDriver
+import logger.Logger
 import org.awaitility.Awaitility
 import org.awaitility.core.ConditionTimeoutException
 import org.openqa.selenium.By
@@ -31,6 +33,8 @@ import org.openqa.selenium.OutputType
 import org.openqa.selenium.StaleElementReferenceException
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.interactions.Actions
+import org.openqa.selenium.interactions.PointerInput
+import org.openqa.selenium.interactions.Sequence
 import pazone.ashot.AShot
 import pazone.ashot.Screenshot
 import pazone.ashot.ShootingStrategies
@@ -84,7 +88,7 @@ class AndroidAppiumDriver : Driver {
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(pageLoadTimeout))
                 .until {
-                    (identifier == null || getWebElements(identifier, false).isNotEmpty()) && !isPreloaderDisplayed()
+                    (identifier == null || getWebElements(identifier, scrollToFind = false).isNotEmpty()) && !isPreloaderDisplayed()
                 }
             true
         } catch (e: ConditionTimeoutException) {
@@ -94,7 +98,7 @@ class AndroidAppiumDriver : Driver {
 
     private fun isPreloaderDisplayed(): Boolean {
         preloaderElements.forEach { locator ->
-            if (getWebElements(locator, true).isNotEmpty())
+            if (getWebElements(locator, scrollToFind = false).isNotEmpty())
                 return true
         }
         return false
@@ -175,7 +179,7 @@ class AndroidAppiumDriver : Driver {
     private fun getIgnoredAreas(locators: Set<Locator>, originShift: Coords): Set<Coords> {
         val ignoredAreas: HashSet<Coords> = HashSet()
         locators.forEach { locator ->
-            val webElements = getWebElements(locator, onlyDisplayed = true)
+            val webElements = getWebElements(locator, scrollToFind = false)
             webElements.forEach { webElement ->
                 val x = webElement.location.x - originShift.x
                 val y = webElement.location.y - originShift.y
@@ -196,7 +200,7 @@ class AndroidAppiumDriver : Driver {
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(elementTimeout))
                 .until {
-                    val elements = getWebElements(locator, true)
+                    val elements = getWebElements(locator, scrollToFind = true)
                     if (elements.isNotEmpty()) {
                         element = elements[0]
                         return@until true
@@ -209,10 +213,28 @@ class AndroidAppiumDriver : Driver {
         return driver.findElement(byDetect(locator))
     }
 
-    private fun getWebElements(locator: Locator, onlyDisplayed: Boolean): List<WebElement> {
-        val elements = driver.findElements(byDetect(locator))
-        if (onlyDisplayed)
-            return elements.filter { it.isDisplayed }
+    private fun getWebElements(locator: Locator, scrollToFind: Boolean): List<WebElement> {
+        var elements = driver.findElements(byDetect(locator))
+        if (!scrollToFind)
+            return elements
+        var swipeCount = 0
+        var direction = Direction.DOWN
+        while (elements.isEmpty()) {
+            if (swipeCount >= 10)
+                break
+            val elBefore = driver.findElements(By.xpath("//*"))
+            scroll(direction)
+            val elAfter = driver.findElements(By.xpath("//*"))
+            if (elBefore == elAfter) {
+                direction = when(direction) {
+                    Direction.UP -> Direction.DOWN
+                    Direction.DOWN -> Direction.UP
+                }
+            }
+            elements = driver.findElements(byDetect(locator))
+            swipeCount++
+        }
+
         return elements
     }
 
@@ -226,6 +248,59 @@ class AndroidAppiumDriver : Driver {
             LocatorType.ANDROID_UI_AUTOMATOR -> ByAndroidUIAutomator(locator.value)
             null -> By.xpath(locator.value)
         }
+    }
+
+    private fun scroll(direction: Direction) {
+        val scrollableArea = getScrollableArea() ?: return
+
+        val centerX = (scrollableArea.width / 2) + scrollableArea.x
+        val startY: Int
+        val endY: Int
+
+        when(direction) {
+            Direction.UP -> {
+                startY = scrollableArea.y + scrollableArea.height
+                endY = scrollableArea.y
+            }
+            Direction.DOWN -> {
+                startY = scrollableArea.y
+                endY = scrollableArea.y + scrollableArea.height
+            }
+        }
+
+        swipe(Duration.ofMillis(1000), centerX, startY, centerX, endY)
+    }
+
+    private fun swipe(duration: Duration, startX: Int, startY: Int, endX: Int, endY: Int) {
+        val finger = PointerInput(PointerInput.Kind.TOUCH, "finger")
+        val swipe = Sequence(finger, 1)
+        swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY))
+        swipe.addAction(finger.createPointerDown(0))
+        swipe.addAction(finger.createPointerMove(duration, PointerInput.Origin.viewport(), endX, endY))
+        swipe.addAction(finger.createPointerUp(0))
+        driver.perform(listOf(swipe))
+    }
+
+    private fun getScrollableArea(): Coords? {
+        val scrollableElements = driver.findElements(By.xpath("//*[@scrollable='true']"))
+        if (scrollableElements.isEmpty()) {
+            Logger.warning("Scrollable elements not found", "scroll")
+            return null
+        }
+        val scrollable = scrollableElements[0]
+        val appArea = getAppArea()
+
+        val x = scrollable.location.x
+        var y = scrollable.location.y
+        val width = scrollable.size.width
+        var height = scrollable.size.height
+
+        if (y < appArea.y) {
+            height -= (appArea.y - y)
+            y = appArea.y
+        }
+
+        return Coords(x, y, width, height)
     }
 
     override fun setPage(url: String) {
@@ -268,7 +343,7 @@ class AndroidAppiumDriver : Driver {
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(elementTimeout))
-                .until { getWebElements(locator, true).isNotEmpty() }
+                .until { getWebElements(locator, scrollToFind = true).isNotEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
             false
@@ -282,7 +357,7 @@ class AndroidAppiumDriver : Driver {
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(elementTimeout))
-                .until { getWebElements(locator, true).isEmpty() }
+                .until { getWebElements(locator, scrollToFind = true).isEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
             false
