@@ -15,6 +15,7 @@
 
 package driver
 
+import action.helper.Direction
 import pazone.ashot.Screenshot
 import test.element.Locator
 import java.awt.Point
@@ -39,5 +40,7 @@ interface Driver {
     fun isExist(locator: Locator): Boolean
     fun isNotExist(locator: Locator): Boolean
     fun executeJavaScript(script: String, vararg args: Any?): Any?
+    fun swipeElement(locator: Locator, direction: Direction)
+    fun navigateBack()
     fun quit()
 }

@@ -17,7 +17,6 @@
 package driver.mobile
 
 import action.helper.Direction
-import com.google.common.collect.ImmutableMap
 import config.AppiumDriverConfig
 import config.PreloaderConfig
 import config.ScreenshotConfig
@@ -28,10 +27,7 @@ import io.appium.java_client.android.AndroidDriver
 import logger.Logger
 import org.awaitility.Awaitility
 import org.awaitility.core.ConditionTimeoutException
-import org.openqa.selenium.By
-import org.openqa.selenium.OutputType
-import org.openqa.selenium.StaleElementReferenceException
-import org.openqa.selenium.WebElement
+import org.openqa.selenium.*
 import org.openqa.selenium.interactions.Actions
 import org.openqa.selenium.interactions.PointerInput
 import org.openqa.selenium.interactions.Sequence
@@ -58,9 +54,11 @@ class AndroidAppiumDriver : Driver {
     private val elementTimeout: Long = AppiumDriverConfig.elementTimeout
     private val poolDelay: Long = 50
     private val preloaderElements: List<Locator> = PreloaderConfig.elements
+    private val unsupportedOperationMessage = "Operation not supported"
 
     init {
-        driver = AndroidDriver(URL(AppiumDriverConfig.remoteAddress), AppiumDriverConfig.desiredCapabilities)
+        val remoteAddress = URL(AppiumDriverConfig.remoteAddress)
+        driver = AndroidDriver(remoteAddress, AppiumDriverConfig.desiredCapabilities)
         driver.manage().timeouts().implicitlyWait(Duration.ofMillis(0))
     }
 
@@ -88,7 +86,7 @@ class AndroidAppiumDriver : Driver {
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(pageLoadTimeout))
                 .until {
-                    (identifier == null || getWebElements(identifier, scrollToFind = false).isNotEmpty()) && !isPreloaderDisplayed()
+                    (identifier == null || getWebElements(identifier, scrollToFind = true).isNotEmpty()) && !isPreloaderDisplayed()
                 }
             true
         } catch (e: ConditionTimeoutException) {
@@ -102,18 +100,6 @@ class AndroidAppiumDriver : Driver {
                 return true
         }
         return false
-    }
-
-    override fun switchToWindow(url: String?): Boolean {
-        throw UnsupportedOperationException("Operation not supported")
-    }
-
-    override fun closeWindow(url: String?): Boolean {
-        throw UnsupportedOperationException("Operation not supported")
-    }
-
-    override fun getCurrentUrl(): String {
-        throw UnsupportedOperationException("Operation not supported")
     }
 
     override fun getElementValue(locator: Locator): String {
@@ -207,15 +193,15 @@ class AndroidAppiumDriver : Driver {
                     }
                     return@until false
                 }
-        } catch (_: ConditionTimeoutException) {}
-        if (element != null)
-            return element as WebElement
-        return driver.findElement(byDetect(locator))
+        } catch (_: ConditionTimeoutException) {
+            return driver.findElement(byDetect(locator))
+        }
+        return element as WebElement
     }
 
     private fun getWebElements(locator: Locator, scrollToFind: Boolean): List<WebElement> {
         var elements = driver.findElements(byDetect(locator))
-        if (!scrollToFind)
+        if (elements.isNotEmpty() || !scrollToFind)
             return elements
         var swipeCount = 0
         var direction = Direction.DOWN
@@ -223,11 +209,12 @@ class AndroidAppiumDriver : Driver {
             if (swipeCount >= 10)
                 break
             val elBefore = driver.findElements(By.xpath("//*"))
-            scroll(direction)
+            if (!scroll(direction))
+                break
             val elAfter = driver.findElements(By.xpath("//*"))
             if (elBefore == elAfter) {
                 direction = when(direction) {
-                    Direction.UP -> Direction.DOWN
+                    Direction.UP -> break
                     Direction.DOWN -> Direction.UP
                 }
             }
@@ -250,8 +237,8 @@ class AndroidAppiumDriver : Driver {
         }
     }
 
-    private fun scroll(direction: Direction) {
-        val scrollableArea = getScrollableArea() ?: return
+    private fun scroll(direction: Direction): Boolean {
+        val scrollableArea = getScrollableArea() ?: return false
 
         val centerX = (scrollableArea.width / 2) + scrollableArea.x
         val startY: Int
@@ -269,6 +256,7 @@ class AndroidAppiumDriver : Driver {
         }
 
         swipe(Duration.ofMillis(1000), centerX, startY, centerX, endY)
+        return true
     }
 
     private fun swipe(duration: Duration, startX: Int, startY: Int, endX: Int, endY: Int) {
@@ -283,10 +271,8 @@ class AndroidAppiumDriver : Driver {
 
     private fun getScrollableArea(): Coords? {
         val scrollableElements = driver.findElements(By.xpath("//*[@scrollable='true']"))
-        if (scrollableElements.isEmpty()) {
-            Logger.warning("Scrollable elements not found", "scroll")
+        if (scrollableElements.isEmpty())
             return null
-        }
         val scrollable = scrollableElements[0]
         val appArea = getAppArea()
 
@@ -303,16 +289,12 @@ class AndroidAppiumDriver : Driver {
         return Coords(x, y, width, height)
     }
 
-    override fun setPage(url: String) {
-        throw UnsupportedOperationException("Operation not supported")
-    }
-
     override fun setValue(locator: Locator, value: String, sequenceMode: Boolean) {
         val webElement = getWebElement(locator)
         webElement.clear()
         if (sequenceMode) {
             webElement.click()
-            driver.executeScript("mobile: type", ImmutableMap.of("text", value));
+            driver.executeScript("mobile: type", mapOf(Pair("text", value)))
             hideKeyboard()
             return
         }
@@ -323,17 +305,17 @@ class AndroidAppiumDriver : Driver {
         try {
             if (driver.isKeyboardShown)
                 driver.hideKeyboard()
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (e: WebDriverException) {
+            if (e.rawMessage.contains("The software keyboard cannot be hidden")) {
+                Logger.debug("The software keyboard cannot be hidden", "hideKeyboard")
+            } else {
+                throw e
+            }
         }
     }
 
     override fun setSelectValue(locator: Locator, value: String) {
         TODO("Not yet implemented")
-    }
-
-    override fun uploadFile(locator: Locator, file: String) {
-        throw UnsupportedOperationException("Operation not supported")
     }
 
     override fun isExist(locator: Locator): Boolean {
@@ -346,7 +328,7 @@ class AndroidAppiumDriver : Driver {
                 .until { getWebElements(locator, scrollToFind = true).isNotEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
-            false
+            getWebElements(locator, scrollToFind = false).isNotEmpty()
         }
     }
 
@@ -360,15 +342,43 @@ class AndroidAppiumDriver : Driver {
                 .until { getWebElements(locator, scrollToFind = true).isEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
-            false
+            getWebElements(locator, scrollToFind = false).isEmpty()
         }
     }
 
-    override fun executeJavaScript(script: String, vararg args: Any?): Any? {
-        throw UnsupportedOperationException("Operation not supported")
+    override fun swipeElement(locator: Locator, direction: Direction) {
+        TODO("Not yet implemented")
+    }
+
+    override fun navigateBack() {
+        driver.navigate().back()
     }
 
     override fun quit() {
         driver.quit()
+    }
+
+    override fun switchToWindow(url: String?): Boolean {
+        throw UnsupportedOperationException(unsupportedOperationMessage)
+    }
+
+    override fun closeWindow(url: String?): Boolean {
+        throw UnsupportedOperationException(unsupportedOperationMessage)
+    }
+
+    override fun getCurrentUrl(): String {
+        throw UnsupportedOperationException(unsupportedOperationMessage)
+    }
+
+    override fun setPage(url: String) {
+        throw UnsupportedOperationException(unsupportedOperationMessage)
+    }
+
+    override fun uploadFile(locator: Locator, file: String) {
+        throw UnsupportedOperationException(unsupportedOperationMessage)
+    }
+
+    override fun executeJavaScript(script: String, vararg args: Any?): Any? {
+        throw UnsupportedOperationException(unsupportedOperationMessage)
     }
 }

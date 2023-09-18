@@ -15,6 +15,7 @@
 
 package driver.web
 
+import action.helper.Direction
 import config.BrowserOptionsConfig
 import config.PreloaderConfig
 import config.ScreenshotConfig
@@ -303,7 +304,15 @@ class ChromeDriver : Driver {
         return js.executeScript(script, *args)
     }
 
+    override fun navigateBack() {
+        driver.navigate().back()
+    }
+
     override fun quit() {
         driver.quit()
+    }
+
+    override fun swipeElement(locator: Locator, direction: Direction) {
+        throw UnsupportedOperationException("Operation not supported")
     }
 }
