@@ -206,7 +206,7 @@ class AndroidAppiumDriver : Driver {
         var swipeCount = 0
         var direction = Direction.DOWN
         while (elements.isEmpty()) {
-            if (swipeCount >= 10)
+            if (swipeCount >= 20)
                 break
             val elBefore = driver.findElements(By.xpath("//*"))
             if (!scroll(direction))
@@ -255,7 +255,7 @@ class AndroidAppiumDriver : Driver {
             }
         }
 
-        swipe(Duration.ofMillis(1000), centerX, startY, centerX, endY)
+        swipe(Duration.ofMillis(500), centerX, startY, centerX, endY)
         return true
     }
 
@@ -274,17 +274,11 @@ class AndroidAppiumDriver : Driver {
         if (scrollableElements.isEmpty())
             return null
         val scrollable = scrollableElements[0]
-        val appArea = getAppArea()
 
         val x = scrollable.location.x
-        var y = scrollable.location.y
+        val y = scrollable.location.y + (scrollable.size.height / 4)
         val width = scrollable.size.width
-        var height = scrollable.size.height
-
-        if (y < appArea.y) {
-            height -= (appArea.y - y)
-            y = appArea.y
-        }
+        val height = scrollable.size.height / 2
 
         return Coords(x, y, width, height)
     }
