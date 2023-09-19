@@ -61,6 +61,7 @@ class ChromeDriver : Driver {
     override fun click(locator: Locator, points: ArrayList<Point>?) {
         val element = getWebElement(locator)
         if (points.isNullOrEmpty()) {
+            executeJavaScript("arguments[0].scrollIntoView();", element)
             element.click()
         } else {
             with (Actions(driver)) {
