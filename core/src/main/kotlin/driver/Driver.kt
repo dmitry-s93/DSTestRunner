@@ -21,26 +21,52 @@ import test.element.Locator
 import java.awt.Point
 import java.util.ArrayList
 
+private const val notImplementedMessage = "Method not implemented for this driver instance"
+
 interface Driver {
     fun click(locator: Locator, points: ArrayList<Point>? = null)
     fun checkLoadPage(url: String?, identifier: Locator?): Boolean
-    fun switchToWindow(url: String?): Boolean
-    fun closeWindow(url: String?): Boolean
-    fun getCurrentUrl(): String
     fun getElementValue(locator: Locator): String
     fun getScreenshot(
         longScreenshot: Boolean = false,
         ignoredElements: Set<Locator> = HashSet(),
         screenshotAreas: Set<Locator> = HashSet()
     ): Screenshot
-    fun setPage(url: String)
     fun setValue(locator: Locator, value: String, sequenceMode: Boolean = false)
     fun setSelectValue(locator: Locator, value: String)
-    fun uploadFile(locator: Locator, file: String)
     fun isExist(locator: Locator): Boolean
     fun isNotExist(locator: Locator): Boolean
-    fun executeJavaScript(script: String, vararg args: Any?): Any?
-    fun swipeElement(locator: Locator, direction: Direction)
     fun navigateBack()
     fun quit()
+
+    // Web only
+    fun setPage(url: String) {
+        throw NotImplementedError(notImplementedMessage)
+    }
+    fun switchToWindow(url: String?): Boolean {
+        throw NotImplementedError(notImplementedMessage)
+    }
+    fun closeWindow(url: String?): Boolean {
+        throw NotImplementedError(notImplementedMessage)
+    }
+    fun getCurrentUrl(): String {
+        throw NotImplementedError(notImplementedMessage)
+    }
+    fun uploadFile(locator: Locator, file: String) {
+        throw NotImplementedError(notImplementedMessage)
+    }
+    fun executeJavaScript(script: String, vararg args: Any?): Any? {
+        throw NotImplementedError(notImplementedMessage)
+    }
+    fun hoverOverElement(locator: Locator) {
+        throw NotImplementedError(notImplementedMessage)
+    }
+
+    // Mobile only
+    fun swipeElement(locator: Locator, direction: Direction) {
+        throw NotImplementedError(notImplementedMessage)
+    }
+    fun hideKeyboard() {
+        throw NotImplementedError(notImplementedMessage)
+    }
 }

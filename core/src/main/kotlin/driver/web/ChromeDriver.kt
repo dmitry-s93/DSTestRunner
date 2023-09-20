@@ -15,7 +15,6 @@
 
 package driver.web
 
-import action.helper.Direction
 import config.BrowserOptionsConfig
 import config.PreloaderConfig
 import config.ScreenshotConfig
@@ -61,7 +60,7 @@ class ChromeDriver : Driver {
     override fun click(locator: Locator, points: ArrayList<Point>?) {
         val element = getWebElement(locator)
         if (points.isNullOrEmpty()) {
-            executeJavaScript("arguments[0].scrollIntoView();", element)
+            executeJavaScript("arguments[0].scrollIntoView({block: 'center'});", element)
             element.click()
         } else {
             with (Actions(driver)) {
@@ -305,15 +304,15 @@ class ChromeDriver : Driver {
         return js.executeScript(script, *args)
     }
 
+    override fun hoverOverElement(locator: Locator) {
+        TODO("Not yet implemented")
+    }
+
     override fun navigateBack() {
         driver.navigate().back()
     }
 
     override fun quit() {
         driver.quit()
-    }
-
-    override fun swipeElement(locator: Locator, direction: Direction) {
-        throw UnsupportedOperationException("Operation not supported")
     }
 }
