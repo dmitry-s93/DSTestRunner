@@ -22,7 +22,6 @@ class TestLogger {
     companion object {
         fun log(id: String, parentId: String, testName: String, actionResult: ActionResult) {
             val result = actionResult.getStatus()
-            val message = actionResult.getMessage()
 
             val ansiColor = when (result) {
                 ActionStatus.PASSED -> Color.ANSI_BRIGHT_GREEN
@@ -30,11 +29,18 @@ class TestLogger {
                 ActionStatus.BROKEN -> Color.ANSI_BRIGHT_YELLOW
             }
 
-            var errorPart = ""
-            if (message != null)
-                errorPart = "\n${ansiColor}$message${Color.ANSI_RESET}"
+            var message = ""
+            actionResult.getMessage()?.let {
+                message = "\n${ansiColor}$it${Color.ANSI_RESET}"
+            }
 
-            println("${Logger.getTime()} ${Logger.getThreadId()} $ansiColor$result${Color.ANSI_RESET} --> ${Color.ANSI_BRIGHT_CYAN}$parentId.$id${Color.ANSI_RESET} : ${Color.ANSI_BRIGHT_CYAN}$testName${Color.ANSI_RESET}$errorPart")
+            val dateTime = Logger.getTime()
+            val threadId = Logger.getThreadId()
+            val stepResult = ansiColor + result + Color.ANSI_RESET
+            val stepId = Color.ANSI_BRIGHT_CYAN + parentId + "." + id + Color.ANSI_RESET
+            val stepName = Color.ANSI_BRIGHT_CYAN + testName + Color.ANSI_RESET
+
+            println("$dateTime $threadId $stepResult --> $stepId : $stepName$message")
         }
     }
 }

@@ -216,6 +216,7 @@ class AndroidAppiumDriver : Driver {
                 direction = when(direction) {
                     Direction.UP -> break
                     Direction.DOWN -> Direction.UP
+                    else -> break
                 }
             }
             elements = driver.findElements(byDetect(locator))
@@ -252,6 +253,9 @@ class AndroidAppiumDriver : Driver {
             Direction.DOWN -> {
                 startY = scrollableArea.y
                 endY = scrollableArea.y + scrollableArea.height
+            }
+            else -> {
+                return false
             }
         }
 
@@ -295,7 +299,7 @@ class AndroidAppiumDriver : Driver {
         webElement.sendKeys(value)
     }
 
-    private fun hideKeyboard() {
+    override fun hideKeyboard() {
         try {
             if (driver.isKeyboardShown)
                 driver.hideKeyboard()
@@ -350,29 +354,5 @@ class AndroidAppiumDriver : Driver {
 
     override fun quit() {
         driver.quit()
-    }
-
-    override fun switchToWindow(url: String?): Boolean {
-        throw UnsupportedOperationException(unsupportedOperationMessage)
-    }
-
-    override fun closeWindow(url: String?): Boolean {
-        throw UnsupportedOperationException(unsupportedOperationMessage)
-    }
-
-    override fun getCurrentUrl(): String {
-        throw UnsupportedOperationException(unsupportedOperationMessage)
-    }
-
-    override fun setPage(url: String) {
-        throw UnsupportedOperationException(unsupportedOperationMessage)
-    }
-
-    override fun uploadFile(locator: Locator, file: String) {
-        throw UnsupportedOperationException(unsupportedOperationMessage)
-    }
-
-    override fun executeJavaScript(script: String, vararg args: Any?): Any? {
-        throw UnsupportedOperationException(unsupportedOperationMessage)
     }
 }
