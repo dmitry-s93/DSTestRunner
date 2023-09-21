@@ -29,20 +29,22 @@ import java.util.*
 
 class ClickAction(private val elementName: String) : ActionReturn(), Action {
     private var elementLocator: Locator? = null
+    private var elementDisplayName: String = elementName
     private val locatorArguments = ArrayList<String>()
     private val clickPoints = ArrayList<Point>()
 
     override fun getName(): String {
-        return Localization.get("ClickAction.DefaultName", elementName)
+        return Localization.get("ClickAction.DefaultName", elementDisplayName)
     }
 
     override fun execute(): ActionResult {
         try {
             val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
-            if (!pageData.isElementExist(elementName))
-                return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.getPageName()))
-            elementLocator = pageData.getElement(elementName)?.getLocator()?.withReplaceArgs(*locatorArguments.toArray())
-            if (elementLocator == null || elementLocator!!.value.isEmpty())
+            val element = pageData.getElement(elementName)
+                ?: return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.getPageName()))
+            element.getDisplayName()?.let { elementDisplayName = it }
+            elementLocator = element.getLocator().withReplaceArgs(*locatorArguments.toArray())
+            if (elementLocator!!.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
             DriverSession.getSession().click(elementLocator!!, clickPoints)
         } catch (e: Exception) {

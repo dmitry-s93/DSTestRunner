@@ -16,7 +16,6 @@
 package test.page
 
 import config.WebDriverConfig
-import logger.Logger
 import test.element.Locator
 import java.net.URI
 
@@ -60,14 +59,9 @@ class PageData(
     }
 
     fun getElement(elementName: String): Element? {
-        if (elements != null && isElementExist(elementName))
+        if (elements != null && elements.containsKey(elementName))
             return elements[elementName]
-        Logger.warning("Element '$elementName' is not set in '$pageName' page")
         return null
-    }
-
-    fun isElementExist(elementName: String): Boolean {
-        return elements?.containsKey(elementName) ?: false
     }
 
     fun getWorkArea(): Locator? {

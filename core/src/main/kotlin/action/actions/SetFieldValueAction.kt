@@ -28,20 +28,22 @@ import test.element.Locator
 class SetFieldValueAction(private val fieldName: String, value: String) : ActionReturn(), Action {
     private val value: String = ValueStorage.replace(value)
     private var elementLocator: Locator? = null
+    private var elementDisplayName: String = fieldName
     private var sequenceMode: Boolean = false
     private val locatorArguments = ArrayList<String>()
 
     override fun getName(): String {
-        return Localization.get("SetFieldValueAction.DefaultName", value, fieldName)
+        return Localization.get("SetFieldValueAction.DefaultName", value, elementDisplayName)
     }
 
     override fun execute(): ActionResult {
         try {
             val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
-            if (!pageData.isElementExist(fieldName))
-                return broke(Localization.get("General.ElementIsNotSetOnPage", fieldName, pageData.getPageName()))
-            elementLocator = pageData.getElement(fieldName)?.getLocator()?.withReplaceArgs(*locatorArguments.toArray())
-            if (elementLocator == null || elementLocator!!.value.isEmpty())
+            val element = pageData.getElement(fieldName)
+                ?: return broke(Localization.get("General.ElementIsNotSetOnPage", fieldName, pageData.getPageName()))
+            element.getDisplayName()?.let { elementDisplayName = it }
+            elementLocator = element.getLocator().withReplaceArgs(*locatorArguments.toArray())
+            if (elementLocator!!.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
             DriverSession.getSession().setValue(elementLocator!!, value, sequenceMode)
         } catch (e: Exception) {

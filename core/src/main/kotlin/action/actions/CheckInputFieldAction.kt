@@ -29,6 +29,7 @@ import test.element.Locator
 
 class CheckInputFieldAction(private val elementName: String) : ActionReturn(), Action {
     private var elementLocator: Locator? = null
+    private var elementDisplayName: String = elementName
     private val locatorArguments = ArrayList<String>()
 
     var maxSize: Int? = null
@@ -36,22 +37,22 @@ class CheckInputFieldAction(private val elementName: String) : ActionReturn(), A
     var allowedChars: String? = null
 
     override fun getName(): String {
-        return Localization.get("CheckFieldAction.DefaultName", elementName)
+        return Localization.get("CheckFieldAction.DefaultName", elementDisplayName)
     }
 
     override fun execute(): ActionResult {
         try {
             val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
-            if (!pageData.isElementExist(elementName))
-                return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.getPageName()))
-            val webElement = pageData.getElement(elementName)
-            elementLocator = webElement?.getLocator()?.withReplaceArgs(*locatorArguments.toArray())
-            if (elementLocator == null || elementLocator!!.value.isEmpty())
+            val element = pageData.getElement(elementName)
+                ?: return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.getPageName()))
+            element.getDisplayName()?.let { elementDisplayName = it }
+            elementLocator = element.getLocator().withReplaceArgs(*locatorArguments.toArray())
+            if (elementLocator!!.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
 
-            if (maxSize == null) maxSize = webElement?.getMaxSize()
-            if (pattern == null) pattern = webElement?.getPattern()
-            if (allowedChars.isNullOrEmpty()) allowedChars = webElement?.getAllowedChars()
+            if (maxSize == null) maxSize = element.getMaxSize()
+            if (pattern == null) pattern = element.getPattern()
+            if (allowedChars.isNullOrEmpty()) allowedChars = element.getAllowedChars()
             if (allowedChars.isNullOrEmpty())
                 allowedChars = "."
             else

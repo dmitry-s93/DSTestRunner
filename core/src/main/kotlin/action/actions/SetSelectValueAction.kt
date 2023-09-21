@@ -28,19 +28,21 @@ import test.element.Locator
 class SetSelectValueAction(private val elementName: String, value: String) : ActionReturn(), Action {
     private val value: String = ValueStorage.replace(value)
     private var elementLocator: Locator? = null
+    private var elementDisplayName: String = elementName
     private val locatorArguments = ArrayList<String>()
 
     override fun getName(): String {
-        return Localization.get("SetSelectValueAction.DefaultName", value, elementName)
+        return Localization.get("SetSelectValueAction.DefaultName", value, elementDisplayName)
     }
 
     override fun execute(): ActionResult {
         try {
             val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
-            if (!pageData.isElementExist(elementName))
-                return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.getPageName()))
-            elementLocator = pageData.getElement(elementName)?.getLocator()?.withReplaceArgs(*locatorArguments.toArray())
-            if (elementLocator == null || elementLocator!!.value.isEmpty())
+            val element = pageData.getElement(elementName)
+                ?: return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.getPageName()))
+            element.getDisplayName()?.let { elementDisplayName = it }
+            elementLocator = element.getLocator().withReplaceArgs(*locatorArguments.toArray())
+            if (elementLocator!!.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
             DriverSession.getSession().setSelectValue(elementLocator!!, value)
         } catch (e: Exception) {
