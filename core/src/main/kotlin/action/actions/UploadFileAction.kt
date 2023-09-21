@@ -29,19 +29,21 @@ import java.io.File
 class UploadFileAction(private val fieldName: String, filePath: String) : ActionReturn(), Action {
     private val file: String = ValueStorage.replace(filePath)
     private var elementLocator: Locator? = null
+    private var elementDisplayName: String = fieldName
     private val locatorArguments = ArrayList<String>()
 
     override fun getName(): String {
-        return Localization.get("UploadFileAction.DefaultName", File(file).name, fieldName)
+        return Localization.get("UploadFileAction.DefaultName", File(file).name, elementDisplayName)
     }
 
     override fun execute(): ActionResult {
         try {
             val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
-            if (!pageData.isElementExist(fieldName))
-                return broke(Localization.get("General.ElementIsNotSetOnPage", fieldName, pageData.getPageName()))
-            elementLocator = pageData.getElement(fieldName)?.getLocator()?.withReplaceArgs(*locatorArguments.toArray())
-            if (elementLocator == null || elementLocator!!.value.isEmpty())
+            val element = pageData.getElement(fieldName)
+                ?: return broke(Localization.get("General.ElementIsNotSetOnPage", fieldName, pageData.getPageName()))
+            element.getDisplayName()?.let { elementDisplayName = it }
+            elementLocator = element.getLocator().withReplaceArgs(*locatorArguments.toArray())
+            if (elementLocator!!.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
             DriverSession.getSession().uploadFile(elementLocator!!, file)
         } catch (e: Exception) {

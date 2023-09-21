@@ -21,12 +21,17 @@ import test.element.LocatorType
 
 class Element(
     private val locator: Locator,
+    private val displayName: String? = null,
     private val maxSize: Int? = null,
     private val allowedChars: String? = null,
     private val pattern: String? = null
 ) {
     fun getLocator(): Locator {
         return locator
+    }
+
+    fun getDisplayName(): String? {
+        return displayName
     }
 
     fun getMaxSize(): Int? {
@@ -51,17 +56,18 @@ open class PageElements {
         name: String,
         locator: String,
         locatorType: LocatorType = LocatorType.XPATH,
+        displayName: String? = null,
         maxSize: Int? = null,
         allowedChars: String? = null,
         pattern: String? = null,
         function: (() -> Unit)? = null
     ) {
         if (parentName.isEmpty())
-            putElement(name, Element(Locator(locator, locatorType), maxSize, allowedChars, pattern))
+            putElement(name, Element(Locator(locator, locatorType), displayName, maxSize, allowedChars, pattern))
         else
             putElement(
                 "$parentName.$name",
-                Element(Locator(parentLocator + locator, locatorType), maxSize, allowedChars, pattern)
+                Element(Locator(parentLocator + locator, locatorType), displayName, maxSize, allowedChars, pattern)
             )
         if (function != null) {
             if (locatorType != LocatorType.XPATH) {

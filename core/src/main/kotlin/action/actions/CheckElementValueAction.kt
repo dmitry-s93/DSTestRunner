@@ -27,21 +27,23 @@ import test.element.Locator
 
 class CheckElementValueAction(private val elementName: String, expectedValue: String) : ActionReturn(), Action {
     private var elementLocator: Locator? = null
+    private var elementDisplayName: String = elementName
     private val expectedValue: String = ValueStorage.replace(expectedValue)
     private var elementValue: String? = null
     private val locatorArguments = ArrayList<String>()
 
     override fun getName(): String {
-        return Localization.get("CheckElementValueAction.DefaultName", elementName)
+        return Localization.get("CheckElementValueAction.DefaultName", elementDisplayName)
     }
 
     override fun execute(): ActionResult {
         try {
             val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
-            if (!pageData.isElementExist(elementName))
-                return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.getPageName()))
-            elementLocator = pageData.getElement(elementName)?.getLocator()?.withReplaceArgs(*locatorArguments.toArray())
-            if (elementLocator == null || elementLocator!!.value.isEmpty())
+            val element = pageData.getElement(elementName)
+                ?: return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.getPageName()))
+            element.getDisplayName()?.let { elementDisplayName = it }
+            elementLocator = element.getLocator().withReplaceArgs(*locatorArguments.toArray())
+            if (elementLocator!!.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
             elementValue = DriverSession.getSession().getElementValue(elementLocator!!)
             if (elementValue != expectedValue)
