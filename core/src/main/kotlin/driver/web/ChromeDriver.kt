@@ -299,6 +299,10 @@ class ChromeDriver : Driver {
         }
     }
 
+    override fun isEnabled(locator: Locator): Boolean {
+        return getWebElement(locator).isEnabled
+    }
+
     override fun executeJavaScript(script: String, vararg args: Any?): Any? {
         val js = driver as JavascriptExecutor
         return js.executeScript(script, *args)

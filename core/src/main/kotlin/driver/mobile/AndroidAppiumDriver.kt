@@ -344,6 +344,10 @@ class AndroidAppiumDriver : Driver {
         }
     }
 
+    override fun isEnabled(locator: Locator): Boolean {
+        return getWebElement(locator).isEnabled
+    }
+
     override fun swipeElement(locator: Locator, direction: Direction) {
         TODO("Not yet implemented")
     }
