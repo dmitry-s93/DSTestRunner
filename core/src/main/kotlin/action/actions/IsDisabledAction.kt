@@ -67,7 +67,7 @@ class IsDisabledAction(private val elementName: String) : ActionReturn(), Action
 }
 
 /**
- * Checks if element [elementName] is enabled
+ * Checks if element [elementName] is disabled
  */
 fun isDisabled(elementName: String, function: (IsDisabledAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
