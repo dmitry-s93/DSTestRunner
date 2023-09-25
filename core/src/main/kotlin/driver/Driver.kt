@@ -36,6 +36,7 @@ interface Driver {
     fun setSelectValue(locator: Locator, value: String)
     fun isExist(locator: Locator): Boolean
     fun isNotExist(locator: Locator): Boolean
+    fun isEnabled(locator: Locator): Boolean
     fun navigateBack()
     fun quit()
 
