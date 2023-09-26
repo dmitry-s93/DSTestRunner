@@ -25,6 +25,7 @@ open class PageBuilder {
     var elements: HashMap<String, Element>? = null
     var workArea: Locator? = null
     var ignoredElements: Set<Locator> = HashSet()
+    var waitTime: Long? = null
 
     fun page(name: String, function: () -> Unit) {
         urlPath = null
@@ -33,8 +34,9 @@ open class PageBuilder {
         elements = null
         workArea = null
         ignoredElements = HashSet()
+        waitTime = null
         function()
-        PageStorage.putPage(name, PageData(name, urlPath, identifier, description, elements, workArea, ignoredElements))
+        PageStorage.putPage(name, PageData(name, urlPath, identifier, description, elements, workArea, ignoredElements, waitTime))
     }
 
     fun group(name: String, function: () -> Unit) {
