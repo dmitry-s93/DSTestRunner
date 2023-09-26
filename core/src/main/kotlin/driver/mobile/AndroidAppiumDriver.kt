@@ -115,7 +115,7 @@ class AndroidAppiumDriver : Driver {
         if (screenshotAreas.isNotEmpty()) {
             val webElements: MutableList<WebElement> = mutableListOf()
             screenshotAreas.forEach { locator ->
-                webElements.add(getWebElement(locator))
+                webElements.addAll(getWebElements(locator, scrollToFind = false))
             }
             screenshot = with(AShot()) {
                 shootingStrategy(ShootingStrategies.simple())

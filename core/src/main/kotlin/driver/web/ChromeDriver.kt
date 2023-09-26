@@ -172,7 +172,7 @@ class ChromeDriver : Driver {
             if (screenshotAreas.isNotEmpty()) {
                 val webElements: MutableList<WebElement> = mutableListOf()
                 screenshotAreas.forEach { locator ->
-                    webElements.add(getWebElement(locator))
+                    webElements.addAll(getWebElements(locator, onlyDisplayed = true))
                 }
                 imageCropper(IndentCropper().addIndentFilter(blur()))
                 takeScreenshot(driver, webElements)
