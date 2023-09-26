@@ -26,7 +26,8 @@ class PageData(
     private val description: String?,
     private val elements: HashMap<String, Element>?,
     private val workArea: Locator?,
-    private val ignoredElements: Set<Locator>
+    private val ignoredElements: Set<Locator>,
+    private val waitTime: Long?
 ) {
     fun getPageName(): String {
         return pageName
@@ -70,5 +71,9 @@ class PageData(
 
     fun getIgnoredElements(): Set<Locator> {
         return ignoredElements
+    }
+
+    fun getWaitTime(): Long? {
+        return waitTime
     }
 }

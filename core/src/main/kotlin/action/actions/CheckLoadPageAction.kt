@@ -50,6 +50,7 @@ class CheckLoadPageAction(private val pageName: String) : ActionReturn(), Action
                     return broke(Localization.get("General.PageUrlNotSpecified"))
             }
             pageIdentifier = pageData.getIdentifier()
+            pageData.getWaitTime()?.let { Thread.sleep(it) }
             if (!DriverSession.getSession().checkLoadPage(pageUrl, pageIdentifier)) {
                 if (!pageUrl.isNullOrEmpty() && !DriverSession.getSession().getCurrentUrl().startsWith(pageUrl.toString()))
                     return fail(Localization.get("CheckLoadPageAction.UrlDoesNotMatch"))
