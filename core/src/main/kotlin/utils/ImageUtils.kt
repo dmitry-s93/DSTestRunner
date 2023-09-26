@@ -24,11 +24,13 @@ import config.MainConfig
 import config.ScreenshotConfig
 import pazone.ashot.Screenshot
 import pazone.ashot.comparison.ImageDiffer
+import java.awt.Graphics
 import java.awt.image.BufferedImage
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import javax.imageio.ImageIO
+import javax.swing.GrayFilter
 
 
 class ImageUtils {
@@ -89,5 +91,14 @@ class ImageUtils {
 
     private fun readImage(input: File): BufferedImage {
         return ImageIO.read(input)
+    }
+
+    private fun markIgnoredAreas(screenshot: Screenshot) {
+        val graphics: Graphics = screenshot.image.createGraphics()
+        screenshot.ignoredAreas.forEach {
+            val ignoredImage = screenshot.image.getSubimage(it.x, it.y, it.width, it.height)
+            graphics.drawImage(GrayFilter.createDisabledImage(ignoredImage), it.x, it.y, null)
+        }
+        graphics.dispose()
     }
 }
