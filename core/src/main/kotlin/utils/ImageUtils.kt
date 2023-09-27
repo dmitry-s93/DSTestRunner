@@ -50,6 +50,7 @@ class ImageUtils {
             val templateImageFile = Paths.get(templateScreenshotDir, templateImageRelativePath.toString()).toFile()
 
             val currentImage = screenData.getCurrentImage()
+            markIgnoredAreas(currentImage)
             saveImage(currentImage.image, currentImageFile)
             screenData.currentImagePath = currentImageRelativePath.toString()
 
@@ -94,10 +95,12 @@ class ImageUtils {
     }
 
     private fun markIgnoredAreas(screenshot: Screenshot) {
+        if (screenshot.ignoredAreas.isEmpty())
+            return
         val graphics: Graphics = screenshot.image.createGraphics()
-        screenshot.ignoredAreas.forEach {
-            val ignoredImage = screenshot.image.getSubimage(it.x, it.y, it.width, it.height)
-            graphics.drawImage(GrayFilter.createDisabledImage(ignoredImage), it.x, it.y, null)
+        screenshot.ignoredAreas.forEach { area ->
+            val ignoredImage = screenshot.image.getSubimage(area.x, area.y, area.width, area.height)
+            graphics.drawImage(GrayFilter.createDisabledImage(ignoredImage), area.x, area.y, null)
         }
         graphics.dispose()
     }

@@ -127,7 +127,7 @@ class AndroidAppiumDriver : Driver {
             screenshot = Screenshot(cropImage(takeScreenshot(), appArea))
             screenshot.originShift = appArea
         }
-        screenshot.ignoredAreas = getIgnoredAreas(ignoredElements, screenshot.originShift)
+        screenshot.ignoredAreas = getIgnoredAreas(ignoredElements, screenshot.originShift, screenshot.coordsToCompare)
         return screenshot
     }
 
@@ -162,7 +162,7 @@ class AndroidAppiumDriver : Driver {
         return Coords(x, y, width, height)
     }
 
-    private fun getIgnoredAreas(locators: Set<Locator>, originShift: Coords): Set<Coords> {
+    private fun getIgnoredAreas(locators: Set<Locator>, originShift: Coords, coordsToCompare: Set<Coords>): Set<Coords> {
         val ignoredAreas: HashSet<Coords> = HashSet()
         locators.forEach { locator ->
             val webElements = getWebElements(locator, scrollToFind = false)
@@ -174,7 +174,7 @@ class AndroidAppiumDriver : Driver {
                 ignoredAreas.add(Coords(x, y, width, height))
             }
         }
-        return ignoredAreas
+        return Coords.intersection(coordsToCompare, ignoredAreas)
     }
 
     private fun getWebElement(locator: Locator): WebElement {
