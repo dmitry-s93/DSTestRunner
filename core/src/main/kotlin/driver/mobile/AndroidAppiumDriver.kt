@@ -184,7 +184,7 @@ class AndroidAppiumDriver : Driver {
             ignoredAreas.addAll(getIgnoredAreas(ignoredElements, originShift, imageHeight))
         }
 
-        var bufferedImage = concatImageSet(bufferedImageList)
+        var bufferedImage = concatImageList(bufferedImageList)
         if (bufferedImage.height > maxImageHeight)
             bufferedImage = bufferedImage.getSubimage(0, 0, bufferedImage.width, maxImageHeight)
 
@@ -203,13 +203,13 @@ class AndroidAppiumDriver : Driver {
         return image.getSubimage(coords.x, coords.y, coords.width, coords.height)
     }
 
-    private fun concatImageSet(imageSet: LinkedList<BufferedImage>): BufferedImage {
+    private fun concatImageList(imageList: LinkedList<BufferedImage>): BufferedImage {
         var currHeight = 0
         var totalHeight = 0
-        imageSet.forEach { totalHeight += it.height }
-        val concatImage = BufferedImage(imageSet.first().width, totalHeight, BufferedImage.TYPE_INT_RGB)
+        imageList.forEach { totalHeight += it.height }
+        val concatImage = BufferedImage(imageList.first().width, totalHeight, BufferedImage.TYPE_INT_RGB)
         val g2d = concatImage.createGraphics()
-        imageSet.forEach {
+        imageList.forEach {
             g2d.drawImage(it, 0, currHeight, null)
             currHeight += it.height
         }
@@ -244,10 +244,13 @@ class AndroidAppiumDriver : Driver {
         locators.forEach { locator ->
             val webElements = getWebElements(locator, scrollToFind = false)
             webElements.forEach { webElement ->
-                val x = webElement.location.x - originShift.x
-                val y = webElement.location.y - originShift.y + yOffset
-                val width = webElement.size.width
-                val height = webElement.size.height
+                val elementLocation = webElement.location
+                val elementSize = webElement.size
+
+                val x = elementLocation.x - originShift.x
+                val y = elementLocation.y - originShift.y + yOffset
+                val width = elementSize.width
+                val height = elementSize.height
                 ignoredAreas.add(Coords(x, y, width, height))
             }
         }
@@ -439,7 +442,14 @@ class AndroidAppiumDriver : Driver {
         val scrollableElements = driver.findElements(By.xpath("//*[@scrollable='true']"))
         if (scrollableElements.isEmpty())
             return null
-        val scrollable = scrollableElements[0]
+        var scrollable = scrollableElements[0]
+
+        if (scrollableElements.size > 1) {
+            for (i in 1..<scrollableElements.size) {
+                if (scrollableElements[i].size.height > scrollable.size.height)
+                    scrollable = scrollableElements[i]
+            }
+        }
 
         val location = scrollable.location
         val size = scrollable.size
