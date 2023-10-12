@@ -65,11 +65,13 @@ class AndroidAppiumDriver : Driver {
     private val maxSwipeCount = 20
     private val preloaderElements: List<Locator> = PreloaderConfig.elements
     private val unsupportedOperationMessage = "Operation not supported"
+    private val appArea: Coords
 
     init {
         val remoteAddress = URL(AppiumDriverConfig.remoteAddress)
         driver = AndroidDriver(remoteAddress, AppiumDriverConfig.desiredCapabilities)
         driver.manage().timeouts().implicitlyWait(Duration.ofMillis(0))
+        appArea = calculateAppArea()
     }
 
     override fun click(locator: Locator, points: ArrayList<Point>?) {
@@ -139,7 +141,6 @@ class AndroidAppiumDriver : Driver {
                 takeScreenshot(driver, webElements)
             }
         } else {
-            val appArea = getAppArea()
             screenshot = Screenshot(takeScreenshot(appArea))
             screenshot.originShift = appArea
         }
@@ -152,7 +153,6 @@ class AndroidAppiumDriver : Driver {
         val scrollableArea = getScrollableArea() ?: return getSingleScreenshot(ignoredElements, screenshotAreas)
         scrollToTop()
 
-        val appArea = getAppArea()
         val maxImageHeight = appArea.height * 4
         val bufferedImageList: LinkedList<BufferedImage> = LinkedList()
         val ignoredAreas: MutableSet<Coords> = HashSet()
@@ -217,7 +217,7 @@ class AndroidAppiumDriver : Driver {
         return concatImage
     }
 
-    private fun getAppArea(): Coords {
+    private fun calculateAppArea(): Coords {
         val statusBar = driver.systemBars["statusBar"]
         val statusBarVisible = statusBar?.get("visible") as Boolean
         val windowSize = driver.manage().window().size
@@ -247,11 +247,13 @@ class AndroidAppiumDriver : Driver {
                 val elementLocation = webElement.location
                 val elementSize = webElement.size
 
-                val x = elementLocation.x - originShift.x
-                val y = elementLocation.y - originShift.y + yOffset
-                val width = elementSize.width
-                val height = elementSize.height
-                ignoredAreas.add(Coords(x, y, width, height))
+                if (elementLocation.y + elementSize.height >= originShift.y) {
+                    val x = elementLocation.x - originShift.x
+                    val y = elementLocation.y - originShift.y + yOffset
+                    val width = elementSize.width
+                    val height = elementSize.height
+                    ignoredAreas.add(Coords(x, y, width, height))
+                }
             }
         }
         return ignoredAreas
