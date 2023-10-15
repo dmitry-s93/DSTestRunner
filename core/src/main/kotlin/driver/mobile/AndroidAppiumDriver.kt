@@ -91,14 +91,19 @@ class AndroidAppiumDriver : Driver {
     }
 
     override fun checkLoadPage(url: String?, identifier: Locator?): Boolean {
+        var scrollToFind = false
         return try {
             Awaitility.await()
                 .ignoreException(StaleElementReferenceException::class.java)
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(pageLoadTimeout))
+                .conditionEvaluationListener { condition ->
+                    if (condition.elapsedTimeInMS > 1500)
+                        scrollToFind = true
+                }
                 .until {
-                    (identifier == null || getWebElements(identifier, scrollToFind = true).isNotEmpty()) && !isPreloaderDisplayed()
+                    !isPreloaderDisplayed() && (identifier == null || getWebElements(identifier, scrollToFind).isNotEmpty())
                 }
             true
         } catch (e: ConditionTimeoutException) {
