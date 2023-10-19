@@ -309,7 +309,9 @@ class ChromeDriver : Driver {
     }
 
     override fun hoverOverElement(locator: Locator) {
-        TODO("Not yet implemented")
+        val action = Actions(driver)
+        val element = getWebElement(locator)
+        action.moveToElement(element).perform()
     }
 
     override fun navigateBack() {
