@@ -60,7 +60,7 @@ class ChromeDriver : Driver {
     override fun click(locator: Locator, points: ArrayList<Point>?) {
         val element = getWebElement(locator)
         if (points.isNullOrEmpty()) {
-            executeJavaScript("arguments[0].scrollIntoView({block: 'center'});", element)
+            scrollToElement(element)
             element.click()
         } else {
             with (Actions(driver)) {
@@ -223,9 +223,20 @@ class ChromeDriver : Driver {
 
     private fun getWebElements(locator: Locator, onlyDisplayed: Boolean): List<WebElement> {
         val elements = driver.findElements(byDetect(locator))
-        if (onlyDisplayed)
-            return elements.filter { it.isDisplayed }
+        if (onlyDisplayed) {
+            val displayedElements: MutableList<WebElement> = mutableListOf()
+            elements.forEach { element ->
+                scrollToElement(element)
+                if (element.isDisplayed)
+                    displayedElements.add(element)
+            }
+            return displayedElements
+        }
         return elements
+    }
+
+    private fun scrollToElement(element: WebElement) {
+        executeJavaScript("arguments[0].scrollIntoView({block: 'center'});", element)
     }
 
     private fun byDetect(locator: Locator): By {
