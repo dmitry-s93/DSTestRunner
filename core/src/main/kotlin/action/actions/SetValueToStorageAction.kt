@@ -64,7 +64,7 @@ class SetValueToStorageAction(private val name: String, private var value: Strin
         if (elementName != null)
             parameters["elementName"] = elementName.toString()
         if (elementLocator != null)
-            parameters["elementLocator"] = elementLocator.toString()
+            parameters["elementLocator"] = elementLocator!!.value
         return parameters
     }
 
