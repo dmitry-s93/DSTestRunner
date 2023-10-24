@@ -60,7 +60,6 @@ class ChromeDriver : Driver {
     override fun click(locator: Locator, points: ArrayList<Point>?) {
         val element = getWebElement(locator)
         if (points.isNullOrEmpty()) {
-            scrollToElement(element)
             element.click()
         } else {
             with (Actions(driver)) {
@@ -208,7 +207,7 @@ class ChromeDriver : Driver {
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(elementTimeout))
                 .until {
-                    val elements = getWebElements(locator, true)
+                    val elements = getWebElements(locator, onlyDisplayed = true, scrollToCheckVisibility = true)
                     if (elements.isNotEmpty()) {
                         element = elements[0]
                         return@until true
@@ -216,17 +215,20 @@ class ChromeDriver : Driver {
                     return@until false
                 }
         } catch (_: ConditionTimeoutException) {}
-        if (element != null)
+        if (element != null) {
+            scrollToElement(element!!)
             return element as WebElement
+        }
         return driver.findElement(byDetect(locator))
     }
 
-    private fun getWebElements(locator: Locator, onlyDisplayed: Boolean): List<WebElement> {
+    private fun getWebElements(locator: Locator, onlyDisplayed: Boolean, scrollToCheckVisibility: Boolean = false): List<WebElement> {
         val elements = driver.findElements(byDetect(locator))
         if (onlyDisplayed) {
             val displayedElements: MutableList<WebElement> = mutableListOf()
             elements.forEach { element ->
-                scrollToElement(element)
+                if (scrollToCheckVisibility)
+                    scrollToElement(element)
                 if (element.isDisplayed)
                     displayedElements.add(element)
             }
@@ -289,7 +291,7 @@ class ChromeDriver : Driver {
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(elementTimeout))
-                .until { getWebElements(locator, true).isNotEmpty() }
+                .until { getWebElements(locator, onlyDisplayed = true, scrollToCheckVisibility = true).isNotEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
             false
@@ -303,7 +305,7 @@ class ChromeDriver : Driver {
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(elementTimeout))
-                .until { getWebElements(locator, true).isEmpty() }
+                .until { getWebElements(locator, onlyDisplayed = true, scrollToCheckVisibility = true).isEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
             false
