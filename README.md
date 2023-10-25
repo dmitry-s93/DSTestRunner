@@ -6,11 +6,15 @@ Framework for writing and running autotests
 
 - Easy writing of autotests
 - Screenshot comparison
-- Supported Browsers:
+- Support for testing web applications in browsers:
   - Google Chrome and Chromium-based
+- Support for testing native Android applications
 - Support for saving results in formats:
   - Allure Report
   - CSV
+
+## TODO
+- Add support for testing iOS applications
 
 ## Quick start
 
