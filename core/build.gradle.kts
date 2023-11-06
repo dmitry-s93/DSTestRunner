@@ -24,7 +24,7 @@ repositories {
 
 dependencies {
     // https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java
-    implementation("org.seleniumhq.selenium:selenium-java:4.11.0")
+    implementation("org.seleniumhq.selenium:selenium-java:4.15.0")
     // https://mvnrepository.com/artifact/org.json/json
     implementation("org.json:json:20230618")
     // https://mvnrepository.com/artifact/commons-io/commons-io
