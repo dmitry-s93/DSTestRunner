@@ -27,3 +27,4 @@
 | [waitTime](actions/wait_time.md)              | Waits for the specified time (in milliseconds)                                                                     |  ✅  |    ✅    |     |
 | [uploadFile](actions/upload_file.md)          | Uploads a file in the file upload field                                                                            |  ✅  |    ❌    |     |
 | [executeSql](actions/execute_sql.md)          | Executes an SQL query on the database                                                                              |  ✅  |    ✅    |     |
+| swipeElement                                  | Swipes an element in the specified direction                                                                       |  ❌  |    ✅    |     |
