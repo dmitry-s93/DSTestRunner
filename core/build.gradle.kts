@@ -28,7 +28,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.json/json
     implementation("org.json:json:20231013")
     // https://mvnrepository.com/artifact/commons-io/commons-io
-    implementation("commons-io:commons-io:2.13.0")
+    implementation("commons-io:commons-io:2.15.0")
     // https://mvnrepository.com/artifact/org.awaitility/awaitility
     implementation("org.awaitility:awaitility:4.2.0")
     // https://mvnrepository.com/artifact/com.opencsv/opencsv
