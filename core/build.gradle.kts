@@ -24,11 +24,11 @@ repositories {
 
 dependencies {
     // https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java
-    implementation("org.seleniumhq.selenium:selenium-java:4.11.0")
+    implementation("org.seleniumhq.selenium:selenium-java:4.15.0")
     // https://mvnrepository.com/artifact/org.json/json
-    implementation("org.json:json:20230618")
+    implementation("org.json:json:20231013")
     // https://mvnrepository.com/artifact/commons-io/commons-io
-    implementation("commons-io:commons-io:2.13.0")
+    implementation("commons-io:commons-io:2.15.0")
     // https://mvnrepository.com/artifact/org.awaitility/awaitility
     implementation("org.awaitility:awaitility:4.2.0")
     // https://mvnrepository.com/artifact/com.opencsv/opencsv
@@ -42,5 +42,5 @@ dependencies {
     // https://github.com/pazone/ashot
     implementation(files("libs/ashot-1.6.0-5430e42.jar"))
     // https://mvnrepository.com/artifact/io.appium/java-client
-    implementation("io.appium:java-client:8.5.1")
+    implementation("io.appium:java-client:9.0.0")
 }
