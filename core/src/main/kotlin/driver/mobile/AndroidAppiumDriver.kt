@@ -531,7 +531,38 @@ class AndroidAppiumDriver : Driver {
     }
 
     override fun swipeElement(locator: Locator, direction: Direction) {
-        TODO("Not yet implemented")
+        val elementCenter = getElementCenter(getWebElement(locator))
+        val duration = Duration.ofMillis(500)
+        val endX: Int
+        val endY: Int
+        when (direction) {
+            Direction.UP -> {
+                endX = elementCenter.x
+                endY = appArea.y
+            }
+            Direction.DOWN -> {
+                endX = elementCenter.x
+                endY = appArea.y + appArea.height
+            }
+            Direction.LEFT -> {
+                endX = appArea.x
+                endY = elementCenter.y
+            }
+            Direction.RIGHT -> {
+                endX = appArea.x + appArea.width
+                endY = elementCenter.y
+            }
+        }
+        swipe(duration, elementCenter.x, elementCenter.y, endX, endY)
+    }
+
+    private fun getElementCenter(element: WebElement): Point {
+        val elementLocation = element.location
+        val elementSize = element.size
+        return Point(
+            elementLocation.x + (elementSize.width / 2),
+            elementLocation.y + (elementSize.height / 2)
+        )
     }
 
     override fun navigateBack() {
