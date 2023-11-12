@@ -363,7 +363,8 @@ class AndroidAppiumDriver : Driver {
             val key = "$resourceId|$text"
             if (result.containsKey(key))
                 duplicateKeys.add(key)
-            result[key] = boundsToCoords(bounds)
+            if (bounds.isNotEmpty())
+                result[key] = boundsToCoords(bounds)
         }
 
         duplicateKeys.forEach {
