@@ -155,8 +155,10 @@ class AndroidAppiumDriver : Driver {
     }
 
     private fun getLongScreenshot(ignoredElements: Set<Locator>, screenshotAreas: Set<Locator>): Screenshot {
+        val pauseAtExtremePoints: Long = 250
         val scrollableArea = getScrollableArea() ?: return getSingleScreenshot(ignoredElements, screenshotAreas)
         scrollToTop()
+        Thread.sleep(pauseAtExtremePoints)
 
         val maxImageHeight = appArea.height * 4
         val bufferedImageList: LinkedList<BufferedImage> = LinkedList()
@@ -182,6 +184,7 @@ class AndroidAppiumDriver : Driver {
         } while (scrollSize > 0 && imageHeight < maxImageHeight)
 
         if (imageHeight < maxImageHeight) {
+            Thread.sleep(pauseAtExtremePoints)
             val y = scrollableArea.y + scrollableArea.height
             val height = appArea.y + appArea.height - y
             originShift = Coords(appArea.x, y, appArea.width, height)
