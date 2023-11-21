@@ -24,6 +24,7 @@ import java.util.ArrayList
 private const val notImplementedMessage = "Method not implemented for this driver instance"
 
 interface Driver {
+    fun getElementTimeout(): Long
     fun click(locator: Locator, points: ArrayList<Point>? = null)
     fun checkLoadPage(url: String?, identifier: Locator?): Boolean
     fun getElementValue(locator: Locator): String
