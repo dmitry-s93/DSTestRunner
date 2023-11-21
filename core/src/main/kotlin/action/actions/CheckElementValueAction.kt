@@ -21,9 +21,12 @@ import action.ActionResult
 import action.ActionReturn
 import config.Localization
 import driver.DriverSession
+import org.awaitility.Awaitility
+import org.awaitility.core.ConditionTimeoutException
 import storage.PageStorage
 import storage.ValueStorage
 import test.element.Locator
+import java.time.Duration
 
 class CheckElementValueAction(private val elementName: String, expectedValue: String) : ActionReturn(), Action {
     private var elementLocator: Locator? = null
@@ -31,6 +34,7 @@ class CheckElementValueAction(private val elementName: String, expectedValue: St
     private val expectedValue: String = ValueStorage.replace(expectedValue)
     private var elementValue: String? = null
     private val locatorArguments = ArrayList<String>()
+    private var waitForExpectedValue: Boolean = false
 
     override fun getName(): String {
         return Localization.get("CheckElementValueAction.DefaultName", elementDisplayName)
@@ -45,9 +49,25 @@ class CheckElementValueAction(private val elementName: String, expectedValue: St
             elementLocator = element.getLocator().withReplaceArgs(*locatorArguments.toArray())
             if (elementLocator!!.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
-            elementValue = DriverSession.getSession().getElementValue(elementLocator!!)
-            if (elementValue != expectedValue)
-                return fail(Localization.get("CheckElementValueAction.ElementValueNotMatch", elementValue, expectedValue))
+            val driverSession = DriverSession.getSession()
+            if (waitForExpectedValue) {
+                try {
+                    Awaitility.await()
+                        .atLeast(Duration.ofMillis(0))
+                        .pollDelay(Duration.ofMillis(100))
+                        .atMost(Duration.ofMillis(driverSession.getElementTimeout()))
+                        .until {
+                            elementValue = driverSession.getElementValue(elementLocator!!)
+                            elementValue == expectedValue
+                        }
+                } catch (_: ConditionTimeoutException) {
+                    return fail(Localization.get("CheckElementValueAction.ElementValueNotMatch", elementValue, expectedValue))
+                }
+            } else {
+                elementValue = driverSession.getElementValue(elementLocator!!)
+                if (elementValue != expectedValue)
+                    return fail(Localization.get("CheckElementValueAction.ElementValueNotMatch", elementValue, expectedValue))
+            }
         } catch (e: Exception) {
             return broke(Localization.get("CheckElementValueAction.GeneralError", e.message), e.stackTraceToString())
         }
@@ -61,6 +81,7 @@ class CheckElementValueAction(private val elementName: String, expectedValue: St
         parameters["elementValue"] = elementValue.toString()
         if (expectedValue != elementValue)
             parameters["expectedValue"] = expectedValue
+        parameters["waitForExpectedValue"] = waitForExpectedValue.toString()
         return parameters
     }
 
@@ -69,6 +90,13 @@ class CheckElementValueAction(private val elementName: String, expectedValue: St
      */
     fun locatorArgument(value: String) {
         locatorArguments.add(ValueStorage.replace(value))
+    }
+
+    /**
+     * Wait for expected value
+     */
+    fun waitForExpectedValue() {
+        waitForExpectedValue = true
     }
 }
 

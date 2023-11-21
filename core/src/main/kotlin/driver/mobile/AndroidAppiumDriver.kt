@@ -74,6 +74,10 @@ class AndroidAppiumDriver : Driver {
         appArea = calculateAppArea()
     }
 
+    override fun getElementTimeout(): Long {
+        return elementTimeout
+    }
+
     override fun click(locator: Locator, points: ArrayList<Point>?) {
         val element = getWebElement(locator)
         if (points.isNullOrEmpty()) {
