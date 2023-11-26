@@ -99,8 +99,12 @@ class ImageUtils {
             return
         val graphics: Graphics = screenshot.image.createGraphics()
         screenshot.ignoredAreas.forEach { area ->
-            val ignoredImage = screenshot.image.getSubimage(area.x, area.y, area.width, area.height)
-            graphics.drawImage(GrayFilter.createDisabledImage(ignoredImage), area.x, area.y, null)
+            try {
+                val ignoredImage = screenshot.image.getSubimage(area.x, area.y, area.width, area.height)
+                graphics.drawImage(GrayFilter.createDisabledImage(ignoredImage), area.x, area.y, null)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
         graphics.dispose()
     }
