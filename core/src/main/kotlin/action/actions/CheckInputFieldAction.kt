@@ -86,19 +86,17 @@ class CheckInputFieldAction(private val elementName: String) : ActionReturn(), A
         val generatedString = removeDuplicateChars(RgxGen("$allowedChars{256}").generate())
         DriverSession.getSession().setValue(elementLocator!!, generatedString)
         val value = DriverSession.getSession().getElementValue(elementLocator!!)
-        val valueLength = value.length
+        var valueLength = value.length
+        if (generatedString.length < valueLength)
+            valueLength = generatedString.length
         if (value != generatedString.substring(0, valueLength)) {
             var notEnteredChars = ""
-            var j = 0
-            for (i in value.indices) {
-                if (j > generatedString.length - 1) break
-                while (value[i].toString() != generatedString[j].toString()) {
-                    notEnteredChars += generatedString[j]
-                    j += 1
-                }
-                j += 1
+            generatedString.forEach { char ->
+                if (!value.contains(char))
+                    notEnteredChars += char
             }
-            return Localization.get("CheckFieldAction.NotPossibleToEnterAllowedCharacters", notEnteredChars) + "\n"
+            if (notEnteredChars.isNotEmpty())
+                return Localization.get("CheckFieldAction.NotPossibleToEnterAllowedCharacters", notEnteredChars) + "\n"
         }
         return ""
     }
