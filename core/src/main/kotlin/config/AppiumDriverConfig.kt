@@ -15,14 +15,14 @@
 
 package config
 
+import driver.mobile.device.Device
+import driver.mobile.device.DeviceFactory
 import logger.Logger
 import org.json.JSONObject
 import org.openqa.selenium.remote.DesiredCapabilities
 
 class AppiumDriverConfig {
     companion object {
-        var remoteAddress: String = ""
-            private set
         var pageLoadTimeout: Long = 0
             private set
         var elementTimeout: Long = 0
@@ -34,11 +34,19 @@ class AppiumDriverConfig {
             try {
                 Logger.debug("Reading parameters from config", "AppiumDriverConfig")
                 val webDriverConfig = config.getJSONObject("AppiumDriver")
-                remoteAddress = webDriverConfig.getString("remoteAddress")
                 pageLoadTimeout = webDriverConfig.getLong("pageLoadTimeout")
                 elementTimeout = webDriverConfig.getLong("elementTimeout")
                 webDriverConfig.getJSONObject("DesiredCapabilities").toMap().forEach { (key, value) ->
                     desiredCapabilities.setCapability(key, value)
+                }
+                webDriverConfig.getJSONObject("devices").toMap().forEach { (name, deviceData) ->
+                    deviceData as HashMap<*,*>
+                    val remoteAddress = deviceData["remoteAddress"].toString()
+                    val capabilities = DesiredCapabilities()
+                    (deviceData["DesiredCapabilities"] as HashMap<*, *>).forEach { (key, value) ->
+                        capabilities.setCapability(key.toString(), value)
+                    }
+                    DeviceFactory.addDevice(Device(name, remoteAddress, capabilities))
                 }
             } catch (e: Exception) {
                 Logger.error("An error occurred while reading the config", "AppiumDriverConfig")

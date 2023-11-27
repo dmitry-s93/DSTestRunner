@@ -21,6 +21,8 @@ import config.AppiumDriverConfig
 import config.PreloaderConfig
 import config.ScreenshotConfig
 import driver.Driver
+import driver.mobile.device.Device
+import driver.mobile.device.DeviceFactory
 import io.appium.java_client.AppiumBy.ByAccessibilityId
 import io.appium.java_client.AppiumBy.ByAndroidUIAutomator
 import io.appium.java_client.android.AndroidDriver
@@ -58,7 +60,7 @@ import javax.xml.xpath.XPathFactory
 
 @Suppress("unused")
 class AndroidAppiumDriver : Driver {
-    private val driver: AndroidDriver
+    private lateinit var driver: AndroidDriver
     private val pageLoadTimeout: Long = AppiumDriverConfig.pageLoadTimeout
     private val elementTimeout: Long = AppiumDriverConfig.elementTimeout
     private val poolDelay: Long = 50
@@ -66,12 +68,26 @@ class AndroidAppiumDriver : Driver {
     private val preloaderElements: List<Locator> = PreloaderConfig.elements
     private val unsupportedOperationMessage = "Operation not supported"
     private val appArea: Coords
+    private var device: Device? = null
 
     init {
-        val remoteAddress = URL(AppiumDriverConfig.remoteAddress)
-        driver = AndroidDriver(remoteAddress, AppiumDriverConfig.desiredCapabilities)
+        device = DeviceFactory.importDevice()
+        startSession(retry = true)
         driver.manage().timeouts().implicitlyWait(Duration.ofMillis(0))
         appArea = calculateAppArea()
+    }
+
+    private fun startSession(retry: Boolean) {
+        try {
+            val remoteAddress = URL(device!!.remoteAddress)
+            val capabilities = AppiumDriverConfig.desiredCapabilities.merge(device!!.desiredCapabilities)
+            driver = AndroidDriver(remoteAddress, capabilities)
+        } catch (e: Exception) {
+            if (retry)
+                return startSession(retry = false)
+            DeviceFactory.addDeviceToBlocklist(device!!)
+            throw e
+        }
     }
 
     override fun getElementTimeout(): Long {
@@ -578,6 +594,13 @@ class AndroidAppiumDriver : Driver {
     }
 
     override fun quit() {
-        driver.quit()
+        try {
+            driver.quit()
+        } catch (e: Exception) {
+            throw e
+        } finally {
+            if (device != null)
+                DeviceFactory.returnDevice(device!!)
+        }
     }
 }

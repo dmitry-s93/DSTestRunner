@@ -69,7 +69,7 @@
 {
   "Main": {
     "name": "AndroidTest",
-    "threads": 1,
+    "threads": 2,
     "driverImpl": "driver.mobile.AndroidAppiumDriver",
     "reporterImpl": "reporter.allure.AllureReporter",
     "testSource": "TestList",
@@ -85,11 +85,9 @@
     "currentScreenshotDir": "/home/user/Screenshots/Android/current"
   },
   "AppiumDriver": {
-    "remoteAddress": "http://localhost:4723",
     "pageLoadTimeout": 20000,
     "elementTimeout": 10000,
     "DesiredCapabilities": {
-      "appium:deviceName": "Android_13",
       "appium:platformName": "Android",
       "appium:platformVersion": "13.0",
       "appium:udid": "emulator-5554",
@@ -98,6 +96,22 @@
       "appium:fullReset": true,
       "appium:enableMultiWindows": true,
       "appium:newCommandTimeout": 90
+    },
+    "devices": {
+      "AndroidEmulator1": {
+        "remoteAddress": "http://localhost:4723",
+        "DesiredCapabilities": {
+          "appium:deviceName": "Android_13_1",
+          "appium:udid": "emulator-5554"
+        }
+      },
+      "AndroidEmulator2": {
+        "remoteAddress": "http://localhost:4724",
+        "DesiredCapabilities": {
+          "appium:deviceName": "Android_13_2",
+          "appium:udid": "emulator-5555"
+        }
+      }
     }
   },
   "DatabaseList": {
