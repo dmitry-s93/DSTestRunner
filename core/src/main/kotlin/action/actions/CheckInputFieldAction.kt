@@ -31,6 +31,7 @@ class CheckInputFieldAction(private val elementName: String) : ActionReturn(), A
     private var elementLocator: Locator? = null
     private var elementDisplayName: String = elementName
     private val locatorArguments = ArrayList<String>()
+    private var doNotCheckAllowedChars: Boolean = false
 
     var maxSize: Int? = null
     var pattern: String? = null
@@ -83,6 +84,8 @@ class CheckInputFieldAction(private val elementName: String) : ActionReturn(), A
     }
 
     private fun checkAllowedChars(): String {
+        if (doNotCheckAllowedChars)
+            return ""
         val generatedString = removeDuplicateChars(RgxGen("$allowedChars{256}").generate())
         DriverSession.getSession().setValue(elementLocator!!, generatedString)
         val value = DriverSession.getSession().getElementValue(elementLocator!!)
@@ -145,6 +148,8 @@ class CheckInputFieldAction(private val elementName: String) : ActionReturn(), A
             parameters["pattern"] = pattern.toString()
         if (allowedChars != ".")
             parameters["allowedCharsPattern"] = allowedChars.toString()
+        if (doNotCheckAllowedChars)
+            parameters["doNotCheckAllowedChars"] = "true"
         return parameters
     }
 
@@ -153,6 +158,10 @@ class CheckInputFieldAction(private val elementName: String) : ActionReturn(), A
      */
     fun locatorArgument(value: String) {
         locatorArguments.add(ValueStorage.replace(value))
+    }
+
+    fun doNotCheckAllowedChars() {
+        doNotCheckAllowedChars = true
     }
 }
 

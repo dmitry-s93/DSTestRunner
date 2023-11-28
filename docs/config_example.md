@@ -90,7 +90,6 @@
     "DesiredCapabilities": {
       "appium:platformName": "Android",
       "appium:platformVersion": "13.0",
-      "appium:udid": "emulator-5554",
       "appium:app": "/home/user/Android/apk/some-app.apk",
       "appium:automationName": "UIAutomator2",
       "appium:fullReset": true,
