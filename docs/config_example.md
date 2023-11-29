@@ -88,7 +88,7 @@
     "pageLoadTimeout": 20000,
     "elementTimeout": 10000,
     "DesiredCapabilities": {
-      "appium:platformName": "Android",
+      "platformName": "ANDROID",
       "appium:platformVersion": "13.0",
       "appium:app": "/home/user/Android/apk/some-app.apk",
       "appium:automationName": "UIAutomator2",
@@ -101,14 +101,16 @@
         "remoteAddress": "http://localhost:4723",
         "DesiredCapabilities": {
           "appium:deviceName": "Android_13_1",
-          "appium:udid": "emulator-5554"
+          "appium:udid": "emulator-5554",
+          "appium:systemPort": 8200
         }
       },
       "AndroidEmulator2": {
         "remoteAddress": "http://localhost:4724",
         "DesiredCapabilities": {
           "appium:deviceName": "Android_13_2",
-          "appium:udid": "emulator-5555"
+          "appium:udid": "emulator-5556",
+          "appium:systemPort": 8201
         }
       }
     }

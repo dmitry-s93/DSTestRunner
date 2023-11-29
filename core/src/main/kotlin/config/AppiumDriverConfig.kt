@@ -27,26 +27,24 @@ class AppiumDriverConfig {
             private set
         var elementTimeout: Long = 0
             private set
-        val desiredCapabilities = DesiredCapabilities()
 
         @Synchronized
         fun load(config: JSONObject) {
             try {
                 Logger.debug("Reading parameters from config", "AppiumDriverConfig")
-                val webDriverConfig = config.getJSONObject("AppiumDriver")
-                pageLoadTimeout = webDriverConfig.getLong("pageLoadTimeout")
-                elementTimeout = webDriverConfig.getLong("elementTimeout")
-                webDriverConfig.getJSONObject("DesiredCapabilities").toMap().forEach { (key, value) ->
-                    desiredCapabilities.setCapability(key, value)
-                }
-                webDriverConfig.getJSONObject("devices").toMap().forEach { (name, deviceData) ->
-                    deviceData as HashMap<*,*>
-                    val remoteAddress = deviceData["remoteAddress"].toString()
-                    val capabilities = DesiredCapabilities()
-                    (deviceData["DesiredCapabilities"] as HashMap<*, *>).forEach { (key, value) ->
-                        capabilities.setCapability(key.toString(), value)
-                    }
-                    DeviceFactory.addDevice(Device(name, remoteAddress, capabilities))
+                val appiumDriverConfig = config.getJSONObject("AppiumDriver")
+                pageLoadTimeout = appiumDriverConfig.getLong("pageLoadTimeout")
+                elementTimeout = appiumDriverConfig.getLong("elementTimeout")
+                val generalCapabilities = appiumDriverConfig.getJSONObject("DesiredCapabilities").toMap()
+                val devices = appiumDriverConfig.getJSONObject("devices")
+                devices.keys().forEach { deviceName ->
+                    val device = devices.getJSONObject(deviceName)
+                    val remoteAddress = device.getString("remoteAddress")
+                    val deviceCapabilities = device.getJSONObject("DesiredCapabilities").toMap()
+                    val capabilities: MutableMap<String, Any> = mutableMapOf()
+                    capabilities.putAll(generalCapabilities)
+                    capabilities.putAll(deviceCapabilities)
+                    DeviceFactory.addDevice(Device(deviceName, remoteAddress, DesiredCapabilities(capabilities)))
                 }
             } catch (e: Exception) {
                 Logger.error("An error occurred while reading the config", "AppiumDriverConfig")
