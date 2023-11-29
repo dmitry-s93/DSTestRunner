@@ -20,5 +20,5 @@ import org.openqa.selenium.remote.DesiredCapabilities
 class Device(
     val name: String,
     val remoteAddress: String,
-    val desiredCapabilities: DesiredCapabilities
+    val capabilities: DesiredCapabilities
 )

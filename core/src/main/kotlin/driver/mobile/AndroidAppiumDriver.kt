@@ -80,7 +80,7 @@ class AndroidAppiumDriver : Driver {
     private fun startSession(retry: Boolean) {
         try {
             val remoteAddress = URL(device!!.remoteAddress)
-            val capabilities = AppiumDriverConfig.desiredCapabilities.merge(device!!.desiredCapabilities)
+            val capabilities = device!!.capabilities
             driver = AndroidDriver(remoteAddress, capabilities)
         } catch (e: Exception) {
             if (retry)
