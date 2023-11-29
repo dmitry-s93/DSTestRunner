@@ -24,9 +24,13 @@ class DriverSession {
         private var driverSession = ThreadLocal<Driver>()
 
         @Synchronized
+        fun setDriverSession(drive: Driver?) {
+            driverSession.set(drive)
+        }
+
         fun createSession() {
             try {
-                driverSession.set(DriverFactory().createDriver(MainConfig.driverImpl))
+                setDriverSession(DriverFactory().createDriver(MainConfig.driverImpl))
             } catch (e: Exception) {
                 Logger.error("Failed to create driver session\n${e.cause}", "createSession")
                 throw e
@@ -42,7 +46,7 @@ class DriverSession {
         fun closeSession() {
             if (driverSession.get() != null) {
                 driverSession.get().quit()
-                driverSession.set(null)
+                setDriverSession(null)
             }
             else
                 Logger.warning("Driver session not created", "closeSession")
