@@ -23,14 +23,14 @@ class DriverSession {
     companion object {
         private var driverSession = ThreadLocal<Driver>()
 
-        @Synchronized
-        fun setDriverSession(drive: Driver?) {
-            driverSession.set(drive)
-        }
-
         fun createSession() {
             try {
-                setDriverSession(DriverFactory().createDriver(MainConfig.driverImpl))
+                if (driverSession.get() != null) {
+                    Logger.warning("An open driver session was detected. It will be closed.", "createSession")
+                    driverSession.get().quit()
+                    driverSession.set(null)
+                }
+                driverSession.set(DriverFactory().createDriver(MainConfig.driverImpl))
             } catch (e: Exception) {
                 Logger.error("Failed to create driver session\n${e.cause}", "createSession")
                 throw e
@@ -39,17 +39,16 @@ class DriverSession {
 
         fun getSession(): Driver {
             if (driverSession.get() == null)
-                Logger.error("Driver session not created", "getSession")
+                throw Exception("Driver session not found")
             return driverSession.get()
         }
 
         fun closeSession() {
             if (driverSession.get() != null) {
                 driverSession.get().quit()
-                setDriverSession(null)
-            }
-            else
-                Logger.warning("Driver session not created", "closeSession")
+                driverSession.set(null)
+            } else
+                Logger.warning("Driver session not found", "closeSession")
         }
     }
 }
