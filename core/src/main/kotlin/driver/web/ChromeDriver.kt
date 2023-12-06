@@ -20,6 +20,7 @@ import config.PreloaderConfig
 import config.ScreenshotConfig
 import config.WebDriverConfig
 import driver.Driver
+import driver.DriverHelper
 import logger.Logger
 import org.awaitility.Awaitility.await
 import org.awaitility.core.ConditionTimeoutException
@@ -48,6 +49,7 @@ class ChromeDriver : Driver {
     private val elementTimeout: Long = WebDriverConfig.elementTimeout
     private val poolDelay: Long = 50
     private val preloaderElements: List<Locator> = PreloaderConfig.elements
+    private val numberOfAttempts = 3
 
     init {
         val chromeOptions = ChromeOptions()
@@ -62,17 +64,19 @@ class ChromeDriver : Driver {
     }
 
     override fun click(locator: Locator, points: ArrayList<Point>?) {
-        val element = getWebElement(locator)
-        if (points.isNullOrEmpty()) {
-            element.click()
-        } else {
-            with (Actions(driver)) {
-                points.forEach {
-                    moveToElement(element)
-                    moveByOffset(it.x, it.y)
-                    click()
+        DriverHelper().handleStaleElementReferenceException("click", numberOfAttempts) {
+            val element = getWebElement(locator)
+            if (points.isNullOrEmpty()) {
+                element.click()
+            } else {
+                with (Actions(driver)) {
+                    points.forEach {
+                        moveToElement(element)
+                        moveByOffset(it.x, it.y)
+                        click()
+                    }
+                    perform()
                 }
-                perform()
             }
         }
     }
@@ -148,10 +152,13 @@ class ChromeDriver : Driver {
     }
 
     override fun getElementValue(locator: Locator): String {
-        val element = getWebElement(locator)
-        var value = element.text
-        if (value.isNullOrEmpty())
-            value = element.getAttribute("value")
+        var value: String? = ""
+        DriverHelper().handleStaleElementReferenceException("getElementValue", numberOfAttempts) {
+            val element = getWebElement(locator)
+            value = element.text
+            if (value.isNullOrEmpty())
+                value = element.getAttribute("value")
+        }
         return value ?: ""
     }
 
@@ -266,16 +273,18 @@ class ChromeDriver : Driver {
     }
 
     override fun setValue(locator: Locator, value: String, sequenceMode: Boolean) {
-        val webElement = getWebElement(locator)
-        webElement.sendKeys(Keys.chord(Keys.CONTROL, "a") + Keys.DELETE)
-        if (sequenceMode) {
-            value.forEach {
-                webElement.sendKeys(it.toString())
-                Thread.sleep(50)
+        DriverHelper().handleStaleElementReferenceException("setValue", numberOfAttempts) {
+            val webElement = getWebElement(locator)
+            webElement.sendKeys(Keys.chord(Keys.CONTROL, "a") + Keys.DELETE)
+            if (sequenceMode) {
+                value.forEach {
+                    webElement.sendKeys(it.toString())
+                    Thread.sleep(50)
+                }
+            } else {
+                webElement.sendKeys(value)
             }
-            return
         }
-        webElement.sendKeys(value)
     }
 
     override fun setSelectValue(locator: Locator, value: String) {

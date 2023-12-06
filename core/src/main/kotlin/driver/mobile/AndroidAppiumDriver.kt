@@ -21,6 +21,7 @@ import config.AppiumDriverConfig
 import config.PreloaderConfig
 import config.ScreenshotConfig
 import driver.Driver
+import driver.DriverHelper
 import driver.mobile.device.Device
 import driver.mobile.device.DeviceFactory
 import io.appium.java_client.AppiumBy.ByAccessibilityId
@@ -69,6 +70,7 @@ class AndroidAppiumDriver : Driver {
     private val unsupportedOperationMessage = "Operation not supported"
     private val appArea: Coords
     private var device: Device? = null
+    private val numberOfAttempts = 3
 
     init {
         device = DeviceFactory.importDevice()
@@ -95,17 +97,19 @@ class AndroidAppiumDriver : Driver {
     }
 
     override fun click(locator: Locator, points: ArrayList<Point>?) {
-        val element = getWebElement(locator)
-        if (points.isNullOrEmpty()) {
-            element.click()
-        } else {
-            with (Actions(driver)) {
-                points.forEach {
-                    moveToElement(element)
-                    moveByOffset(it.x, it.y)
-                    click()
+        DriverHelper().handleStaleElementReferenceException("click", numberOfAttempts) {
+            val element = getWebElement(locator)
+            if (points.isNullOrEmpty()) {
+                element.click()
+            } else {
+                with(Actions(driver)) {
+                    points.forEach {
+                        moveToElement(element)
+                        moveByOffset(it.x, it.y)
+                        click()
+                    }
+                    perform()
                 }
-                perform()
             }
         }
     }
@@ -140,7 +144,11 @@ class AndroidAppiumDriver : Driver {
     }
 
     override fun getElementValue(locator: Locator): String {
-        return getWebElement(locator).text
+        var value = ""
+        DriverHelper().handleStaleElementReferenceException("getElementValue", numberOfAttempts) {
+            value = getWebElement(locator).text
+        }
+        return value
     }
 
     override fun getScreenshot(longScreenshot: Boolean, ignoredElements: Set<Locator>, screenshotAreas: Set<Locator>): Screenshot {
@@ -494,15 +502,17 @@ class AndroidAppiumDriver : Driver {
     }
 
     override fun setValue(locator: Locator, value: String, sequenceMode: Boolean) {
-        val webElement = getWebElement(locator)
-        webElement.clear()
-        if (sequenceMode) {
-            webElement.click()
-            driver.executeScript("mobile: type", mapOf(Pair("text", value)))
-            hideKeyboard()
-            return
+        DriverHelper().handleStaleElementReferenceException("setValue", numberOfAttempts) {
+            val webElement = getWebElement(locator)
+            webElement.clear()
+            if (sequenceMode) {
+                webElement.click()
+                driver.executeScript("mobile: type", mapOf(Pair("text", value)))
+                hideKeyboard()
+            } else {
+                webElement.sendKeys(value)
+            }
         }
-        webElement.sendKeys(value)
     }
 
     override fun hideKeyboard() {
