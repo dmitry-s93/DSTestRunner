@@ -78,6 +78,7 @@ class ChromeDriver : Driver {
                     perform()
                 }
             }
+            hideCursor()
         }
     }
 
@@ -164,10 +165,8 @@ class ChromeDriver : Driver {
 
     override fun getScreenshot(longScreenshot: Boolean, ignoredElements: Set<Locator>, screenshotAreas: Set<Locator>): Screenshot {
         ScreenshotConfig.executeJavaScriptBeforeScreenshot?.let { executeJavaScript(it) }
-        executeJavaScript("""
-            window.scrollTo(0, 0);
-            document.activeElement.blur();
-        """.trimIndent())
+        scrollToTop()
+        removeFocus()
         val waitTime = ScreenshotConfig.waitTimeBeforeScreenshot
         if (waitTime > 0)
             Thread.sleep(waitTime)
@@ -250,6 +249,21 @@ class ChromeDriver : Driver {
 
     private fun scrollToElement(element: WebElement) {
         executeJavaScript("arguments[0].scrollIntoView({block: 'center'});", element)
+    }
+
+    private fun scrollToTop() {
+        executeJavaScript("window.scrollTo(0, 0);")
+    }
+
+    private fun removeFocus() {
+        executeJavaScript("document.activeElement.blur();")
+    }
+
+    private fun hideCursor() {
+        with (Actions(driver)) {
+            moveToLocation(0, 0)
+            perform()
+        }
     }
 
     private fun byDetect(locator: Locator): By {
