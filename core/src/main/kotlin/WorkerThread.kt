@@ -15,15 +15,16 @@
 
 import logger.Logger
 import reporter.ReporterSession
+import storage.ValueStorage
 
 
 class WorkerThread(private val testClassName: String) : Runnable {
     override fun run() {
         Logger.info("Thread started: ${Thread.currentThread().name}")
         ReporterSession.createSession()
-        val testClass = Class.forName(testClassName)
-        testClass.getDeclaredConstructor().newInstance()
+        Class.forName(testClassName).getDeclaredConstructor().newInstance()
         ReporterSession.closeSession()
+        ValueStorage.clear()
         Logger.info("Thread ended: ${Thread.currentThread().name}")
     }
 }
