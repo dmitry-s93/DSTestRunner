@@ -31,7 +31,7 @@ class ClickAction(private val elementName: String) : ActionReturn(), Action {
     private var elementLocator: Locator? = null
     private var elementDisplayName: String = elementName
     private val locatorArguments = ArrayList<String>()
-    private val clickPoints = ArrayList<Point>()
+    private val clickPoints = ArrayList<Pair<Point, Point?>>()
 
     override fun getName(): String {
         return Localization.get("ClickAction.DefaultName", elementDisplayName)
@@ -60,7 +60,8 @@ class ClickAction(private val elementName: String) : ActionReturn(), Action {
         if (clickPoints.isNotEmpty()) {
             val points = StringBuilder()
             clickPoints.forEach {
-                points.append("[${it.x},${it.y}]")
+                val point1 = it.first
+                points.append("[${point1.x},${point1.y}]")
             }
             parameters["clickPoints"] = points.toString()
         }
@@ -79,7 +80,11 @@ class ClickAction(private val elementName: String) : ActionReturn(), Action {
      * You must specify the offset of the coordinate relative to the center of the element.
      */
     fun clickPoint(xOffset: Int, yOffset: Int) {
-        clickPoints.add(Point(xOffset, yOffset))
+        clickPoints.add(Pair(Point(xOffset, yOffset), null))
+    }
+
+    fun clickAndMovePoint(startX: Int, startY: Int, endX: Int, endY: Int) {
+        clickPoints.add(Pair(Point(startX, startY), Point(endX, endY)))
     }
 }
 

@@ -31,7 +31,6 @@ import logger.Logger
 import org.awaitility.Awaitility
 import org.awaitility.core.ConditionTimeoutException
 import org.openqa.selenium.*
-import org.openqa.selenium.interactions.Actions
 import org.openqa.selenium.interactions.PointerInput
 import org.openqa.selenium.interactions.Sequence
 import org.w3c.dom.Document
@@ -96,19 +95,25 @@ class AndroidAppiumDriver : Driver {
         return elementTimeout
     }
 
-    override fun click(locator: Locator, points: ArrayList<Point>?) {
+    override fun click(locator: Locator, points: ArrayList<Pair<Point, Point?>>?) {
         DriverHelper().handleStaleElementReferenceException("click", numberOfAttempts) {
             val element = getWebElement(locator)
             if (points.isNullOrEmpty()) {
                 element.click()
             } else {
-                with(Actions(driver)) {
-                    points.forEach {
-                        moveToElement(element)
-                        moveByOffset(it.x, it.y)
-                        click()
+                val center = getElementCenter(element)
+                points.forEach {
+                    val point1 = it.first
+                    val point2 = it.second
+                    if (point2 != null) {
+                        throw NotImplementedError("Not yet implemented")
+                    } else {
+                        tapOnPoint(
+                            center.x + point1.x,
+                            center.y + point1.y
+                        )
                     }
-                    perform()
+                    Thread.sleep(300)
                 }
             }
         }
@@ -475,6 +480,15 @@ class AndroidAppiumDriver : Driver {
         swipe.addAction(finger.createPointerMove(duration, PointerInput.Origin.viewport(), endX, endY))
         swipe.addAction(finger.createPointerUp(0))
         driver.perform(listOf(swipe))
+    }
+
+    private fun tapOnPoint(xCoordinate: Int, yCoordinate: Int) {
+        val finger = PointerInput(PointerInput.Kind.TOUCH, "finger")
+        val clickSequence = Sequence(finger, 1)
+        clickSequence.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), xCoordinate, yCoordinate))
+        clickSequence.addAction(finger.createPointerDown(0))
+        clickSequence.addAction(finger.createPointerUp(0))
+        driver.perform(listOf(clickSequence))
     }
 
     private fun getScrollableArea(): Coords? {
