@@ -63,7 +63,7 @@ class ChromeDriver : Driver {
         return elementTimeout
     }
 
-    override fun click(locator: Locator, points: ArrayList<Point>?) {
+    override fun click(locator: Locator, points: ArrayList<Pair<Point, Point?>>?) {
         DriverHelper().handleStaleElementReferenceException("click", numberOfAttempts) {
             val element = getWebElement(locator)
             if (points.isNullOrEmpty()) {
@@ -71,9 +71,15 @@ class ChromeDriver : Driver {
             } else {
                 with (Actions(driver)) {
                     points.forEach {
-                        moveToElement(element)
-                        moveByOffset(it.x, it.y)
-                        click()
+                        val point1 = it.first
+                        val point2 = it.second
+                        if (point2 != null) {
+                            throw NotImplementedError("Not yet implemented")
+                        } else {
+                            moveToElement(element)
+                            moveByOffset(point1.x, point1.y)
+                            click()
+                        }
                     }
                     perform()
                 }
