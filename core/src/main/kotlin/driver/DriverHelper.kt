@@ -17,6 +17,8 @@ package driver
 
 import logger.Logger
 import org.openqa.selenium.StaleElementReferenceException
+import org.openqa.selenium.WebElement
+import java.awt.Point
 
 class DriverHelper {
     fun handleStaleElementReferenceException(logSource: String, numberOfAttempts: Int, function: () -> Unit) {
@@ -31,5 +33,14 @@ class DriverHelper {
             }
             throw e
         }
+    }
+
+    fun getElementCenter(element: WebElement): Point {
+        val elementLocation = element.location
+        val elementSize = element.size
+        return Point(
+            elementLocation.x + (elementSize.width / 2),
+            elementLocation.y + (elementSize.height / 2)
+        )
     }
 }

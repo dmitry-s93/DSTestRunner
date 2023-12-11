@@ -101,7 +101,7 @@ class AndroidAppiumDriver : Driver {
             if (points.isNullOrEmpty()) {
                 element.click()
             } else {
-                val center = getElementCenter(element)
+                val center = DriverHelper().getElementCenter(element)
                 points.forEach {
                     val point1 = it.first
                     val point2 = it.second
@@ -579,7 +579,7 @@ class AndroidAppiumDriver : Driver {
     }
 
     override fun swipeElement(locator: Locator, direction: Direction) {
-        val elementCenter = getElementCenter(getWebElement(locator))
+        val elementCenter = DriverHelper().getElementCenter(getWebElement(locator))
         val duration = Duration.ofMillis(500)
         val endX: Int
         val endY: Int
@@ -602,15 +602,6 @@ class AndroidAppiumDriver : Driver {
             }
         }
         swipe(duration, elementCenter.x, elementCenter.y, endX, endY)
-    }
-
-    private fun getElementCenter(element: WebElement): Point {
-        val elementLocation = element.location
-        val elementSize = element.size
-        return Point(
-            elementLocation.x + (elementSize.width / 2),
-            elementLocation.y + (elementSize.height / 2)
-        )
     }
 
     override fun navigateBack() {

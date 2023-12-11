@@ -69,20 +69,22 @@ class ChromeDriver : Driver {
             if (points.isNullOrEmpty()) {
                 element.click()
             } else {
-                with (Actions(driver)) {
-                    points.forEach {
-                        val point1 = it.first
-                        val point2 = it.second
-                        if (point2 != null) {
-                            throw NotImplementedError("Not yet implemented")
-                        } else {
-                            moveToElement(element)
-                            moveByOffset(point1.x, point1.y)
-                            click()
-                        }
+                val center = DriverHelper().getElementCenter(element)
+                val action = Actions(driver)
+                points.forEach {
+                    val point1 = it.first
+                    val point2 = it.second
+                    if (point2 != null) {
+                        action.moveToLocation(center.x + point1.x, center.y + point1.y)
+                        action.clickAndHold()
+                        action.moveToLocation(center.x + point2.x, center.y + point2.y)
+                        action.release()
+                    } else {
+                        action.moveToLocation(center.x + point1.x, center.y + point1.y)
+                        action.click()
                     }
-                    perform()
                 }
+                action.perform()
             }
             hideCursor()
         }
