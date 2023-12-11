@@ -20,6 +20,7 @@ import action.ActionStatus
 import action.ScreenData
 import config.Localization
 import config.reporter.AllureReporterConfig
+import logger.Logger
 import org.json.JSONArray
 import org.json.JSONObject
 import reporter.Reporter
@@ -92,6 +93,8 @@ class AllureReporter : Reporter {
         }
         if (!steps.containsKey(parentId))
             steps[parentId] = LinkedHashMap()
+        if (steps[parentId]?.containsKey("$parentId.$id") == true)
+            Logger.warning("Duplicate step ID: $parentId.$id", "AllureReporter")
         steps[parentId]?.put("$parentId.$id", step)
     }
 
