@@ -27,6 +27,8 @@ open class PageBuilder {
     var ignoredElements: Set<Locator> = HashSet()
     var waitTime: Long? = null
 
+
+    @Deprecated("Use PageData instead")
     fun page(name: String, function: () -> Unit) {
         urlPath = null
         identifier = null

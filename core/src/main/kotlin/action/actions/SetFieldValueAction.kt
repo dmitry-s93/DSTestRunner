@@ -40,7 +40,7 @@ class SetFieldValueAction(private val fieldName: String, value: String) : Action
         try {
             val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
             val element = pageData.getElement(fieldName)
-                ?: return broke(Localization.get("General.ElementIsNotSetOnPage", fieldName, pageData.getPageName()))
+                ?: return broke(Localization.get("General.ElementIsNotSetOnPage", fieldName, pageData.pageName))
             element.getDisplayName()?.let { elementDisplayName = it }
             elementLocator = element.getLocator().withReplaceArgs(*locatorArguments.toArray())
             if (elementLocator!!.value.isEmpty())

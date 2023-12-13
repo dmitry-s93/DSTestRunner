@@ -10,7 +10,6 @@
     "driverImpl": "driver.web.ChromeDriver",
     "reporterImpl": "reporter.allure.AllureReporter",
     "testSource": "TestList",
-    "pageSource": "pages.PageList",
     "consoleLogLevel": "DEBUG"
   },
   "Screenshot": {
@@ -73,7 +72,6 @@
     "driverImpl": "driver.mobile.AndroidAppiumDriver",
     "reporterImpl": "reporter.allure.AllureReporter",
     "testSource": "TestList",
-    "pageSource": "pages.PageList",
     "consoleLogLevel": "DEBUG"
   },
   "Screenshot": {

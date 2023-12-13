@@ -24,21 +24,23 @@ import driver.DriverSession
 import storage.PageStorage
 import test.page.PageData
 
-class OpenBrowserAction(private val page: PageData) : ActionReturn(), Action {
-    private var pageUrl: String = ""
+class OpenBrowserActionDeprecated(private val pageName: String) : ActionReturn(), Action {
+    private var pageUrl: String? = null
 
     override fun getName(): String {
-        return Localization.get("OpenBrowserAction.DefaultName", page.pageName)
+        return Localization.get("OpenBrowserAction.DefaultName", pageName)
     }
 
     override fun execute(): ActionResult {
-        PageStorage.setCurrentPage(page)
-        pageUrl = page.getUrl()
-        if (pageUrl.isEmpty())
+        if (!PageStorage.isPageExist(pageName))
+            return broke(Localization.get("General.PageIsNotSpecifiedInPageList", pageName))
+        PageStorage.setCurrentPage(pageName)
+        pageUrl = PageStorage.getPage(pageName)?.getUrl()
+        if (pageUrl.isNullOrEmpty())
             return broke(Localization.get("General.PageUrlNotSpecified"))
         try {
             DriverSession.createSession()
-            DriverSession.getSession().setPage(pageUrl)
+            DriverSession.getSession().setPage(pageUrl!!)
         } catch (e: Exception) {
             return broke(Localization.get("OpenBrowserAction.GeneralError", e.message), e.stackTraceToString())
         }
@@ -47,15 +49,16 @@ class OpenBrowserAction(private val page: PageData) : ActionReturn(), Action {
 
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
-        parameters["pageName"] = page.pageName
-        parameters["pageUrl"] = pageUrl
+        parameters["pageName"] = pageName
+        parameters["pageUrl"] = pageUrl.toString()
         return parameters
     }
 }
 
-fun openBrowser(page: PageData, function: (OpenBrowserAction.() -> Unit)? = null): ActionData {
+@Deprecated("Use PageData instead of page name")
+fun openBrowser(pageName: String, function: (OpenBrowserActionDeprecated.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = OpenBrowserAction(page)
+    val action = OpenBrowserActionDeprecated(pageName)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()

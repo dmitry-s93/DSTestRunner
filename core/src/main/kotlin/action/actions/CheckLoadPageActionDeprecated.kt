@@ -24,38 +24,45 @@ import storage.ValueStorage
 import test.element.Locator
 import test.page.PageData
 
-class CheckLoadPageAction(private val page: PageData) : ActionReturn(), Action {
+
+class CheckLoadPageActionDeprecated(private val pageName: String) : ActionReturn(), Action {
     private var pageUrl: String? = null
+    private var pageIdentifier: Locator? = null
     private var screenData: ScreenData? = null
     private val ignoredElements: MutableSet<Locator> = HashSet()
     private var screenshotAreas: MutableSet<Locator> = HashSet()
     private var takeScreenshotClass: TakeScreenshot? = null
 
     override fun getName(): String {
-        return Localization.get("CheckLoadPageAction.DefaultName", page.pageName)
+        return Localization.get("CheckLoadPageAction.DefaultName", pageName)
     }
 
     override fun execute(): ActionResult {
         try {
-            PageStorage.setCurrentPage(page)
-            if (page.urlPath != null) {
-                pageUrl = page.getUrl()
+            if (!PageStorage.isPageExist(pageName))
+                return broke(Localization.get("General.PageIsNotSpecifiedInPageList", pageName))
+            PageStorage.setCurrentPage(pageName)
+            val pageData = PageStorage.getPage(pageName)
+            val urlPath = pageData!!.urlPath
+            if (urlPath != null) {
+                pageUrl = pageData.getUrl()
                 if (pageUrl.isNullOrEmpty())
                     return broke(Localization.get("General.PageUrlNotSpecified"))
             }
-            page.waitTime?.let { Thread.sleep(it) }
-            if (!DriverSession.getSession().checkLoadPage(pageUrl, page.identifier)) {
+            pageIdentifier = pageData.identifier
+            pageData.waitTime?.let { Thread.sleep(it) }
+            if (!DriverSession.getSession().checkLoadPage(pageUrl, pageIdentifier)) {
                 if (!pageUrl.isNullOrEmpty() && !DriverSession.getSession().getCurrentUrl().startsWith(pageUrl.toString()))
                     return fail(Localization.get("CheckLoadPageAction.UrlDoesNotMatch"))
                 return fail(Localization.get("CheckLoadPageAction.PageDidNotLoad"))
             }
             if (takeScreenshotClass != null) {
                 val longScreenshot = takeScreenshotClass!!.longScreenshot
-                ignoredElements.addAll(page.ignoredElements)
-                ignoredElements.addAll(getElements(page, takeScreenshotClass!!.getIgnoredElements()))
-                screenshotAreas.addAll(getElements(page, takeScreenshotClass!!.getElements()))
+                ignoredElements.addAll(pageData.ignoredElements)
+                ignoredElements.addAll(getElements(pageData, takeScreenshotClass!!.getIgnoredElements()))
+                screenshotAreas.addAll(getElements(pageData, takeScreenshotClass!!.getElements()))
                 if (screenshotAreas.isEmpty())
-                    page.workArea?.let { screenshotAreas.add(it) }
+                    pageData.workArea?.let { screenshotAreas.add(it) }
                 val screenshot = DriverSession.getSession().getScreenshot(
                     longScreenshot = longScreenshot,
                     ignoredElements = ignoredElements,
@@ -76,17 +83,17 @@ class CheckLoadPageAction(private val page: PageData) : ActionReturn(), Action {
             if (locator != null)
                 locators.add(locator)
             else
-                Logger.warning(Localization.get("General.ElementIsNotSetOnPage", elementName, page))
+                Logger.warning(Localization.get("General.ElementIsNotSetOnPage", elementName, pageName))
         }
         return locators
     }
 
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
-        parameters["pageName"] = page.pageName
+        parameters["pageName"] = pageName
         if (pageUrl != null)
             parameters["pageUrl"] = pageUrl.toString()
-        parameters["pageIdentifier"] = page.identifier?.value.toString()
+        parameters["pageIdentifier"] = pageIdentifier?.value.toString()
         if (ignoredElements.isNotEmpty()) {
             val elements: MutableSet<String> = HashSet()
             ignoredElements.forEach {
@@ -165,9 +172,10 @@ class CheckLoadPageAction(private val page: PageData) : ActionReturn(), Action {
     }
 }
 
-fun checkLoadPage(page: PageData, function: (CheckLoadPageAction.() -> Unit)? = null): ActionData {
+@Deprecated("Use PageData instead of page name")
+fun checkLoadPage(pageName: String, function: (CheckLoadPageActionDeprecated.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = CheckLoadPageAction(page)
+    val action = CheckLoadPageActionDeprecated(pageName)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()

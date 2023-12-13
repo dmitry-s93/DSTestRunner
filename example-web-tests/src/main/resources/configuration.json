@@ -5,7 +5,6 @@
     "driverImpl": "driver.web.ChromeDriver",
     "reporterImpl": "reporter.allure.AllureReporter",
     "testSource": "TestList",
-    "pageSource": "pages.PageList",
     "consoleLogLevel": "DEBUG"
   },
   "WebDriver": {
@@ -14,8 +13,17 @@
     "pageLoadTimeout": 20000,
     "elementTimeout": 10000
   },
+  "Screenshot": {
+    "takeScreenshotOnError": true,
+    "saveTemplateIfMissing": true,
+    "allowableDifference": 20,
+    "waitTimeBeforeScreenshot": 0,
+    "templateScreenshotDir": "/home/user/Screenshots/Web/template",
+    "currentScreenshotDir": "/home/user/Screenshots/Web/current"
+  },
   "BrowserOptions": [
-    "window-size=1280,1024"
+    "window-size=1280,1024",
+    "force-device-scale-factor=1"
   ],
   "PreloaderElements": [
     "//div[contains(@class,'example-preloader')]"

@@ -30,7 +30,8 @@ fun main(args: Array<String>) {
     if (configurationFile.isNullOrEmpty())
         configurationFile = "configuration.json"
     ConfigLoader().loadConfiguration(configurationFile)
-    Class.forName(MainConfig.pageSource).getDeclaredConstructor().newInstance()
+    if (MainConfig.pageSource.isNotEmpty())
+        Class.forName(MainConfig.pageSource).getDeclaredConstructor().newInstance()
 
     var threadCount = argsHashMap["-threads"]?.toInt()
     if (threadCount == null)

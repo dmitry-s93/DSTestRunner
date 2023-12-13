@@ -44,7 +44,7 @@ class SetValueToStorageAction(private val name: String, private var value: Strin
             if (elementName != null) {
                 val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
                 val element = pageData.getElement(elementName)
-                    ?: return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.getPageName()))
+                    ?: return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.pageName))
                 elementLocator = element.getLocator().withReplaceArgs(*locatorArguments.toArray())
                 if (elementLocator!!.value.isEmpty())
                     return broke(Localization.get("General.ElementLocatorNotSpecified"))

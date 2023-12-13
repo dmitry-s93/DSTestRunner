@@ -26,22 +26,23 @@ import org.apache.hc.core5.http.message.BasicNameValuePair
 import org.apache.hc.core5.net.URIBuilder
 import storage.PageStorage
 import storage.ValueStorage
-import test.page.PageData
 
-class SetPageAction(private val page: PageData) : ActionReturn(), Action {
+class SetPageActionDeprecated(private val pageName: String) : ActionReturn(), Action {
     @SuppressWarnings("WeakerAccess")
     var pageUrl: String? = null
     private val urlParameters: MutableList<NameValuePair> = mutableListOf()
     private val urlArguments: HashMap<String, String> = HashMap()
 
     override fun getName(): String {
-        return Localization.get("SetPageAction.DefaultName", page.pageName)
+        return Localization.get("SetPageAction.DefaultName", pageName)
     }
 
     override fun execute(): ActionResult {
-        PageStorage.setCurrentPage(page)
+        if (!PageStorage.isPageExist(pageName))
+            return broke(Localization.get("General.PageIsNotSpecifiedInPageList", pageName))
+        PageStorage.setCurrentPage(pageName)
         if (pageUrl == null)
-            pageUrl = page.getUrl(urlArguments)
+            pageUrl = PageStorage.getPage(pageName)?.getUrl(urlArguments)
         if (pageUrl.isNullOrEmpty())
             return broke(Localization.get("General.PageUrlNotSpecified"))
         try {
@@ -55,7 +56,7 @@ class SetPageAction(private val page: PageData) : ActionReturn(), Action {
 
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
-        parameters["pageName"] = page.pageName
+        parameters["pageName"] = pageName
         parameters["pageUrl"] = pageUrl.toString()
         return parameters
     }
@@ -78,9 +79,10 @@ class SetPageAction(private val page: PageData) : ActionReturn(), Action {
 /**
  * Goes to page [pageName]
  */
-fun setPage(page: PageData, function: (SetPageAction.() -> Unit)? = null): ActionData {
+@Deprecated("Use PageData instead of page name")
+fun setPage(pageName: String, function: (SetPageActionDeprecated.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = SetPageAction(page)
+    val action = SetPageActionDeprecated(pageName)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
