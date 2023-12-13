@@ -22,40 +22,45 @@ import action.ActionReturn
 import config.Localization
 import driver.DriverSession
 import storage.PageStorage
-import test.page.PageData
 
-class OpenBrowserAction(private val page: PageData) : ActionReturn(), Action {
-    private var pageUrl: String = ""
+class SwitchToWindowActionDeprecated(private val pageName: String?) : ActionReturn(), Action {
+    private val pageUrl: String? = pageName?.let { PageStorage.getPage(it)?.getUrl() }
 
     override fun getName(): String {
-        return Localization.get("OpenBrowserAction.DefaultName", page.pageName)
+        if (pageName.isNullOrEmpty())
+            return Localization.get("SwitchToWindowAction.DefaultName")
+        return Localization.get("SwitchToWindowAction.DefaultNameWithPage", pageName)
     }
 
     override fun execute(): ActionResult {
-        PageStorage.setCurrentPage(page)
-        pageUrl = page.getUrl()
-        if (pageUrl.isEmpty())
-            return broke(Localization.get("General.PageUrlNotSpecified"))
         try {
-            DriverSession.createSession()
-            DriverSession.getSession().setPage(pageUrl)
+            if (!DriverSession.getSession().switchToWindow(pageUrl))
+                return fail(Localization.get("SwitchToWindowAction.UnableToFindWindow"))
         } catch (e: Exception) {
-            return broke(Localization.get("OpenBrowserAction.GeneralError", e.message), e.stackTraceToString())
+            return broke(Localization.get("SwitchToWindowAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }
 
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
-        parameters["pageName"] = page.pageName
-        parameters["pageUrl"] = pageUrl
+        if (!pageName.isNullOrEmpty())
+            parameters["pageName"] = pageName
+        if (!pageUrl.isNullOrEmpty())
+            parameters["pageUrl"] = pageUrl
         return parameters
     }
 }
 
-fun openBrowser(page: PageData, function: (OpenBrowserAction.() -> Unit)? = null): ActionData {
+/**
+ * Switches to the window with page [pageName]
+ *
+ * Switches to the first other window (if [pageName] is not specified)
+ */
+@Deprecated("Use PageData instead of page name")
+fun switchToWindow(pageName: String?, function: (SwitchToWindowActionDeprecated.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = OpenBrowserAction(page)
+    val action = SwitchToWindowActionDeprecated(pageName)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()

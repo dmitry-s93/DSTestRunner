@@ -42,6 +42,10 @@ class PageStorage {
             currentPage.set(getPage(name))
         }
 
+        fun setCurrentPage(page: PageData) {
+            currentPage.set(page)
+        }
+
         fun getCurrentPage(): PageData? {
             return currentPage.get()
         }

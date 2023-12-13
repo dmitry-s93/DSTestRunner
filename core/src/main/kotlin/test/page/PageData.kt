@@ -20,19 +20,15 @@ import test.element.Locator
 import java.net.URI
 
 class PageData(
-    private val pageName: String,
-    private val urlPath: String?,
-    private val identifier: Locator?,
-    private val description: String?,
-    private val elements: HashMap<String, Element>?,
-    private val workArea: Locator?,
-    private val ignoredElements: Set<Locator>,
-    private val waitTime: Long?
+    val pageName: String,
+    val urlPath: String? = null,
+    val identifier: Locator? = null,
+    val description: String? = null,
+    private val elements: HashMap<String, Element>? = null,
+    val workArea: Locator? = null,
+    val ignoredElements: Set<Locator> = HashSet(),
+    val waitTime: Long? = null
 ) {
-    fun getPageName(): String {
-        return pageName
-    }
-
     fun getUrl(urlArguments: HashMap<String, String>? = null): String {
         if (urlPath != null) {
             var resUrlPath = urlPath
@@ -47,33 +43,9 @@ class PageData(
         return WebDriverConfig.url
     }
 
-    fun getUrlPath(): String? {
-        return urlPath
-    }
-
-    fun getIdentifier(): Locator? {
-        return identifier
-    }
-
-    fun getDescription(): String? {
-        return description
-    }
-
     fun getElement(elementName: String): Element? {
         if (elements != null && elements.containsKey(elementName))
             return elements[elementName]
         return null
-    }
-
-    fun getWorkArea(): Locator? {
-        return workArea
-    }
-
-    fun getIgnoredElements(): Set<Locator> {
-        return ignoredElements
-    }
-
-    fun getWaitTime(): Long? {
-        return waitTime
     }
 }

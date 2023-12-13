@@ -46,7 +46,8 @@ class MainConfig {
                 driverImpl = mainConfig.getString("driverImpl")
                 reporterImpl = mainConfig.getString("reporterImpl")
                 testSource = mainConfig.getString("testSource")
-                pageSource = mainConfig.getString("pageSource")
+                if (mainConfig.has("pageSource"))
+                    pageSource = mainConfig.getString("pageSource")
                 val consoleLogLevelString = mainConfig.getString("consoleLogLevel").uppercase()
                 try {
                     consoleLogLevel = LogLevel.valueOf(consoleLogLevelString).value

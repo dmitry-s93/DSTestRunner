@@ -22,14 +22,15 @@ import action.ActionReturn
 import config.Localization
 import driver.DriverSession
 import storage.PageStorage
+import test.page.PageData
 
-class SwitchToWindowAction(private val pageName: String?) : ActionReturn(), Action {
-    private val pageUrl: String? = pageName?.let { PageStorage.getPage(it)?.getUrl() }
+class SwitchToWindowAction(private val page: PageData?) : ActionReturn(), Action {
+    private val pageUrl: String? = page?.getUrl()
 
     override fun getName(): String {
-        if (pageName.isNullOrEmpty())
+        if (page == null)
             return Localization.get("SwitchToWindowAction.DefaultName")
-        return Localization.get("SwitchToWindowAction.DefaultNameWithPage", pageName)
+        return Localization.get("SwitchToWindowAction.DefaultNameWithPage", page.pageName)
     }
 
     override fun execute(): ActionResult {
@@ -44,8 +45,8 @@ class SwitchToWindowAction(private val pageName: String?) : ActionReturn(), Acti
 
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
-        if (!pageName.isNullOrEmpty())
-            parameters["pageName"] = pageName
+        if (page != null)
+            parameters["pageName"] = page.pageName
         if (!pageUrl.isNullOrEmpty())
             parameters["pageUrl"] = pageUrl
         return parameters
@@ -57,9 +58,9 @@ class SwitchToWindowAction(private val pageName: String?) : ActionReturn(), Acti
  *
  * Switches to the first other window (if [pageName] is not specified)
  */
-fun switchToWindow(pageName: String?, function: (SwitchToWindowAction.() -> Unit)? = null): ActionData {
+fun switchToWindow(page: PageData?, function: (SwitchToWindowAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = SwitchToWindowAction(pageName)
+    val action = SwitchToWindowAction(page)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
