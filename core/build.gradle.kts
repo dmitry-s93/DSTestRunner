@@ -24,19 +24,19 @@ repositories {
 
 dependencies {
     // https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java
-    implementation("org.seleniumhq.selenium:selenium-java:4.15.0")
+    implementation("org.seleniumhq.selenium:selenium-java:4.16.1")
     // https://mvnrepository.com/artifact/org.json/json
     implementation("org.json:json:20231013")
     // https://mvnrepository.com/artifact/commons-io/commons-io
-    implementation("commons-io:commons-io:2.15.0")
+    implementation("commons-io:commons-io:2.15.1")
     // https://mvnrepository.com/artifact/org.awaitility/awaitility
     implementation("org.awaitility:awaitility:4.2.0")
     // https://mvnrepository.com/artifact/com.opencsv/opencsv
-    implementation("com.opencsv:opencsv:5.8")
+    implementation("com.opencsv:opencsv:5.9")
     // https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5
-    implementation("org.apache.httpcomponents.client5:httpclient5:5.2.1")
+    implementation("org.apache.httpcomponents.client5:httpclient5:5.3")
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    implementation("org.postgresql:postgresql:42.6.0")
+    implementation("org.postgresql:postgresql:42.7.1")
     // https://mvnrepository.com/artifact/com.github.curious-odd-man/rgxgen
     implementation("com.github.curious-odd-man:rgxgen:1.4")
     // https://github.com/pazone/ashot
