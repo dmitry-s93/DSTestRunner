@@ -36,7 +36,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5
     implementation("org.apache.httpcomponents.client5:httpclient5:5.3")
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    implementation("org.postgresql:postgresql:42.6.0")
+    implementation("org.postgresql:postgresql:42.7.1")
     // https://mvnrepository.com/artifact/com.github.curious-odd-man/rgxgen
     implementation("com.github.curious-odd-man:rgxgen:1.4")
     // https://github.com/pazone/ashot
