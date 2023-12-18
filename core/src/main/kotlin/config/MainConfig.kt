@@ -31,8 +31,6 @@ class MainConfig {
             private set
         var testSource: String = ""
             private set
-        var pageSource: String = ""
-            private set
         var consoleLogLevel: Int = 1
             private set
         val sessionId: String = System.currentTimeMillis().toString()
@@ -46,8 +44,6 @@ class MainConfig {
                 driverImpl = mainConfig.getString("driverImpl")
                 reporterImpl = mainConfig.getString("reporterImpl")
                 testSource = mainConfig.getString("testSource")
-                if (mainConfig.has("pageSource"))
-                    pageSource = mainConfig.getString("pageSource")
                 val consoleLogLevelString = mainConfig.getString("consoleLogLevel").uppercase()
                 try {
                     consoleLogLevel = LogLevel.valueOf(consoleLogLevelString).value
