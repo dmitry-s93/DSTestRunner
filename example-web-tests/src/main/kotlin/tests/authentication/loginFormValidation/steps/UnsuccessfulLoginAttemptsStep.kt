@@ -5,7 +5,7 @@ import action.actions.checkLoadPage
 import action.actions.click
 import action.actions.setFieldValue
 import action.actions.web.setPage
-import authorizationPages
+import pages.AuthorizationPageList.Companion.loginPage
 import test.TestBuilder
 
 fun unsuccessfulLoginAttempts(id: String, stepName: String, test: Any) {
@@ -15,12 +15,12 @@ fun unsuccessfulLoginAttempts(id: String, stepName: String, test: Any) {
                 step("01", "Incorrect password") {
                     optional()
                     steps {
-                        step("01", setPage(authorizationPages.login))
-                        step("02", checkLoadPage(authorizationPages.login))
+                        step("01", setPage(loginPage))
+                        step("02", checkLoadPage(loginPage))
                         step("03", setFieldValue("UsernameEdit", "{user_login}"))
                         step("04", setFieldValue("PasswordEdit", "wrong_password"))
                         step("05", click("LoginButton"))
-                        step("06", checkLoadPage(authorizationPages.login) {
+                        step("06", checkLoadPage(loginPage) {
                             name = "Stayed on the login page"
                         })
                         step("07", checkElementValue("ErrorMessage", "{UserPasswordNotMatchMessage}"))
@@ -29,12 +29,12 @@ fun unsuccessfulLoginAttempts(id: String, stepName: String, test: Any) {
                 step("02", "Login by blocked user") {
                     optional()
                     steps {
-                        step("01", setPage(authorizationPages.login))
-                        step("02", checkLoadPage(authorizationPages.login))
+                        step("01", setPage(loginPage))
+                        step("02", checkLoadPage(loginPage))
                         step("03", setFieldValue("UsernameEdit", "{locked_user_login}"))
                         step("04", setFieldValue("PasswordEdit", "{locked_user_password}"))
                         step("05", click("LoginButton"))
-                        step("06", checkLoadPage(authorizationPages.login) {
+                        step("06", checkLoadPage(loginPage) {
                             name = "Stayed on the login page"
                         })
                         step("07", checkElementValue("ErrorMessage", "{UserLockedMessage}"))

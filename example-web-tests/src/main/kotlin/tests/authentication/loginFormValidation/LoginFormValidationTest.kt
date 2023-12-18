@@ -4,7 +4,7 @@ import action.actions.importUser
 import action.actions.setValueToStorage
 import action.actions.web.closeBrowser
 import action.actions.web.openBrowser
-import authorizationPages
+import pages.AuthorizationPageList.Companion.loginPage
 import reporter.allure.SeverityLevel
 import reporter.allure.allure
 import test.TestBuilder
@@ -20,7 +20,7 @@ class LoginFormValidationTest : TestBuilder("TEST_02", "Login Form Validation") 
             severity(SeverityLevel.CRITICAL)
         }
         before {
-            step("01_before", openBrowser(authorizationPages.login))
+            step("01_before", openBrowser(loginPage))
 
             step("02_before", importUser("StandardUser", "user"))
             step("03_before", importUser("LockedUser", "locked_user"))
