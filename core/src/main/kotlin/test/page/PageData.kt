@@ -27,7 +27,7 @@ class PageData(
     private val elements: HashMap<String, Element>? = null,
     val workArea: Locator? = null,
     val ignoredElements: Set<Locator> = HashSet(),
-    val waitTime: Long? = null
+    val waitTimeBeforeScreenshot: Long? = null
 ) {
     fun getUrl(urlArguments: HashMap<String, String>? = null): String {
         if (urlPath != null) {
