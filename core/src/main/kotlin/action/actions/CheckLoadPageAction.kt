@@ -43,13 +43,13 @@ class CheckLoadPageAction(private val page: PageData) : ActionReturn(), Action {
                 if (pageUrl.isNullOrEmpty())
                     return broke(Localization.get("General.PageUrlNotSpecified"))
             }
-            page.waitTime?.let { Thread.sleep(it) }
             if (!DriverSession.getSession().checkLoadPage(pageUrl, page.identifier)) {
                 if (!pageUrl.isNullOrEmpty() && !DriverSession.getSession().getCurrentUrl().startsWith(pageUrl.toString()))
                     return fail(Localization.get("CheckLoadPageAction.UrlDoesNotMatch"))
                 return fail(Localization.get("CheckLoadPageAction.PageDidNotLoad"))
             }
             if (takeScreenshotClass != null) {
+                page.waitTimeBeforeScreenshot?.let { Thread.sleep(it) }
                 val longScreenshot = takeScreenshotClass!!.longScreenshot
                 ignoredElements.addAll(page.ignoredElements)
                 ignoredElements.addAll(getElements(page, takeScreenshotClass!!.getIgnoredElements()))
