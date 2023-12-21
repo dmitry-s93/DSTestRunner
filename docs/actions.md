@@ -28,3 +28,4 @@
 | [uploadFile](actions/upload_file.md)          | Uploads a file in the file upload field                                                                            |  ✅  |    ❌    |     |
 | [executeSql](actions/execute_sql.md)          | Executes an SQL query on the database                                                                              |  ✅  |    ✅    |     |
 | swipeElement                                  | Swipes an element in the specified direction                                                                       |  ❌  |    ✅    |     |
+| setLocation                                   | Sets the location of the mobile device (latitude and longitude)                                                    |  ❌  |    ✅    |     |
