@@ -27,6 +27,7 @@ import driver.mobile.device.DeviceFactory
 import io.appium.java_client.AppiumBy.ByAccessibilityId
 import io.appium.java_client.AppiumBy.ByAndroidUIAutomator
 import io.appium.java_client.android.AndroidDriver
+import io.appium.java_client.android.geolocation.AndroidGeoLocation
 import logger.Logger
 import org.awaitility.Awaitility
 import org.awaitility.core.ConditionTimeoutException
@@ -606,6 +607,10 @@ class AndroidAppiumDriver : Driver {
 
     override fun navigateBack() {
         driver.navigate().back()
+    }
+
+    override fun setLocation(latitude: Double, longitude: Double) {
+        driver.setLocation(AndroidGeoLocation(latitude, longitude))
     }
 
     override fun quit() {

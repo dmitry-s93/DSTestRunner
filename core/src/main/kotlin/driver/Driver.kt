@@ -71,4 +71,7 @@ interface Driver {
     fun hideKeyboard() {
         throw NotImplementedError(notImplementedMessage)
     }
+    fun setLocation(latitude: Double, longitude: Double) {
+        throw NotImplementedError(notImplementedMessage)
+    }
 }
