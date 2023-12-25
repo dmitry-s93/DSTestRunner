@@ -15,6 +15,7 @@
 
 package config
 
+import driver.web.BrowserType
 import logger.Logger
 import org.json.JSONObject
 
@@ -28,12 +29,15 @@ class WebDriverConfig {
             private set
         var elementTimeout: Long = 0
             private set
+        lateinit var browserType: BrowserType
+            private set
 
         @Synchronized
         fun load(config: JSONObject) {
             try {
                 Logger.debug("Reading parameters from config", "WebDriverConfig")
                 val webDriverConfig = config.getJSONObject("WebDriver")
+                browserType = BrowserType.valueOf(webDriverConfig.getString("browser").uppercase())
                 url = webDriverConfig.getString("url")
                 remoteAddress = webDriverConfig.getString("remoteAddress")
                 pageLoadTimeout = webDriverConfig.getLong("pageLoadTimeout")

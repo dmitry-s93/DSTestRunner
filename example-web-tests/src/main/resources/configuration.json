@@ -2,12 +2,13 @@
   "Main": {
     "name": "WebTest",
     "threads": 5,
-    "driverImpl": "driver.web.ChromeDriver",
+    "driverImpl": "driver.web.WebDriver",
     "reporterImpl": "reporter.allure.AllureReporter",
     "testSource": "TestList",
     "consoleLogLevel": "DEBUG"
   },
   "WebDriver": {
+    "browser": "Chrome",
     "url": "https://www.saucedemo.com/",
     "remoteAddress": "http://localhost:4444/wd/hub",
     "pageLoadTimeout": 20000,

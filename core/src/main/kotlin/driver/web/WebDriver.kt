@@ -25,9 +25,13 @@ import logger.Logger
 import org.awaitility.Awaitility.await
 import org.awaitility.core.ConditionTimeoutException
 import org.openqa.selenium.*
+import org.openqa.selenium.WebDriver
 import org.openqa.selenium.chrome.ChromeOptions
+import org.openqa.selenium.edge.EdgeOptions
+import org.openqa.selenium.firefox.FirefoxOptions
 import org.openqa.selenium.interactions.Actions
 import org.openqa.selenium.remote.RemoteWebDriver
+import org.openqa.selenium.safari.SafariOptions
 import org.openqa.selenium.support.ui.Select
 import pazone.ashot.AShot
 import pazone.ashot.Screenshot
@@ -43,18 +47,37 @@ import java.time.Duration
 
 
 @Suppress("unused")
-class ChromeDriver : Driver {
+class WebDriver : Driver {
     private val driver: WebDriver
     private val pageLoadTimeout: Long = WebDriverConfig.pageLoadTimeout
     private val elementTimeout: Long = WebDriverConfig.elementTimeout
     private val poolDelay: Long = 50
     private val preloaderElements: List<Locator> = PreloaderConfig.elements
     private val numberOfAttempts = 3
+    private val browserType = WebDriverConfig.browserType
 
     init {
-        val chromeOptions = ChromeOptions()
-        chromeOptions.addArguments(BrowserOptionsConfig.arguments)
-        driver = RemoteWebDriver(URL(WebDriverConfig.remoteAddress), chromeOptions)
+        when(browserType) {
+            BrowserType.CHROME -> {
+                val chromeOptions = ChromeOptions()
+                chromeOptions.addArguments(BrowserOptionsConfig.arguments)
+                driver = RemoteWebDriver(URL(WebDriverConfig.remoteAddress), chromeOptions)
+            }
+            BrowserType.FIREFOX -> {
+                val firefoxOptions = FirefoxOptions()
+                firefoxOptions.addArguments(BrowserOptionsConfig.arguments)
+                driver = RemoteWebDriver(URL(WebDriverConfig.remoteAddress), firefoxOptions)
+            }
+            BrowserType.EDGE -> {
+                val edgeOptions = EdgeOptions()
+                edgeOptions.addArguments(BrowserOptionsConfig.arguments)
+                driver = RemoteWebDriver(URL(WebDriverConfig.remoteAddress), edgeOptions)
+            }
+            BrowserType.SAFARI -> {
+                val safariOptions = SafariOptions()
+                driver = RemoteWebDriver(URL(WebDriverConfig.remoteAddress), safariOptions)
+            }
+        }
         driver.manage().timeouts().pageLoadTimeout(Duration.ofMillis(pageLoadTimeout))
         driver.manage().timeouts().implicitlyWait(Duration.ofMillis(0))
     }
@@ -297,7 +320,11 @@ class ChromeDriver : Driver {
     override fun setValue(locator: Locator, value: String, sequenceMode: Boolean) {
         DriverHelper().handleStaleElementReferenceException("setValue", numberOfAttempts) {
             val webElement = getWebElement(locator)
-            webElement.sendKeys(Keys.chord(Keys.CONTROL, "a") + Keys.DELETE)
+            if (browserType == BrowserType.SAFARI) {
+                webElement.clear()
+            } else {
+                webElement.sendKeys(Keys.chord(Keys.CONTROL, "a") + Keys.DELETE)
+            }
             if (sequenceMode) {
                 value.forEach {
                     webElement.sendKeys(it.toString())
