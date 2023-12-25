@@ -7,7 +7,7 @@
   "Main": {
     "name": "WebTest",
     "threads": 5,
-    "driverImpl": "driver.web.ChromeDriver",
+    "driverImpl": "driver.web.WebDriver",
     "reporterImpl": "reporter.allure.AllureReporter",
     "testSource": "TestList",
     "consoleLogLevel": "DEBUG"
@@ -23,6 +23,7 @@
     "currentScreenshotDir": "/home/user/Screenshots/Web/current"
   },
   "WebDriver": {
+    "browser": "Chrome",
     "url": "https://www.example.com/",
     "remoteAddress": "http://localhost:4444/wd/hub",
     "pageLoadTimeout": 20000,
