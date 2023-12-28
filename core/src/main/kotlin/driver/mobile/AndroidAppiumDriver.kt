@@ -429,12 +429,12 @@ class AndroidAppiumDriver : Driver {
     private fun byDetect(locator: Locator): By {
         return when(locator.type) {
             LocatorType.XPATH -> By.xpath(locator.value)
-            LocatorType.CSS_SELECTOR -> By.cssSelector(locator.value)
             LocatorType.CLASS_NAME -> By.ByClassName(locator.value)
             LocatorType.ID -> By.id(locator.value)
             LocatorType.ACCESSIBILITY_ID -> ByAccessibilityId(locator.value)
             LocatorType.ANDROID_UI_AUTOMATOR -> ByAndroidUIAutomator(locator.value)
             null -> By.xpath(locator.value)
+            else -> throw UnsupportedOperationException("Locator type not supported: ${locator.type.value}")
         }
     }
 

@@ -6,7 +6,9 @@ enum class LocatorType(val value: String) {
     CLASS_NAME("Class Name"),
     ID("ID"),
     ACCESSIBILITY_ID("Accessibility ID"),
-    ANDROID_UI_AUTOMATOR("Android UI Automator")
+    ANDROID_UI_AUTOMATOR("Android UI Automator"),
+    IOS_CLASS_CHAIN("iOS Class Chain"),
+    IOS_PREDICATE_STRING("iOS Predicate String")
 }
 
 class Locator(value: String, val type: LocatorType? = null) {
