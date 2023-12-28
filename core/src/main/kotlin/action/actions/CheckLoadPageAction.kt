@@ -76,7 +76,7 @@ class CheckLoadPageAction(private val page: PageData) : ActionReturn(), Action {
             if (locator != null)
                 locators.add(locator)
             else
-                Logger.warning(Localization.get("General.ElementIsNotSetOnPage", elementName, page))
+                Logger.warning(Localization.get("General.ElementIsNotSetOnPage", elementName, page.pageName))
         }
         return locators
     }
