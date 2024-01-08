@@ -28,7 +28,9 @@ class ValueStorage {
         }
 
         fun getValue(name: String): String? {
-            return storedValues.get()[name]
+            if (storedValues.get() != null)
+                return storedValues.get()[name]
+            return null
         }
 
         fun replace(value: String): String {
