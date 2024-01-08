@@ -145,7 +145,7 @@ class IOSAppiumDriver : Driver {
                 webElements.addAll(getWebElements(locator, onlyDisplayed = true))
             }
             screenshot = with(AShot()) {
-                shootingStrategy(ShootingStrategies.simple())
+                shootingStrategy(ShootingStrategies.scaling(screenScale.toFloat())) // TODO: Do not use scaling
                 imageCropper(IndentCropper().addIndentFilter(IndentFilerFactory.blur()))
                 takeScreenshot(driver, webElements)
             }
@@ -208,9 +208,10 @@ class IOSAppiumDriver : Driver {
 
     override fun hideKeyboard() {
         if (driver.isKeyboardShown) {
-            getWebElement(
-                Locator("type='XCUIElementTypeButton' AND name='keyboard hide'", LocatorType.IOS_PREDICATE_STRING)
-            ).click()
+            val locator = Locator("type='XCUIElementTypeButton' AND name='keyboard hide'", LocatorType.IOS_PREDICATE_STRING)
+            if (getWebElements(locator, onlyDisplayed = true).isEmpty())
+                return
+            getWebElement(locator).click()
         }
     }
 
@@ -219,11 +220,31 @@ class IOSAppiumDriver : Driver {
     }
 
     override fun isExist(locator: Locator): Boolean {
-        TODO("Not yet implemented")
+        return try {
+            Awaitility.await()
+                .ignoreException(StaleElementReferenceException::class.java)
+                .atLeast(Duration.ofMillis(0))
+                .pollDelay(Duration.ofMillis(poolDelay))
+                .atMost(Duration.ofMillis(elementTimeout))
+                .until { getWebElements(locator, onlyDisplayed = false).isNotEmpty() }
+            true
+        } catch (e: ConditionTimeoutException) {
+            getWebElements(locator, onlyDisplayed = false).isNotEmpty()
+        }
     }
 
     override fun isNotExist(locator: Locator): Boolean {
-        TODO("Not yet implemented")
+        return try {
+            Awaitility.await()
+                .ignoreException(StaleElementReferenceException::class.java)
+                .atLeast(Duration.ofMillis(0))
+                .pollDelay(Duration.ofMillis(poolDelay))
+                .atMost(Duration.ofMillis(elementTimeout))
+                .until { getWebElements(locator, onlyDisplayed = false).isEmpty() }
+            true
+        } catch (e: ConditionTimeoutException) {
+            getWebElements(locator, onlyDisplayed = false).isEmpty()
+        }
     }
 
     override fun isEnabled(locator: Locator): Boolean {
