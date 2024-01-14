@@ -57,6 +57,8 @@ import javax.imageio.ImageIO
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 
 @Suppress("unused")
@@ -68,7 +70,7 @@ class AndroidAppiumDriver : Driver {
     private val maxSwipeCount = 20
     private val preloaderElements: List<Locator> = PreloaderConfig.elements
     private val unsupportedOperationMessage = "Operation not supported"
-    private val appArea: Coords
+    private val viewportArea: Coords
     private var device: Device? = null
     private val numberOfAttempts = 3
 
@@ -76,7 +78,7 @@ class AndroidAppiumDriver : Driver {
         device = DeviceFactory.importDevice()
         startSession(retry = true)
         driver.manage().timeouts().implicitlyWait(Duration.ofMillis(0))
-        appArea = calculateAppArea()
+        viewportArea = getViewportRect()
     }
 
     private fun startSession(retry: Boolean) {
@@ -90,6 +92,17 @@ class AndroidAppiumDriver : Driver {
             DeviceFactory.addDeviceToBlocklist(device!!)
             throw e
         }
+    }
+
+    private fun getViewportRect(): Coords {
+        val viewportRect = driver.executeScript("mobile: viewportRect") as Map<*, *>
+
+        val left = viewportRect["left"] as Long
+        val top = viewportRect["top"] as Long
+        val width = viewportRect["width"] as Long
+        val height = viewportRect["height"] as Long
+
+        return Coords(left.toInt(), top.toInt(), width.toInt(), height.toInt())
     }
 
     override fun getElementTimeout(): Long {
@@ -180,8 +193,8 @@ class AndroidAppiumDriver : Driver {
                 takeScreenshot(driver, webElements)
             }
         } else {
-            screenshot = Screenshot(takeScreenshot(appArea))
-            screenshot.originShift = appArea
+            screenshot = Screenshot(takeScreenshot(viewportArea))
+            screenshot.originShift = viewportArea
         }
         val ignoredAreas = getIgnoredAreas(ignoredElements, screenshot.originShift)
         screenshot.ignoredAreas = Coords.intersection(screenshot.coordsToCompare, ignoredAreas)
@@ -194,12 +207,12 @@ class AndroidAppiumDriver : Driver {
         scrollToTop()
         Thread.sleep(pauseAtExtremePoints)
 
-        val maxImageHeight = appArea.height * 4
+        val maxImageHeight = viewportArea.height * 4
         val bufferedImageList: LinkedList<BufferedImage> = LinkedList()
         val ignoredAreas: MutableSet<Coords> = HashSet()
 
-        var imageHeight = scrollableArea.y + scrollableArea.height - appArea.y
-        var originShift = Coords(appArea.x, appArea.y, appArea.width,  imageHeight)
+        var imageHeight = scrollableArea.y + scrollableArea.height - viewportArea.y
+        var originShift = Coords(viewportArea.x, viewportArea.y, viewportArea.width,  imageHeight)
         bufferedImageList.add(takeScreenshot(originShift))
         ignoredAreas.addAll(getIgnoredAreas(ignoredElements, originShift))
 
@@ -210,7 +223,7 @@ class AndroidAppiumDriver : Driver {
             val scrollSize = getScrollSize(elementPositionsBefore, getElementPositions())
             if (scrollSize > 0) {
                 val y = scrollableArea.y + scrollableArea.height - scrollSize
-                originShift = Coords(appArea.x, y, appArea.width, scrollSize)
+                originShift = Coords(viewportArea.x, y, viewportArea.width, scrollSize)
                 bufferedImageList.add(takeScreenshot(originShift))
                 ignoredAreas.addAll(getIgnoredAreas(ignoredElements, originShift, imageHeight))
                 imageHeight += scrollSize
@@ -220,8 +233,8 @@ class AndroidAppiumDriver : Driver {
         if (imageHeight < maxImageHeight) {
             Thread.sleep(pauseAtExtremePoints)
             val y = scrollableArea.y + scrollableArea.height
-            val height = appArea.y + appArea.height - y
-            originShift = Coords(appArea.x, y, appArea.width, height)
+            val height = viewportArea.y + viewportArea.height - y
+            originShift = Coords(viewportArea.x, y, viewportArea.width, height)
             bufferedImageList.add(takeScreenshot(originShift))
             ignoredAreas.addAll(getIgnoredAreas(ignoredElements, originShift, imageHeight))
         }
@@ -257,28 +270,6 @@ class AndroidAppiumDriver : Driver {
         }
         g2d.dispose()
         return concatImage
-    }
-
-    private fun calculateAppArea(): Coords {
-        val statusBar = driver.systemBars["statusBar"]
-        val statusBarVisible = statusBar?.get("visible") as Boolean
-        val windowSize = driver.manage().window().size
-        val windowPosition = driver.manage().window().position
-
-        val x = windowPosition.x
-        var y = windowPosition.y
-        val width = windowSize.width
-        var height = windowSize.height
-
-        if (statusBarVisible) {
-            val statusBarHeight = (statusBar["height"] as Long).toInt()
-            if (y < statusBarHeight) {
-                y += statusBarHeight
-                height -= y
-            }
-        }
-
-        return Coords(x, y, width, height)
     }
 
     private fun getIgnoredAreas(locators: Set<Locator>, originShift: Coords, yOffset: Int = 0): Set<Coords> {
@@ -459,7 +450,7 @@ class AndroidAppiumDriver : Driver {
             }
         }
 
-        swipe(Duration.ofMillis(500), centerX, startY, centerX, endY)
+        swipe(centerX, startY, centerX, endY)
         return true
     }
 
@@ -473,14 +464,22 @@ class AndroidAppiumDriver : Driver {
         } while (getScrollSize(elementPositionsBefore, getElementPositions()) != 0 && currSwipeCount < maxSwipeCount)
     }
 
-    private fun swipe(duration: Duration, startX: Int, startY: Int, endX: Int, endY: Int) {
+    private fun swipe(startX: Int, startY: Int, endX: Int, endY: Int) {
+        val duration = countSwipeDuration(startX, startY, endX, endY)
         val finger = PointerInput(PointerInput.Kind.TOUCH, "finger")
         val swipe = Sequence(finger, 1)
         swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY))
         swipe.addAction(finger.createPointerDown(0))
         swipe.addAction(finger.createPointerMove(duration, PointerInput.Origin.viewport(), endX, endY))
+        swipe.addAction(finger.createPointerMove(Duration.ofMillis(100), PointerInput.Origin.viewport(), endX, endY))
         swipe.addAction(finger.createPointerUp(0))
         driver.perform(listOf(swipe))
+    }
+
+    private fun countSwipeDuration(x1: Int, y1: Int, x2: Int, y2: Int): Duration {
+        val fullAreaSwipeDuration = 1200F
+        val distanceInPx = sqrt((x2 - x1).toDouble().pow(2) + (y2 - y1).toDouble().pow(2))
+        return Duration.ofMillis((fullAreaSwipeDuration / viewportArea.height * distanceInPx).toLong())
     }
 
     private fun tapOnPoint(xCoordinate: Int, yCoordinate: Int) {
@@ -581,28 +580,27 @@ class AndroidAppiumDriver : Driver {
 
     override fun swipeElement(locator: Locator, direction: Direction) {
         val elementCenter = DriverHelper().getElementCenter(getWebElement(locator))
-        val duration = Duration.ofMillis(500)
         val endX: Int
         val endY: Int
         when (direction) {
             Direction.UP -> {
                 endX = elementCenter.x
-                endY = appArea.y
+                endY = viewportArea.y
             }
             Direction.DOWN -> {
                 endX = elementCenter.x
-                endY = appArea.y + appArea.height
+                endY = viewportArea.y + viewportArea.height
             }
             Direction.LEFT -> {
-                endX = appArea.x
+                endX = viewportArea.x
                 endY = elementCenter.y
             }
             Direction.RIGHT -> {
-                endX = appArea.x + appArea.width
+                endX = viewportArea.x + viewportArea.width
                 endY = elementCenter.y
             }
         }
-        swipe(duration, elementCenter.x, elementCenter.y, endX, endY)
+        swipe(elementCenter.x, elementCenter.y, endX, endY)
     }
 
     override fun navigateBack() {
