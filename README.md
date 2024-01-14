@@ -8,6 +8,7 @@ Framework for writing and running autotests
 - Screenshot comparison
 - Support for testing web applications in browsers:
   - Google Chrome and Chromium-based
+  - Mozilla Firefox
 - Support for mobile application testing:
   - Android
   - iOS
