@@ -57,6 +57,7 @@ import javax.imageio.ImageIO
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
+import kotlin.math.ceil
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -477,9 +478,10 @@ class AndroidAppiumDriver : Driver {
     }
 
     private fun countSwipeDuration(x1: Int, y1: Int, x2: Int, y2: Int): Duration {
-        val fullAreaSwipeDuration = 1200F
+        val fullAreaSwipeDuration = 1.2 // in seconds
         val distanceInPx = sqrt((x2 - x1).toDouble().pow(2) + (y2 - y1).toDouble().pow(2))
-        return Duration.ofMillis((fullAreaSwipeDuration / viewportArea.height * distanceInPx).toLong())
+        val duration = ceil(fullAreaSwipeDuration / viewportArea.height * distanceInPx * 10) * 100
+        return Duration.ofMillis(duration.toLong())
     }
 
     private fun tapOnPoint(xCoordinate: Int, yCoordinate: Int) {
