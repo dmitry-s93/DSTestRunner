@@ -517,14 +517,15 @@ class AndroidAppiumDriver : Driver {
         return Coords(x, y, width, height)
     }
 
-    override fun setValue(locator: Locator, value: String, sequenceMode: Boolean) {
+    override fun setValue(locator: Locator, value: String, sequenceMode: Boolean, hideKeyboard: Boolean) {
         DriverHelper().handleStaleElementReferenceException("setValue", numberOfAttempts) {
             val webElement = getWebElement(locator)
             webElement.clear()
             if (sequenceMode) {
                 webElement.click()
                 driver.executeScript("mobile: type", mapOf(Pair("text", value)))
-                hideKeyboard()
+                if (hideKeyboard)
+                    hideKeyboard()
             } else {
                 webElement.sendKeys(value)
             }

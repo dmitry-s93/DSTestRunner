@@ -197,12 +197,13 @@ class IOSAppiumDriver : Driver {
         return ignoredAreas
     }
 
-    override fun setValue(locator: Locator, value: String, sequenceMode: Boolean) {
+    override fun setValue(locator: Locator, value: String, sequenceMode: Boolean, hideKeyboard: Boolean) {
         DriverHelper().handleStaleElementReferenceException("setValue", numberOfAttempts) {
             val webElement = getWebElement(locator)
             webElement.clear()
             webElement.sendKeys(value)
-            hideKeyboard()
+            if (hideKeyboard)
+                hideKeyboard()
         }
     }
 

@@ -19,7 +19,6 @@ import action.helper.Direction
 import pazone.ashot.Screenshot
 import test.element.Locator
 import java.awt.Point
-import java.util.ArrayList
 
 private const val notImplementedMessage = "Method not implemented for this driver instance"
 
@@ -33,7 +32,8 @@ interface Driver {
         ignoredElements: Set<Locator> = HashSet(),
         screenshotAreas: Set<Locator> = HashSet()
     ): Screenshot
-    fun setValue(locator: Locator, value: String, sequenceMode: Boolean = false)
+
+    fun setValue(locator: Locator, value: String, sequenceMode: Boolean = false, hideKeyboard: Boolean = true)
     fun setSelectValue(locator: Locator, value: String)
     fun isExist(locator: Locator): Boolean
     fun isNotExist(locator: Locator): Boolean
@@ -45,21 +45,27 @@ interface Driver {
     fun setPage(url: String) {
         throw NotImplementedError(notImplementedMessage)
     }
+
     fun switchToWindow(url: String?): Boolean {
         throw NotImplementedError(notImplementedMessage)
     }
+
     fun closeWindow(url: String?): Boolean {
         throw NotImplementedError(notImplementedMessage)
     }
+
     fun getCurrentUrl(): String {
         throw NotImplementedError(notImplementedMessage)
     }
+
     fun uploadFile(locator: Locator, file: String) {
         throw NotImplementedError(notImplementedMessage)
     }
+
     fun executeJavaScript(script: String, vararg args: Any?): Any? {
         throw NotImplementedError(notImplementedMessage)
     }
+
     fun hoverOverElement(locator: Locator) {
         throw NotImplementedError(notImplementedMessage)
     }
@@ -68,9 +74,11 @@ interface Driver {
     fun swipeElement(locator: Locator, direction: Direction) {
         throw NotImplementedError(notImplementedMessage)
     }
+
     fun hideKeyboard() {
         throw NotImplementedError(notImplementedMessage)
     }
+
     fun setLocation(latitude: Double, longitude: Double) {
         throw NotImplementedError(notImplementedMessage)
     }

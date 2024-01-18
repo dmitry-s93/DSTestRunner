@@ -31,6 +31,8 @@ class SetFieldValueAction(private val fieldName: String, value: String) : Action
     private var elementDisplayName: String = fieldName
     private var sequenceMode: Boolean = false
     private val locatorArguments = ArrayList<String>()
+    @Suppress("MemberVisibilityCanBePrivate")
+    var hideKeyboard: Boolean = true
 
     override fun getName(): String {
         return Localization.get("SetFieldValueAction.DefaultName", value, elementDisplayName)
@@ -45,7 +47,7 @@ class SetFieldValueAction(private val fieldName: String, value: String) : Action
             elementLocator = element.getLocator().withReplaceArgs(*locatorArguments.toArray())
             if (elementLocator!!.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
-            DriverSession.getSession().setValue(elementLocator!!, value, sequenceMode)
+            DriverSession.getSession().setValue(elementLocator!!, value, sequenceMode, hideKeyboard)
         } catch (e: Exception) {
             return broke(Localization.get("SetFieldValueAction.GeneralError", e.message), e.stackTraceToString())
         }
