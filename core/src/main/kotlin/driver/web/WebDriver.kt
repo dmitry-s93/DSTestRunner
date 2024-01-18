@@ -317,7 +317,7 @@ class WebDriver : Driver {
         }
     }
 
-    override fun setValue(locator: Locator, value: String, sequenceMode: Boolean) {
+    override fun setValue(locator: Locator, value: String, sequenceMode: Boolean, hideKeyboard: Boolean) {
         DriverHelper().handleStaleElementReferenceException("setValue", numberOfAttempts) {
             val webElement = getWebElement(locator)
             if (browserType == BrowserType.SAFARI) {
