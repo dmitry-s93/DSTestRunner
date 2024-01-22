@@ -21,11 +21,11 @@
 | navigateBack                                  | Goes back                                                                                                          |  ✅  |    ✅    |  ❌  |
 | [isExist](actions/is_exist.md)                | Checks for the presence of an element. Returns fail if the element is not found on the page.                       |  ✅  |    ✅    |  ✅  |
 | [isNotExist](actions/is_not_exist.md)         | Checks for the absence of an element. Returns pass if the element is not found on the page.                        |  ✅  |    ✅    |  ✅  |
-| isEnabled                                     | Checks that the element is enabled                                                                                 |  ✅  |    ✅    |     |
-| isDisabled                                    | Checks that the element is disabled                                                                                |  ✅  |    ✅    |     |
+| isEnabled                                     | Checks that the element is enabled                                                                                 |  ✅  |    ✅    |  ✅  |
+| isDisabled                                    | Checks that the element is disabled                                                                                |  ✅  |    ✅    |  ✅  |
 | hoverOverElement                              | Moves the cursor over an element                                                                                   |  ✅  |    ❌    |  ❌  |
 | [waitTime](actions/wait_time.md)              | Waits for the specified time (in milliseconds)                                                                     |  ✅  |    ✅    |  ✅  |
 | [uploadFile](actions/upload_file.md)          | Uploads a file in the file upload field                                                                            |  ✅  |    ❌    |  ❌  |
 | [executeSql](actions/execute_sql.md)          | Executes an SQL query on the database                                                                              |  ✅  |    ✅    |  ✅  |
-| swipeElement                                  | Swipes an element in the specified direction                                                                       |  ❌  |    ✅    |     |
+| swipeElement                                  | Swipes an element in the specified direction                                                                       |  ❌  |    ✅    |  ✅  |
 | setLocation                                   | Sets the location of the mobile device (latitude and longitude)                                                    |  ❌  |    ✅    |     |
