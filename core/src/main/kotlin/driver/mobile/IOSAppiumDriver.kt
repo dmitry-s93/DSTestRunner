@@ -1,5 +1,6 @@
 package driver.mobile
 
+import action.helper.Direction
 import config.AppiumDriverConfig
 import config.PreloaderConfig
 import config.ScreenshotConfig
@@ -15,6 +16,7 @@ import org.openqa.selenium.By
 import org.openqa.selenium.OutputType
 import org.openqa.selenium.StaleElementReferenceException
 import org.openqa.selenium.WebElement
+import org.openqa.selenium.interactions.PointerInput
 import pazone.ashot.AShot
 import pazone.ashot.Screenshot
 import pazone.ashot.ShootingStrategies
@@ -29,12 +31,15 @@ import java.io.ByteArrayInputStream
 import java.net.URL
 import java.time.Duration
 import javax.imageio.ImageIO
+import kotlin.math.ceil
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 @Suppress("unused")
 class IOSAppiumDriver : Driver {
     private lateinit var driver: IOSDriver
     private var device: Device? = null
-    private val viewportRect: Coords
+    private val viewportArea: Coords
     private val screenScale: Int
     private val pageLoadTimeout: Long = AppiumDriverConfig.pageLoadTimeout
     private val elementTimeout: Long = AppiumDriverConfig.elementTimeout
@@ -47,7 +52,7 @@ class IOSAppiumDriver : Driver {
         device = DeviceFactory.importDevice()
         startSession(retry = true)
         driver.manage().timeouts().implicitlyWait(Duration.ofMillis(0))
-        viewportRect = getViewportRect()
+        viewportArea = getViewportRect()
         screenScale = getScreenScale()
     }
 
@@ -150,8 +155,8 @@ class IOSAppiumDriver : Driver {
                 takeScreenshot(driver, webElements)
             }
         } else {
-            screenshot = Screenshot(takeScreenshot(viewportRect))
-            screenshot.originShift = viewportRect
+            screenshot = Screenshot(takeScreenshot(viewportArea))
+            screenshot.originShift = viewportArea
         }
         val ignoredAreas = getIgnoredAreas(ignoredElements, screenshot.originShift)
         screenshot.ignoredAreas = Coords.intersection(screenshot.coordsToCompare, ignoredAreas)
@@ -256,6 +261,31 @@ class IOSAppiumDriver : Driver {
         TODO("Not yet implemented")
     }
 
+    override fun swipeElement(locator: Locator, direction: Direction) {
+        val elementCenter = DriverHelper().getElementCenter(getWebElement(locator))
+        val endX: Int
+        val endY: Int
+        when (direction) {
+            Direction.UP -> {
+                endX = elementCenter.x
+                endY = viewportArea.y
+            }
+            Direction.DOWN -> {
+                endX = elementCenter.x
+                endY = viewportArea.y + viewportArea.height
+            }
+            Direction.LEFT -> {
+                endX = viewportArea.x
+                endY = elementCenter.y
+            }
+            Direction.RIGHT -> {
+                endX = viewportArea.x + viewportArea.width
+                endY = elementCenter.y
+            }
+        }
+        swipe(elementCenter.x, elementCenter.y, endX, endY)
+    }
+
     override fun quit() {
         try {
             driver.quit()
@@ -313,5 +343,28 @@ class IOSAppiumDriver : Driver {
             null -> By.xpath(locator.value)
             else -> throw UnsupportedOperationException("Locator type not supported: ${locator.type.value}")
         }
+    }
+
+    private fun swipe(startX: Int, startY: Int, endX: Int, endY: Int) {
+        val duration = countSwipeDuration(
+            startX * screenScale, startY * screenScale,
+            endX * screenScale, endY * screenScale
+        )
+        println(duration)
+        val finger = PointerInput(PointerInput.Kind.TOUCH, "finger")
+        val swipe = org.openqa.selenium.interactions.Sequence(finger, 1)
+        swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY))
+        swipe.addAction(finger.createPointerDown(0))
+        swipe.addAction(finger.createPointerMove(duration, PointerInput.Origin.viewport(), endX - 1, endY))
+        swipe.addAction(finger.createPointerMove(Duration.ofMillis(100), PointerInput.Origin.viewport(), endX + 1, endY))
+        swipe.addAction(finger.createPointerUp(0))
+        driver.perform(listOf(swipe))
+    }
+
+    private fun countSwipeDuration(x1: Int, y1: Int, x2: Int, y2: Int): Duration {
+        val fullAreaSwipeDuration = 1.2 // in seconds
+        val distanceInPx = sqrt((x2 - x1).toDouble().pow(2) + (y2 - y1).toDouble().pow(2))
+        val duration = ceil(fullAreaSwipeDuration / viewportArea.height * distanceInPx * 10) * 100
+        return Duration.ofMillis(duration.toLong())
     }
 }
