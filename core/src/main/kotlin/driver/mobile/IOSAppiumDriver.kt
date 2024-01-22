@@ -254,7 +254,7 @@ class IOSAppiumDriver : Driver {
     }
 
     override fun isEnabled(locator: Locator): Boolean {
-        TODO("Not yet implemented")
+        return getWebElement(locator).isEnabled
     }
 
     override fun navigateBack() {
