@@ -29,6 +29,7 @@ import java.awt.image.BufferedImage
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.util.*
 import javax.imageio.ImageIO
 import javax.swing.GrayFilter
 
@@ -107,5 +108,19 @@ class ImageUtils {
             }
         }
         graphics.dispose()
+    }
+
+    fun concatImageList(imageList: LinkedList<BufferedImage>): BufferedImage {
+        var currHeight = 0
+        var totalHeight = 0
+        imageList.forEach { totalHeight += it.height }
+        val concatImage = BufferedImage(imageList.first().width, totalHeight, BufferedImage.TYPE_INT_RGB)
+        val g2d = concatImage.createGraphics()
+        imageList.forEach {
+            g2d.drawImage(it, 0, currHeight, null)
+            currHeight += it.height
+        }
+        g2d.dispose()
+        return concatImage
     }
 }

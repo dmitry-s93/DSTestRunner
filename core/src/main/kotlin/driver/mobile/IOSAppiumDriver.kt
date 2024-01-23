@@ -17,6 +17,10 @@ import org.openqa.selenium.OutputType
 import org.openqa.selenium.StaleElementReferenceException
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.interactions.PointerInput
+import org.w3c.dom.Document
+import org.w3c.dom.Element
+import org.w3c.dom.NodeList
+import org.xml.sax.InputSource
 import pazone.ashot.AShot
 import pazone.ashot.Screenshot
 import pazone.ashot.ShootingStrategies
@@ -25,12 +29,20 @@ import pazone.ashot.cropper.indent.IndentCropper
 import pazone.ashot.cropper.indent.IndentFilerFactory
 import test.element.Locator
 import test.element.LocatorType
+import utils.ImageUtils
 import java.awt.Point
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
+import java.io.StringReader
 import java.net.URL
 import java.time.Duration
+import java.util.*
 import javax.imageio.ImageIO
+import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.xpath.XPathConstants
+import javax.xml.xpath.XPathFactory
+import kotlin.collections.HashMap
+import kotlin.collections.HashSet
 import kotlin.math.ceil
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -46,6 +58,7 @@ class IOSAppiumDriver : Driver {
     private val poolDelay: Long = 50
     private val preloaderElements: List<Locator> = PreloaderConfig.elements
     private val numberOfAttempts = 3
+    private val maxSwipeCount = 20
 
 
     init {
@@ -54,6 +67,7 @@ class IOSAppiumDriver : Driver {
         driver.manage().timeouts().implicitlyWait(Duration.ofMillis(0))
         viewportArea = getViewportRect()
         screenScale = getScreenScale()
+        getLongScreenshot(HashSet(), HashSet())
     }
 
     private fun startSession(retry: Boolean) {
@@ -138,7 +152,8 @@ class IOSAppiumDriver : Driver {
         val waitTime = ScreenshotConfig.waitTimeBeforeScreenshot
         if (waitTime > 0)
             Thread.sleep(waitTime)
-        // TODO: Add support for long screenshots
+        if (longScreenshot && screenshotAreas.isEmpty())
+            return getLongScreenshot(ignoredElements, screenshotAreas)
         return getSingleScreenshot(ignoredElements, screenshotAreas)
     }
 
@@ -160,6 +175,54 @@ class IOSAppiumDriver : Driver {
         }
         val ignoredAreas = getIgnoredAreas(ignoredElements, screenshot.originShift)
         screenshot.ignoredAreas = Coords.intersection(screenshot.coordsToCompare, ignoredAreas)
+        return screenshot
+    }
+
+    private fun getLongScreenshot(ignoredElements: Set<Locator>, screenshotAreas: Set<Locator>): Screenshot {
+        val pauseAtExtremePoints: Long = 250
+        val scrollableArea = getScrollableArea(screenScale) ?: return getSingleScreenshot(ignoredElements, screenshotAreas)
+        scrollToTop()
+        Thread.sleep(pauseAtExtremePoints)
+
+        val maxImageHeight = viewportArea.height * 4
+        val bufferedImageList: LinkedList<BufferedImage> = LinkedList()
+        val ignoredAreas: MutableSet<Coords> = HashSet()
+
+        var imageHeight = scrollableArea.y + scrollableArea.height - viewportArea.y
+        var originShift = Coords(viewportArea.x, viewportArea.y, viewportArea.width,  imageHeight)
+        bufferedImageList.add(takeScreenshot(originShift))
+        ignoredAreas.addAll(getIgnoredAreas(ignoredElements, originShift))
+
+        do {
+            val elementPositionsBefore = getElementPositions()
+            if (!scroll(Direction.UP))
+                break
+            val scrollSize = getScrollSize(elementPositionsBefore, getElementPositions()) * screenScale
+            if (scrollSize > 0) {
+                val y = scrollableArea.y + scrollableArea.height - scrollSize
+                originShift = Coords(viewportArea.x, y, viewportArea.width, scrollSize)
+                bufferedImageList.add(takeScreenshot(originShift))
+                ignoredAreas.addAll(getIgnoredAreas(ignoredElements, originShift, imageHeight))
+                imageHeight += scrollSize
+            }
+        } while (scrollSize > 0 && imageHeight < maxImageHeight)
+
+        if (imageHeight < maxImageHeight) {
+            Thread.sleep(pauseAtExtremePoints)
+            val y = scrollableArea.y + scrollableArea.height
+            val height = viewportArea.y + viewportArea.height - y
+            originShift = Coords(viewportArea.x, y, viewportArea.width, height)
+            bufferedImageList.add(takeScreenshot(originShift))
+            ignoredAreas.addAll(getIgnoredAreas(ignoredElements, originShift, imageHeight))
+        }
+
+        var bufferedImage = ImageUtils().concatImageList(bufferedImageList)
+        if (bufferedImage.height > maxImageHeight)
+            bufferedImage = bufferedImage.getSubimage(0, 0, bufferedImage.width, maxImageHeight)
+
+        val screenshot = Screenshot(bufferedImage)
+        screenshot.ignoredAreas = Coords.intersection(screenshot.coordsToCompare, ignoredAreas)
+
         return screenshot
     }
 
@@ -345,6 +408,106 @@ class IOSAppiumDriver : Driver {
         }
     }
 
+    private fun scrollToTop() {
+        var currSwipeCount = 0
+        do {
+            val elementPositionsBefore = getElementPositions()
+            if (!scroll(Direction.DOWN))
+                break
+            currSwipeCount++
+        } while (getScrollSize(elementPositionsBefore, getElementPositions()) != 0 && currSwipeCount < maxSwipeCount)
+    }
+
+    private fun scroll(direction: Direction): Boolean {
+        val scrollableArea = getScrollableArea() ?: return false
+
+        val centerX = (scrollableArea.width / 2) + scrollableArea.x
+        val startY: Int
+        val endY: Int
+
+        when(direction) {
+            Direction.UP -> {
+                startY = scrollableArea.y + scrollableArea.height
+                endY = scrollableArea.y
+            }
+            Direction.DOWN -> {
+                startY = scrollableArea.y
+                endY = scrollableArea.y + scrollableArea.height
+            }
+            else -> {
+                return false
+            }
+        }
+
+        swipe(centerX, startY, centerX, endY)
+        return true
+    }
+
+    private fun getScrollSize(elementCoords1: Map<String, Coords>, elementCoords2: Map<String, Coords>): Int {
+        val scrollSizes = HashMap<Int, Int>()
+
+        elementCoords1.forEach {
+            val coords1 = elementCoords1[it.key]
+            val coords2 = elementCoords2[it.key]
+
+            if (coords1 != null && coords2 != null && coords1.height == coords2.height) {
+                val difference = coords1.y - coords2.y
+                val count = scrollSizes[difference]
+                if (count != null) {
+                    scrollSizes[difference] = count.inc()
+                } else {
+                    scrollSizes[difference] = 1
+                }
+            }
+        }
+
+        var scrollSize = 0
+        var maxCount = 0
+        scrollSizes.forEach {
+            if (it.key != 0 && it.value > maxCount) {
+                scrollSize = it.key
+                maxCount = it.value
+            }
+        }
+
+        return scrollSize
+    }
+
+    private fun getElementPositions(): Map<String, Coords> {
+        val builder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+        val `is` = InputSource(StringReader(driver.pageSource))
+        val document: Document = builder.parse(`is`)
+
+        val xPathFactory = XPathFactory.newInstance()
+        val xpath = xPathFactory.newXPath()
+        val expr = xpath.compile("//*[string-length(@name) > 0]")
+        val nodes = expr.evaluate(document, XPathConstants.NODESET) as NodeList
+
+        val result: MutableMap<String, Coords> = HashMap()
+        val duplicateKeys: MutableSet<String> = HashSet()
+
+        for (i in 0 until nodes.length) {
+            val element = nodes.item(i) as Element
+            val key = element.getAttribute("name")
+            val x = element.getAttribute("x")
+            val y = element.getAttribute("y")
+            val width = element.getAttribute("width")
+            val height = element.getAttribute("height")
+
+            if (result.containsKey(key))
+                duplicateKeys.add(key)
+            if (x.isNotEmpty() && y.isNotEmpty() && width.isNotEmpty() && height.isNotEmpty())
+                result[key] = Coords(x.toInt(), y.toInt(), width.toInt(), height.toInt())
+        }
+
+        duplicateKeys.forEach {
+            if (result.containsKey(it))
+                result.remove(it)
+        }
+
+        return result
+    }
+
     private fun swipe(startX: Int, startY: Int, endX: Int, endY: Int) {
         val duration = countSwipeDuration(
             startX * screenScale, startY * screenScale,
@@ -366,5 +529,31 @@ class IOSAppiumDriver : Driver {
         val distanceInPx = sqrt((x2 - x1).toDouble().pow(2) + (y2 - y1).toDouble().pow(2))
         val duration = ceil(fullAreaSwipeDuration / viewportArea.height * distanceInPx * 10) * 100
         return Duration.ofMillis(duration.toLong())
+    }
+
+    private fun getScrollableArea(scale: Int = 1): Coords? {
+        val scrollableElements = driver.findElements(
+            AppiumBy.iOSNsPredicateString("type == 'XCUIElementTypeScrollView' OR type == 'XCUIElementTypeTable'")
+        )
+        if (scrollableElements.isEmpty())
+            return null
+        var scrollable = scrollableElements[0]
+
+        if (scrollableElements.size > 1) {
+            for (i in 1..<scrollableElements.size) {
+                if (scrollableElements[i].size.height > scrollable.size.height)
+                    scrollable = scrollableElements[i]
+            }
+        }
+
+        val location = scrollable.location
+        val size = scrollable.size
+
+        val x = location.x * scale
+        val y = location.y + (size.height / 4) * scale
+        val width = size.width * scale
+        val height = size.height / 2 * scale
+
+        return Coords(x, y, width, height)
     }
 }
