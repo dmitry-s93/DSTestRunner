@@ -67,7 +67,6 @@ class IOSAppiumDriver : Driver {
         driver.manage().timeouts().implicitlyWait(Duration.ofMillis(0))
         viewportArea = getViewportRect()
         screenScale = getScreenScale()
-        getLongScreenshot(HashSet(), HashSet())
     }
 
     private fun startSession(retry: Boolean) {
