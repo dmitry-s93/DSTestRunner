@@ -46,6 +46,7 @@ import pazone.ashot.cropper.indent.IndentCropper
 import pazone.ashot.cropper.indent.IndentFilerFactory
 import test.element.Locator
 import test.element.LocatorType
+import utils.ImageUtils
 import java.awt.Point
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
@@ -240,7 +241,7 @@ class AndroidAppiumDriver : Driver {
             ignoredAreas.addAll(getIgnoredAreas(ignoredElements, originShift, imageHeight))
         }
 
-        var bufferedImage = concatImageList(bufferedImageList)
+        var bufferedImage = ImageUtils().concatImageList(bufferedImageList)
         if (bufferedImage.height > maxImageHeight)
             bufferedImage = bufferedImage.getSubimage(0, 0, bufferedImage.width, maxImageHeight)
 
@@ -257,20 +258,6 @@ class AndroidAppiumDriver : Driver {
 
     private fun cropImage(image: BufferedImage, coords: Coords): BufferedImage {
         return image.getSubimage(coords.x, coords.y, coords.width, coords.height)
-    }
-
-    private fun concatImageList(imageList: LinkedList<BufferedImage>): BufferedImage {
-        var currHeight = 0
-        var totalHeight = 0
-        imageList.forEach { totalHeight += it.height }
-        val concatImage = BufferedImage(imageList.first().width, totalHeight, BufferedImage.TYPE_INT_RGB)
-        val g2d = concatImage.createGraphics()
-        imageList.forEach {
-            g2d.drawImage(it, 0, currHeight, null)
-            currHeight += it.height
-        }
-        g2d.dispose()
-        return concatImage
     }
 
     private fun getIgnoredAreas(locators: Set<Locator>, originShift: Coords, yOffset: Int = 0): Set<Coords> {
