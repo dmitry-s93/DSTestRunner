@@ -1,3 +1,19 @@
+/* Copyright 2023 DSTestRunner Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
 package driver.mobile
 
 import action.helper.Direction
@@ -17,10 +33,7 @@ import org.openqa.selenium.OutputType
 import org.openqa.selenium.StaleElementReferenceException
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.interactions.PointerInput
-import org.w3c.dom.Document
 import org.w3c.dom.Element
-import org.w3c.dom.NodeList
-import org.xml.sax.InputSource
 import pazone.ashot.AShot
 import pazone.ashot.Screenshot
 import pazone.ashot.ShootingStrategies
@@ -33,16 +46,10 @@ import utils.ImageUtils
 import java.awt.Point
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
-import java.io.StringReader
 import java.net.URL
 import java.time.Duration
 import java.util.*
 import javax.imageio.ImageIO
-import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.xpath.XPathConstants
-import javax.xml.xpath.XPathFactory
-import kotlin.collections.HashMap
-import kotlin.collections.HashSet
 import kotlin.math.ceil
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -151,7 +158,7 @@ class IOSAppiumDriver : Driver {
         val waitTime = ScreenshotConfig.waitTimeBeforeScreenshot
         if (waitTime > 0)
             Thread.sleep(waitTime)
-        if (longScreenshot && screenshotAreas.isEmpty())
+        if (longScreenshot && screenshotAreas.isEmpty() && isPageDoesNotFitOnScreen())
             return getLongScreenshot(ignoredElements, screenshotAreas)
         return getSingleScreenshot(ignoredElements, screenshotAreas)
     }
@@ -223,6 +230,11 @@ class IOSAppiumDriver : Driver {
         screenshot.ignoredAreas = Coords.intersection(screenshot.coordsToCompare, ignoredAreas)
 
         return screenshot
+    }
+
+    private fun isPageDoesNotFitOnScreen(): Boolean {
+        val height = (viewportArea.y + viewportArea.height) / screenScale
+        return DriverHelper().getNodesByXpath(getPageSource(), "//*[self::XCUIElementTypeScrollView or self::XCUIElementTypeTable]//*[((@y + @height) > $height or @y < 0)]").length > 0
     }
 
     private fun takeScreenshot(area: Coords): BufferedImage {
@@ -473,15 +485,7 @@ class IOSAppiumDriver : Driver {
     }
 
     private fun getElementPositions(): Map<String, Coords> {
-        val builder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-        val `is` = InputSource(StringReader(driver.pageSource))
-        val document: Document = builder.parse(`is`)
-
-        val xPathFactory = XPathFactory.newInstance()
-        val xpath = xPathFactory.newXPath()
-        val expr = xpath.compile("//*[string-length(@name) > 0]")
-        val nodes = expr.evaluate(document, XPathConstants.NODESET) as NodeList
-
+        val nodes = DriverHelper().getNodesByXpath(getPageSource(), "//*[string-length(@name) > 0]")
         val result: MutableMap<String, Coords> = HashMap()
         val duplicateKeys: MutableSet<String> = HashSet()
 
@@ -507,12 +511,21 @@ class IOSAppiumDriver : Driver {
         return result
     }
 
+    private fun getPageSource(): String {
+        return driver.executeScript(
+            "mobile: source",
+            mapOf(
+                Pair("format", "xml"),
+                Pair("excludedAttributes", "type,value,label,enabled,visible,accessible,index")
+            )
+        ).toString()
+    }
+
     private fun swipe(startX: Int, startY: Int, endX: Int, endY: Int) {
         val duration = countSwipeDuration(
             startX * screenScale, startY * screenScale,
             endX * screenScale, endY * screenScale
         )
-        println(duration)
         val finger = PointerInput(PointerInput.Kind.TOUCH, "finger")
         val swipe = org.openqa.selenium.interactions.Sequence(finger, 1)
         swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY))
