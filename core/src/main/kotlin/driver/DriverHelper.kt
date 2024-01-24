@@ -18,7 +18,14 @@ package driver
 import logger.Logger
 import org.openqa.selenium.StaleElementReferenceException
 import org.openqa.selenium.WebElement
+import org.w3c.dom.Document
+import org.w3c.dom.NodeList
+import org.xml.sax.InputSource
 import java.awt.Point
+import java.io.StringReader
+import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.xpath.XPathConstants
+import javax.xml.xpath.XPathFactory
 
 class DriverHelper {
     fun handleStaleElementReferenceException(logSource: String, numberOfAttempts: Int, function: () -> Unit) {
@@ -42,5 +49,16 @@ class DriverHelper {
             elementLocation.x + (elementSize.width / 2),
             elementLocation.y + (elementSize.height / 2)
         )
+    }
+
+    fun getNodesByXpath(source: String, expression: String ): NodeList {
+        val builder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+        val `is` = InputSource(StringReader(source))
+        val document: Document = builder.parse(`is`)
+
+        val xPathFactory = XPathFactory.newInstance()
+        val xpath = xPathFactory.newXPath()
+        val expr = xpath.compile(expression)
+        return expr.evaluate(document, XPathConstants.NODESET) as NodeList
     }
 }

@@ -34,10 +34,7 @@ import org.awaitility.core.ConditionTimeoutException
 import org.openqa.selenium.*
 import org.openqa.selenium.interactions.PointerInput
 import org.openqa.selenium.interactions.Sequence
-import org.w3c.dom.Document
 import org.w3c.dom.Element
-import org.w3c.dom.NodeList
-import org.xml.sax.InputSource
 import pazone.ashot.AShot
 import pazone.ashot.Screenshot
 import pazone.ashot.ShootingStrategies
@@ -50,14 +47,10 @@ import utils.ImageUtils
 import java.awt.Point
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
-import java.io.StringReader
 import java.net.URL
 import java.time.Duration
 import java.util.*
 import javax.imageio.ImageIO
-import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.xpath.XPathConstants
-import javax.xml.xpath.XPathFactory
 import kotlin.math.ceil
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -359,15 +352,7 @@ class AndroidAppiumDriver : Driver {
     }
 
     private fun getElementPositions(): Map<String, Coords> {
-        val builder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-        val `is` = InputSource(StringReader(driver.pageSource))
-        val document: Document = builder.parse(`is`)
-
-        val xPathFactory = XPathFactory.newInstance()
-        val xpath = xPathFactory.newXPath()
-        val expr = xpath.compile("//*[string-length(@text) > 0]")
-        val nodes = expr.evaluate(document, XPathConstants.NODESET) as NodeList
-
+        val nodes = DriverHelper().getNodesByXpath(driver.pageSource, "//*[string-length(@text) > 0]")
         val result: MutableMap<String, Coords> = HashMap()
         val duplicateKeys: MutableSet<String> = HashSet()
 
