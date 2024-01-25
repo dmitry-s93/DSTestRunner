@@ -521,7 +521,7 @@ class IOSAppiumDriver : Driver {
 
         for (i in 0 until nodes.length) {
             val element = nodes.item(i) as Element
-            val key = element.getAttribute("name")
+            val key = element.tagName + "|" + element.getAttribute("name")
             val x = element.getAttribute("x")
             val y = element.getAttribute("y")
             val width = element.getAttribute("width")
