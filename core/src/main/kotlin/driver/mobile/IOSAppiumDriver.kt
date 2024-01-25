@@ -122,14 +122,19 @@ class IOSAppiumDriver : Driver {
     }
 
     override fun checkLoadPage(url: String?, identifier: Locator?): Boolean {
+        var scrollToFind = false
         return try {
             Awaitility.await()
                 .ignoreException(StaleElementReferenceException::class.java)
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(pageLoadTimeout))
+                .conditionEvaluationListener { condition ->
+                    if (condition.elapsedTimeInMS > 3000)
+                        scrollToFind = true
+                }
                 .until {
-                    !isPreloaderDisplayed() && (identifier == null || getWebElements(identifier, onlyDisplayed = false).isNotEmpty())
+                    !isPreloaderDisplayed() && (identifier == null || getWebElements(identifier, onlyDisplayed = false, scrollToFind).isNotEmpty())
                 }
             true
         } catch (e: ConditionTimeoutException) {
@@ -139,7 +144,7 @@ class IOSAppiumDriver : Driver {
 
     private fun isPreloaderDisplayed(): Boolean {
         preloaderElements.forEach { locator ->
-            if (getWebElements(locator, onlyDisplayed = true).isNotEmpty())
+            if (getWebElements(locator, onlyDisplayed = true, scrollToFind = false).isNotEmpty())
                 return true
         }
         return false
@@ -168,7 +173,7 @@ class IOSAppiumDriver : Driver {
         if (screenshotAreas.isNotEmpty()) {
             val webElements: MutableList<WebElement> = mutableListOf()
             screenshotAreas.forEach { locator ->
-                webElements.addAll(getWebElements(locator, onlyDisplayed = true))
+                webElements.addAll(getWebElements(locator, onlyDisplayed = true, scrollToFind = false))
             }
             screenshot = with(AShot()) {
                 shootingStrategy(ShootingStrategies.scaling(screenScale.toFloat())) // TODO: Do not use scaling
@@ -259,7 +264,7 @@ class IOSAppiumDriver : Driver {
     private fun getIgnoredAreas(locators: Set<Locator>, originShift: Coords, yOffset: Int = 0): Set<Coords> {
         val ignoredAreas: HashSet<Coords> = HashSet()
         locators.forEach { locator ->
-            val webElements = getWebElements(locator, onlyDisplayed = true)
+            val webElements = getWebElements(locator, onlyDisplayed = true, scrollToFind = false)
             webElements.forEach { webElement ->
                 val elementLocation = webElement.location
                 val elementSize = webElement.size
@@ -289,7 +294,7 @@ class IOSAppiumDriver : Driver {
     override fun hideKeyboard() {
         if (driver.isKeyboardShown) {
             val locator = Locator("type='XCUIElementTypeButton' AND name='keyboard hide'", LocatorType.IOS_PREDICATE_STRING)
-            if (getWebElements(locator, onlyDisplayed = true).isEmpty())
+            if (getWebElements(locator, onlyDisplayed = true, scrollToFind = false).isEmpty())
                 return
             getWebElement(locator).click()
         }
@@ -306,10 +311,10 @@ class IOSAppiumDriver : Driver {
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(elementTimeout))
-                .until { getWebElements(locator, onlyDisplayed = false).isNotEmpty() }
+                .until { getWebElements(locator, onlyDisplayed = false, scrollToFind = false).isNotEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
-            getWebElements(locator, onlyDisplayed = false).isNotEmpty()
+            getWebElements(locator, onlyDisplayed = false, scrollToFind = false).isNotEmpty()
         }
     }
 
@@ -320,10 +325,10 @@ class IOSAppiumDriver : Driver {
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(elementTimeout))
-                .until { getWebElements(locator, onlyDisplayed = false).isEmpty() }
+                .until { getWebElements(locator, onlyDisplayed = false, scrollToFind = false).isEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
-            getWebElements(locator, onlyDisplayed = false).isEmpty()
+            getWebElements(locator, onlyDisplayed = false, scrollToFind = false).isEmpty()
         }
     }
 
@@ -380,7 +385,7 @@ class IOSAppiumDriver : Driver {
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(elementTimeout))
                 .until {
-                    val elements = getWebElements(locator, onlyDisplayed = false)
+                    val elements = getWebElements(locator, onlyDisplayed = false, scrollToFind = false)
                     if (elements.isNotEmpty()) {
                         element = elements[0]
                         return@until true
@@ -393,8 +398,33 @@ class IOSAppiumDriver : Driver {
         return element as WebElement
     }
 
-    private fun getWebElements(locator: Locator, onlyDisplayed: Boolean): List<WebElement> {
-        val elements = driver.findElements(byDetect(locator))
+    private fun getWebElements(locator: Locator, onlyDisplayed: Boolean, scrollToFind: Boolean): List<WebElement> {
+        var elements = filterElements(driver.findElements(byDetect(locator)), onlyDisplayed)
+        if (elements.isNotEmpty() || !scrollToFind)
+            return elements
+        var swipeCount = 0
+        var direction = Direction.DOWN
+        while (elements.isEmpty()) {
+            if (swipeCount >= maxSwipeCount)
+                break
+            val elementPositionsBefore = getElementPositions()
+            if (!scroll(direction))
+                break
+            if (getScrollSize(elementPositionsBefore, getElementPositions()) == 0) {
+                direction = when(direction) {
+                    Direction.UP -> break
+                    Direction.DOWN -> Direction.UP
+                    else -> break
+                }
+            }
+            elements = filterElements(driver.findElements(byDetect(locator)), onlyDisplayed)
+            swipeCount++
+        }
+
+        return elements
+    }
+
+    private fun filterElements(elements: List<WebElement>, onlyDisplayed: Boolean): List<WebElement> {
         if (onlyDisplayed) {
             val displayedElements: MutableList<WebElement> = mutableListOf()
             elements.forEach { element ->
@@ -491,7 +521,7 @@ class IOSAppiumDriver : Driver {
 
         for (i in 0 until nodes.length) {
             val element = nodes.item(i) as Element
-            val key = element.getAttribute("name")
+            val key = element.tagName + "|" + element.getAttribute("name")
             val x = element.getAttribute("x")
             val y = element.getAttribute("y")
             val width = element.getAttribute("width")
