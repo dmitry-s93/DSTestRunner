@@ -22,25 +22,35 @@ repositories {
     mavenCentral()
 }
 
+val seleniumJavaVersion = "4.16.1"
+val appiumJavaClientVersion = "9.0.0"
+val jsonVersion = "20231013"
+val commonsIOVersion = "2.15.1"
+val awaitilityVersion = "4.2.0"
+val openCsvVersion = "5.9"
+val httpClient5Version = "5.3"
+val postgresqlVersion = "42.7.1"
+val rgxgenVersion = "1.4"
+
 dependencies {
     // https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java
-    implementation("org.seleniumhq.selenium:selenium-java:4.16.1")
+    implementation("org.seleniumhq.selenium:selenium-java:$seleniumJavaVersion")
     // https://mvnrepository.com/artifact/org.json/json
-    implementation("org.json:json:20231013")
+    implementation("org.json:json:$jsonVersion")
     // https://mvnrepository.com/artifact/commons-io/commons-io
-    implementation("commons-io:commons-io:2.15.1")
+    implementation("commons-io:commons-io:$commonsIOVersion")
     // https://mvnrepository.com/artifact/org.awaitility/awaitility
-    implementation("org.awaitility:awaitility:4.2.0")
+    implementation("org.awaitility:awaitility:$awaitilityVersion")
     // https://mvnrepository.com/artifact/com.opencsv/opencsv
-    implementation("com.opencsv:opencsv:5.9")
+    implementation("com.opencsv:opencsv:$openCsvVersion")
     // https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5
-    implementation("org.apache.httpcomponents.client5:httpclient5:5.3")
+    implementation("org.apache.httpcomponents.client5:httpclient5:$httpClient5Version")
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    implementation("org.postgresql:postgresql:42.7.1")
+    implementation("org.postgresql:postgresql:$postgresqlVersion")
     // https://mvnrepository.com/artifact/com.github.curious-odd-man/rgxgen
-    implementation("com.github.curious-odd-man:rgxgen:1.4")
+    implementation("com.github.curious-odd-man:rgxgen:$rgxgenVersion")
     // https://github.com/pazone/ashot
     implementation(files("libs/ashot-1.6.0-5430e42.jar"))
     // https://mvnrepository.com/artifact/io.appium/java-client
-    implementation("io.appium:java-client:9.0.0")
+    implementation("io.appium:java-client:$appiumJavaClientVersion")
 }
