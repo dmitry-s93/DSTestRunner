@@ -385,7 +385,7 @@ class IOSAppiumDriver : Driver {
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(elementTimeout))
                 .until {
-                    val elements = getWebElements(locator, onlyDisplayed = false, scrollToFind = false)
+                    val elements = getWebElements(locator, onlyDisplayed = false, scrollToFind = true)
                     if (elements.isNotEmpty()) {
                         element = elements[0]
                         return@until true
