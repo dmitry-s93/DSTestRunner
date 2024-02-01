@@ -171,20 +171,16 @@ class IOSAppiumDriver : Driver {
     private fun getSingleScreenshot(ignoredElements: Set<Locator>, screenshotAreas: Set<Locator>): Screenshot {
         val screenshot: Screenshot
         if (screenshotAreas.isNotEmpty()) {
-            val webElements: MutableList<WebElement> = mutableListOf()
-            screenshotAreas.forEach { locator ->
-                webElements.addAll(getWebElements(locator, onlyDisplayed = true, scrollToFind = false))
-            }
             screenshot = with(AShot()) {
-                shootingStrategy(ShootingStrategies.scaling(screenScale.toFloat())) // TODO: Do not use scaling
+                shootingStrategy(ShootingStrategies.simple())
                 imageCropper(IndentCropper().addIndentFilter(IndentFilerFactory.blur()))
-                takeScreenshot(driver, webElements)
+                takeScreenshot(driver, getElementCoordinates(screenshotAreas))
             }
         } else {
             screenshot = Screenshot(takeScreenshot(viewportArea))
             screenshot.originShift = viewportArea
         }
-        val ignoredAreas = getIgnoredAreas(ignoredElements, screenshot.originShift)
+        val ignoredAreas = getElementCoordinates(ignoredElements, screenshot.originShift)
         screenshot.ignoredAreas = Coords.intersection(screenshot.coordsToCompare, ignoredAreas)
         return screenshot
     }
@@ -202,7 +198,7 @@ class IOSAppiumDriver : Driver {
         var imageHeight = scrollableArea.y + scrollableArea.height - viewportArea.y
         var originShift = Coords(viewportArea.x, viewportArea.y, viewportArea.width,  imageHeight)
         bufferedImageList.add(takeScreenshot(originShift))
-        ignoredAreas.addAll(getIgnoredAreas(ignoredElements, originShift))
+        ignoredAreas.addAll(getElementCoordinates(ignoredElements, originShift))
 
         do {
             val elementPositionsBefore = getElementPositions()
@@ -213,7 +209,7 @@ class IOSAppiumDriver : Driver {
                 val y = scrollableArea.y + scrollableArea.height - scrollSize
                 originShift = Coords(viewportArea.x, y, viewportArea.width, scrollSize)
                 bufferedImageList.add(takeScreenshot(originShift))
-                ignoredAreas.addAll(getIgnoredAreas(ignoredElements, originShift, imageHeight))
+                ignoredAreas.addAll(getElementCoordinates(ignoredElements, originShift, imageHeight))
                 imageHeight += scrollSize
             }
         } while (scrollSize > 0 && imageHeight < maxImageHeight)
@@ -224,7 +220,7 @@ class IOSAppiumDriver : Driver {
             val height = viewportArea.y + viewportArea.height - y
             originShift = Coords(viewportArea.x, y, viewportArea.width, height)
             bufferedImageList.add(takeScreenshot(originShift))
-            ignoredAreas.addAll(getIgnoredAreas(ignoredElements, originShift, imageHeight))
+            ignoredAreas.addAll(getElementCoordinates(ignoredElements, originShift, imageHeight))
         }
 
         var bufferedImage = ImageUtils().concatImageList(bufferedImageList)
@@ -261,20 +257,27 @@ class IOSAppiumDriver : Driver {
         return image.getSubimage(x, y, width, height)
     }
 
-    private fun getIgnoredAreas(locators: Set<Locator>, originShift: Coords, yOffset: Int = 0): Set<Coords> {
+    private fun getElementCoordinates(locators: Set<Locator>, originShift: Coords? = null, yOffset: Int = 0): Set<Coords> {
         val ignoredAreas: HashSet<Coords> = HashSet()
+        var originShiftX = 0
+        var originShiftY = 0
+        if (originShift != null) {
+            originShiftX = originShift.x
+            originShiftY = originShift.y
+        }
         locators.forEach { locator ->
-            val webElements = getWebElements(locator, onlyDisplayed = true, scrollToFind = false)
-            webElements.forEach { webElement ->
-                val elementLocation = webElement.location
-                val elementSize = webElement.size
-
-                if ((elementLocation.y * screenScale) + (elementSize.height * screenScale) >= originShift.y) {
-                    val x = elementLocation.x * screenScale - originShift.x
-                    val y = elementLocation.y * screenScale - originShift.y + yOffset
-                    val width = elementSize.width * screenScale
-                    val height = elementSize.height * screenScale
-                    ignoredAreas.add(Coords(x, y, width, height))
+            DriverHelper().handleStaleElementReferenceException("getElementCoordinates", numberOfAttempts) {
+                val webElements = getWebElements(locator, onlyDisplayed = true, scrollToFind = false)
+                webElements.forEach { webElement ->
+                    val elementLocation = webElement.location
+                    val elementSize = webElement.size
+                    if ((elementLocation.y * screenScale) + (elementSize.height * screenScale) >= originShiftY) {
+                        val x = elementLocation.x * screenScale - originShiftX
+                        val y = elementLocation.y * screenScale - originShiftY + yOffset
+                        val width = elementSize.width * screenScale
+                        val height = elementSize.height * screenScale
+                        ignoredAreas.add(Coords(x, y, width, height))
+                    }
                 }
             }
         }
