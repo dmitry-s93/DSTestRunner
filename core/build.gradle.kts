@@ -50,7 +50,7 @@ dependencies {
     // https://mvnrepository.com/artifact/com.github.curious-odd-man/rgxgen
     implementation("com.github.curious-odd-man:rgxgen:$rgxgenVersion")
     // https://github.com/pazone/ashot
-    implementation(files("libs/ashot-1.6.0-5430e42.jar"))
+    implementation(files("libs/ashot-1.6.1-e1f84e5-modified.jar"))
     // https://mvnrepository.com/artifact/io.appium/java-client
     implementation("io.appium:java-client:$appiumJavaClientVersion")
 }
