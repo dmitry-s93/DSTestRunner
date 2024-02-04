@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package action.actions
+package action.actions.mobile
 
 import action.Action
 import action.ActionData
@@ -22,31 +22,34 @@ import action.ActionReturn
 import config.Localization
 import driver.DriverSession
 
-class NavigateBackAction : ActionReturn(), Action {
+class InstallAppAction(private var appPath: String?) : ActionReturn(), Action {
     override fun getName(): String {
-        return Localization.get("NavigateBackAction.DefaultName")
+        return Localization.get("InstallAppAction.DefaultName")
     }
 
     override fun execute(): ActionResult {
         try {
-            DriverSession.getSession().navigateBack()
+            DriverSession.getSession().installApp(appPath)
         } catch (e: Exception) {
-            return broke(Localization.get("NavigateBackAction.GeneralError", e.message), e.stackTraceToString())
+            return broke(Localization.get("InstallAppAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }
 
     override fun getParameters(): HashMap<String, String> {
-        return HashMap()
+        val parameters = HashMap<String, String>()
+        if (appPath != null)
+            parameters["appPath"] = appPath.toString()
+        return parameters
     }
 }
 
 /**
- * Goes back
+ * Installs the application
  */
-fun navigateBack(function: (NavigateBackAction.() -> Unit)? = null): ActionData {
+fun installApp(appPath: String? = null, function: (InstallAppAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = NavigateBackAction()
+    val action = InstallAppAction(appPath)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
