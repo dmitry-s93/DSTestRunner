@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package action.actions
+package action.actions.mobile
 
 import action.Action
 import action.ActionData
@@ -22,31 +22,34 @@ import action.ActionReturn
 import config.Localization
 import driver.DriverSession
 
-class NavigateBackAction : ActionReturn(), Action {
+class ActivateAppAction(private var bundleId: String?) : ActionReturn(), Action {
     override fun getName(): String {
-        return Localization.get("NavigateBackAction.DefaultName")
+        return Localization.get("ActivateAppAction.DefaultName")
     }
 
     override fun execute(): ActionResult {
         try {
-            DriverSession.getSession().navigateBack()
+            DriverSession.getSession().activateApp(bundleId)
         } catch (e: Exception) {
-            return broke(Localization.get("NavigateBackAction.GeneralError", e.message), e.stackTraceToString())
+            return broke(Localization.get("ActivateAppAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
     }
 
     override fun getParameters(): HashMap<String, String> {
-        return HashMap()
+        val parameters = HashMap<String, String>()
+        if (bundleId != null)
+            parameters["bundleId"] = bundleId.toString()
+        return parameters
     }
 }
 
 /**
- * Goes back
+ * Activates the application
  */
-fun navigateBack(function: (NavigateBackAction.() -> Unit)? = null): ActionData {
+fun activateApp(bundleId: String? = null, function: (ActivateAppAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = NavigateBackAction()
+    val action = ActivateAppAction(bundleId)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()

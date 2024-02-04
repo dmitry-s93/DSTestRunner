@@ -82,4 +82,24 @@ interface Driver {
     fun setLocation(latitude: Double, longitude: Double) {
         throw NotImplementedError(notImplementedMessage)
     }
+
+    fun installApp(appPath: String?) {
+        throw NotImplementedError(notImplementedMessage)
+    }
+
+    fun activateApp(bundleId: String?) {
+        throw NotImplementedError(notImplementedMessage)
+    }
+
+    fun terminateApp(bundleId: String?) {
+        throw NotImplementedError(notImplementedMessage)
+    }
+
+    fun removeApp(bundleId: String?) {
+        throw NotImplementedError(notImplementedMessage)
+    }
+
+    fun isAppInstalled(bundleId: String?): Boolean {
+        throw NotImplementedError(notImplementedMessage)
+    }
 }

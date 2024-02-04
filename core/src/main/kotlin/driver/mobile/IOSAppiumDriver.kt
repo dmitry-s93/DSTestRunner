@@ -368,6 +368,44 @@ class IOSAppiumDriver : Driver {
         swipe(elementCenter.x, elementCenter.y, endX, endY)
     }
 
+    override fun installApp(appPath: String?) {
+        if (appPath.isNullOrEmpty())
+            driver.installApp(device?.capabilities?.getCapability("appium:app").toString())
+        else
+        driver.installApp(appPath)
+    }
+
+    override fun activateApp(bundleId: String?) {
+        if (bundleId.isNullOrEmpty())
+            driver.activateApp(getBundleId().toString())
+        else
+            driver.activateApp(bundleId)
+    }
+
+    override fun terminateApp(bundleId: String?) {
+        if (bundleId.isNullOrEmpty())
+            driver.terminateApp(getBundleId().toString())
+        else
+            driver.terminateApp(bundleId)
+    }
+
+    override fun removeApp(bundleId: String?) {
+        if (bundleId.isNullOrEmpty())
+            driver.removeApp(getBundleId().toString())
+        else
+            driver.removeApp(bundleId)
+    }
+
+    override fun isAppInstalled(bundleId: String?): Boolean {
+        if (bundleId.isNullOrEmpty())
+            return driver.isAppInstalled(getBundleId().toString())
+        return driver.isAppInstalled(bundleId)
+    }
+
+    private fun getBundleId(): Any? {
+        return device?.capabilities?.getCapability("appium:bundleId")
+    }
+
     override fun quit() {
         try {
             driver.quit()
