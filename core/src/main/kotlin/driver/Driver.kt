@@ -102,4 +102,16 @@ interface Driver {
     fun isAppInstalled(bundleId: String?): Boolean {
         throw NotImplementedError(notImplementedMessage)
     }
+
+    fun getAlertText(): String {
+        throw NotImplementedError(notImplementedMessage)
+    }
+
+    fun acceptAlert() {
+        throw NotImplementedError(notImplementedMessage)
+    }
+
+    fun dismissAlert() {
+        throw NotImplementedError(notImplementedMessage)
+    }
 }

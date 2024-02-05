@@ -28,10 +28,7 @@ import io.appium.java_client.AppiumBy
 import io.appium.java_client.ios.IOSDriver
 import org.awaitility.Awaitility
 import org.awaitility.core.ConditionTimeoutException
-import org.openqa.selenium.By
-import org.openqa.selenium.OutputType
-import org.openqa.selenium.StaleElementReferenceException
-import org.openqa.selenium.WebElement
+import org.openqa.selenium.*
 import org.openqa.selenium.interactions.PointerInput
 import org.w3c.dom.Element
 import pazone.ashot.AShot
@@ -404,6 +401,36 @@ class IOSAppiumDriver : Driver {
 
     private fun getBundleId(): Any? {
         return device?.capabilities?.getCapability("appium:bundleId")
+    }
+
+    override fun getAlertText(): String {
+        return getAlert().text
+    }
+
+    override fun acceptAlert() {
+        getAlert().accept()
+    }
+
+    override fun dismissAlert() {
+        getAlert().dismiss()
+    }
+
+    private fun getAlert(): Alert {
+        Awaitility.await()
+            .atLeast(Duration.ofMillis(0))
+            .pollDelay(Duration.ofMillis(poolDelay))
+            .atMost(Duration.ofMillis(pageLoadTimeout))
+            .until { isAlertPresent() }
+        return driver.switchTo().alert()
+    }
+
+    private fun isAlertPresent(): Boolean {
+        try {
+            driver.switchTo().alert()
+            return true
+        } catch (e: NoAlertPresentException) {
+            return false
+        }
     }
 
     override fun quit() {
