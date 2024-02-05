@@ -1,0 +1,69 @@
+/* Copyright 2024 DSTestRunner Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package action.actions.mobile
+
+import action.Action
+import action.ActionData
+import action.ActionResult
+import action.ActionReturn
+import config.Localization
+import driver.DriverSession
+
+class CheckAlertTextAction(private val text: String) : ActionReturn(), Action {
+    private var alertText: String? = null
+    @Suppress("MemberVisibilityCanBePrivate")
+    var fullMatch = false
+    override fun getName(): String {
+        return Localization.get("CheckAlertTextAction.DefaultName")
+    }
+
+    override fun execute(): ActionResult {
+        try {
+            alertText = DriverSession.getSession().getAlertText()
+            if (fullMatch) {
+                if (alertText != text)
+                    return fail(Localization.get("CheckAlertTextAction.ValueDoesNotMatchExpected", alertText, text))
+            } else {
+                if (!alertText!!.contains(text))
+                    return fail(Localization.get("CheckAlertTextAction.ValueDoesNotContainText", text))
+            }
+        } catch (e: Exception) {
+            return broke(Localization.get("CheckAlertTextAction.GeneralError", e.message), e.stackTraceToString())
+        }
+        return pass()
+    }
+
+    override fun getParameters(): HashMap<String, String> {
+        val parameters = HashMap<String, String>()
+        parameters["text"] = text
+        parameters["alertText"] = alertText.toString()
+        return parameters
+    }
+}
+
+/**
+ * Checks the alert text
+ */
+fun checkAlertText(text: String, function: (CheckAlertTextAction.() -> Unit)? = null): ActionData {
+    val startTime = System.currentTimeMillis()
+    val action = CheckAlertTextAction(text)
+    function?.invoke(action)
+    val result = action.execute()
+    val parameters = action.getParameters()
+    val name = action.getName()
+    val stopTime = System.currentTimeMillis()
+    return ActionData(result, parameters, name, startTime, stopTime)
+}

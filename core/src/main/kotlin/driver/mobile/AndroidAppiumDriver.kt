@@ -624,6 +624,36 @@ class AndroidAppiumDriver : Driver {
         return device?.capabilities?.getCapability("appium:appPackage")
     }
 
+    override fun getAlertText(): String {
+        return getAlert().text
+    }
+
+    override fun acceptAlert() {
+        getAlert().accept()
+    }
+
+    override fun dismissAlert() {
+        getAlert().dismiss()
+    }
+
+    private fun getAlert(): Alert {
+        Awaitility.await()
+            .atLeast(Duration.ofMillis(0))
+            .pollDelay(Duration.ofMillis(poolDelay))
+            .atMost(Duration.ofMillis(pageLoadTimeout))
+            .until { isAlertPresent() }
+        return driver.switchTo().alert()
+    }
+
+    private fun isAlertPresent(): Boolean {
+        try {
+            driver.switchTo().alert()
+            return true
+        } catch (e: NoAlertPresentException) {
+            return false
+        }
+    }
+
     override fun quit() {
         try {
             driver.quit()
