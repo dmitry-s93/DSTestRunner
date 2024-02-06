@@ -628,20 +628,28 @@ class AndroidAppiumDriver : Driver {
         return getAlert().text
     }
 
-    override fun acceptAlert() {
+    override fun acceptAlert(buttonLabel: String?) {
+        if (buttonLabel != null)
+            Logger.warning("The 'buttonLabel' parameter is not supported on Android", "acceptAlert")
         getAlert().accept()
     }
 
-    override fun dismissAlert() {
+    override fun dismissAlert(buttonLabel: String?) {
+        if (buttonLabel != null)
+            Logger.warning("The 'buttonLabel' parameter is not supported on Android", "dismissAlert")
         getAlert().dismiss()
     }
 
     private fun getAlert(): Alert {
-        Awaitility.await()
-            .atLeast(Duration.ofMillis(0))
-            .pollDelay(Duration.ofMillis(poolDelay))
-            .atMost(Duration.ofMillis(pageLoadTimeout))
-            .until { isAlertPresent() }
+        try {
+            Awaitility.await()
+                .atLeast(Duration.ofMillis(0))
+                .pollDelay(Duration.ofMillis(poolDelay))
+                .atMost(Duration.ofMillis(pageLoadTimeout))
+                .until { isAlertPresent() }
+        } catch (_: ConditionTimeoutException) {
+            return driver.switchTo().alert()
+        }
         return driver.switchTo().alert()
     }
 

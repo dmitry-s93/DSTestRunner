@@ -404,24 +404,38 @@ class IOSAppiumDriver : Driver {
     }
 
     override fun getAlertText(): String {
-        return getAlert().text
+        waitForAlert()
+        return driver.switchTo().alert().text
     }
 
-    override fun acceptAlert() {
-        getAlert().accept()
+    override fun acceptAlert(buttonLabel: String?) {
+        waitForAlert()
+        val args = HashMap<String, String>();
+        args["action"] = "accept"
+        if (buttonLabel != null)
+            args["buttonLabel"] = buttonLabel
+        driver.executeScript("mobile:alert", args)
     }
 
-    override fun dismissAlert() {
-        getAlert().dismiss()
+    override fun dismissAlert(buttonLabel: String?) {
+        waitForAlert()
+        val args = HashMap<String, String>();
+        args["action"] = "dismiss"
+        if (buttonLabel != null)
+            args["buttonLabel"] = buttonLabel
+        driver.executeScript("mobile:alert", args)
     }
 
-    private fun getAlert(): Alert {
-        Awaitility.await()
-            .atLeast(Duration.ofMillis(0))
-            .pollDelay(Duration.ofMillis(poolDelay))
-            .atMost(Duration.ofMillis(pageLoadTimeout))
-            .until { isAlertPresent() }
-        return driver.switchTo().alert()
+    private fun waitForAlert() {
+        try {
+            Awaitility.await()
+                .atLeast(Duration.ofMillis(0))
+                .pollDelay(Duration.ofMillis(poolDelay))
+                .atMost(Duration.ofMillis(pageLoadTimeout))
+                .until { isAlertPresent() }
+        } catch (_: ConditionTimeoutException) {
+            driver.switchTo().alert() // Will throw an exception
+        }
     }
 
     private fun isAlertPresent(): Boolean {

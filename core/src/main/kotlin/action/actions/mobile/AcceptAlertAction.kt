@@ -22,14 +22,14 @@ import action.ActionReturn
 import config.Localization
 import driver.DriverSession
 
-class AcceptAlertAction : ActionReturn(), Action {
+class AcceptAlertAction(private val buttonLabel: String?) : ActionReturn(), Action {
     override fun getName(): String {
         return Localization.get("AcceptAlertAction.DefaultName")
     }
 
     override fun execute(): ActionResult {
         try {
-            DriverSession.getSession().acceptAlert()
+            DriverSession.getSession().acceptAlert(buttonLabel)
         } catch (e: Exception) {
             return broke(Localization.get("AcceptAlertAction.GeneralError", e.message), e.stackTraceToString())
         }
@@ -37,16 +37,20 @@ class AcceptAlertAction : ActionReturn(), Action {
     }
 
     override fun getParameters(): HashMap<String, String> {
-        return HashMap()
+        val parameters = HashMap<String, String>()
+        if (buttonLabel != null)
+            parameters["buttonLabel"] = buttonLabel
+        return parameters
     }
 }
 
 /**
  * Accepts an alert
+ * [buttonLabel] - button to press (for iOS only)
  */
-fun acceptAlert(function: (AcceptAlertAction.() -> Unit)? = null): ActionData {
+fun acceptAlert(buttonLabel: String? = null, function: (AcceptAlertAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = AcceptAlertAction()
+    val action = AcceptAlertAction(buttonLabel)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
