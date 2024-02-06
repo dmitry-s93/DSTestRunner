@@ -22,14 +22,14 @@ import action.ActionReturn
 import config.Localization
 import driver.DriverSession
 
-class DismissAlertAction : ActionReturn(), Action {
+class DismissAlertAction(private val buttonLabel: String?) : ActionReturn(), Action {
     override fun getName(): String {
         return Localization.get("DismissAlertAction.DefaultName")
     }
 
     override fun execute(): ActionResult {
         try {
-            DriverSession.getSession().dismissAlert()
+            DriverSession.getSession().dismissAlert(buttonLabel)
         } catch (e: Exception) {
             return broke(Localization.get("DismissAlertAction.GeneralError", e.message), e.stackTraceToString())
         }
@@ -37,16 +37,20 @@ class DismissAlertAction : ActionReturn(), Action {
     }
 
     override fun getParameters(): HashMap<String, String> {
-        return HashMap()
+        val parameters = HashMap<String, String>()
+        if (buttonLabel != null)
+            parameters["buttonLabel"] = buttonLabel
+        return parameters
     }
 }
 
 /**
  * Dismisses an alert
+ * [buttonLabel] - button to press (for iOS only)
  */
-fun dismissAlert(function: (DismissAlertAction.() -> Unit)? = null): ActionData {
+fun dismissAlert(buttonLabel: String? = null, function: (DismissAlertAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = DismissAlertAction()
+    val action = DismissAlertAction(buttonLabel)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()

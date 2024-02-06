@@ -107,11 +107,11 @@ interface Driver {
         throw NotImplementedError(notImplementedMessage)
     }
 
-    fun acceptAlert() {
+    fun acceptAlert(buttonLabel: String? = null) {
         throw NotImplementedError(notImplementedMessage)
     }
 
-    fun dismissAlert() {
+    fun dismissAlert(buttonLabel: String? = null) {
         throw NotImplementedError(notImplementedMessage)
     }
 }
