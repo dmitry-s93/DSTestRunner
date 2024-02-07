@@ -256,17 +256,18 @@ class AndroidAppiumDriver : Driver {
     private fun getIgnoredAreas(locators: Set<Locator>, originShift: Coords, yOffset: Int = 0): Set<Coords> {
         val ignoredAreas: HashSet<Coords> = HashSet()
         locators.forEach { locator ->
-            val webElements = getWebElements(locator, scrollToFind = false)
-            webElements.forEach { webElement ->
-                val elementLocation = webElement.location
-                val elementSize = webElement.size
-
-                if (elementLocation.y + elementSize.height >= originShift.y) {
-                    val x = elementLocation.x - originShift.x
-                    val y = elementLocation.y - originShift.y + yOffset
-                    val width = elementSize.width
-                    val height = elementSize.height
-                    ignoredAreas.add(Coords(x, y, width, height))
+            DriverHelper().handleStaleElementReferenceException("getIgnoredAreas", numberOfAttempts) {
+                val webElements = getWebElements(locator, scrollToFind = false)
+                webElements.forEach { webElement ->
+                    val elementLocation = webElement.location
+                    val elementSize = webElement.size
+                    if (elementLocation.y + elementSize.height >= originShift.y) {
+                        val x = elementLocation.x - originShift.x
+                        val y = elementLocation.y - originShift.y + yOffset
+                        val width = elementSize.width
+                        val height = elementSize.height
+                        ignoredAreas.add(Coords(x, y, width, height))
+                    }
                 }
             }
         }

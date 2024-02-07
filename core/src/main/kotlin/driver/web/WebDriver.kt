@@ -227,13 +227,15 @@ class WebDriver : Driver {
     private fun getIgnoredAreas(locators: Set<Locator>): Set<Coords> {
         val ignoredAreas: HashSet<Coords> = HashSet()
         locators.forEach { locator ->
-            val webElements = getWebElements(locator, onlyDisplayed = true)
-            webElements.forEach { webElement ->
-                val x = webElement.location.x
-                val y = webElement.location.y
-                val width = webElement.size.width
-                val height = webElement.size.height
-                ignoredAreas.add(Coords(x, y, width, height))
+            DriverHelper().handleStaleElementReferenceException("getIgnoredAreas", numberOfAttempts) {
+                val webElements = getWebElements(locator, onlyDisplayed = true)
+                webElements.forEach { webElement ->
+                    val x = webElement.location.x
+                    val y = webElement.location.y
+                    val width = webElement.size.width
+                    val height = webElement.size.height
+                    ignoredAreas.add(Coords(x, y, width, height))
+                }
             }
         }
         return ignoredAreas
