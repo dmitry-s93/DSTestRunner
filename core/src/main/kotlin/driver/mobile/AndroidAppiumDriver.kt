@@ -256,17 +256,18 @@ class AndroidAppiumDriver : Driver {
     private fun getIgnoredAreas(locators: Set<Locator>, originShift: Coords, yOffset: Int = 0): Set<Coords> {
         val ignoredAreas: HashSet<Coords> = HashSet()
         locators.forEach { locator ->
-            val webElements = getWebElements(locator, scrollToFind = false)
-            webElements.forEach { webElement ->
-                val elementLocation = webElement.location
-                val elementSize = webElement.size
-
-                if (elementLocation.y + elementSize.height >= originShift.y) {
-                    val x = elementLocation.x - originShift.x
-                    val y = elementLocation.y - originShift.y + yOffset
-                    val width = elementSize.width
-                    val height = elementSize.height
-                    ignoredAreas.add(Coords(x, y, width, height))
+            DriverHelper().handleStaleElementReferenceException("getIgnoredAreas", numberOfAttempts) {
+                val webElements = getWebElements(locator, scrollToFind = false)
+                webElements.forEach { webElement ->
+                    val elementLocation = webElement.location
+                    val elementSize = webElement.size
+                    if (elementLocation.y + elementSize.height >= originShift.y) {
+                        val x = elementLocation.x - originShift.x
+                        val y = elementLocation.y - originShift.y + yOffset
+                        val width = elementSize.width
+                        val height = elementSize.height
+                        ignoredAreas.add(Coords(x, y, width, height))
+                    }
                 }
             }
         }
@@ -444,7 +445,8 @@ class AndroidAppiumDriver : Driver {
         swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY))
         swipe.addAction(finger.createPointerDown(0))
         swipe.addAction(finger.createPointerMove(duration, PointerInput.Origin.viewport(), endX, endY))
-        swipe.addAction(finger.createPointerMove(Duration.ofMillis(100), PointerInput.Origin.viewport(), endX, endY))
+        // To prevent inertial scrolling from working
+        swipe.addAction(finger.createPointerMove(Duration.ofMillis(150), PointerInput.Origin.viewport(), endX, endY))
         swipe.addAction(finger.createPointerUp(0))
         driver.perform(listOf(swipe))
     }
