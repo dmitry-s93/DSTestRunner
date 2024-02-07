@@ -445,7 +445,8 @@ class AndroidAppiumDriver : Driver {
         swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY))
         swipe.addAction(finger.createPointerDown(0))
         swipe.addAction(finger.createPointerMove(duration, PointerInput.Origin.viewport(), endX, endY))
-        swipe.addAction(finger.createPointerMove(Duration.ofMillis(100), PointerInput.Origin.viewport(), endX, endY))
+        // To prevent inertial scrolling from working
+        swipe.addAction(finger.createPointerMove(Duration.ofMillis(150), PointerInput.Origin.viewport(), endX, endY))
         swipe.addAction(finger.createPointerUp(0))
         driver.perform(listOf(swipe))
     }
