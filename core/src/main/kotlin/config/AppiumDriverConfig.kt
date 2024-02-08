@@ -20,12 +20,15 @@ import driver.mobile.device.DeviceFactory
 import logger.Logger
 import org.json.JSONObject
 import org.openqa.selenium.remote.DesiredCapabilities
+import pazone.ashot.coordinates.Coords
 
 class AppiumDriverConfig {
     companion object {
         var pageLoadTimeout: Long = 0
             private set
         var elementTimeout: Long = 0
+            private set
+        var viewportRect: Coords? = null
             private set
 
         @Synchronized
@@ -35,6 +38,16 @@ class AppiumDriverConfig {
                 val appiumDriverConfig = config.getJSONObject("AppiumDriver")
                 pageLoadTimeout = appiumDriverConfig.getLong("pageLoadTimeout")
                 elementTimeout = appiumDriverConfig.getLong("elementTimeout")
+                if (appiumDriverConfig.has("viewportRect")) {
+                    appiumDriverConfig.getJSONObject("viewportRect").let {
+                        viewportRect = Coords (
+                            it.getInt("left"),
+                            it.getInt("top"),
+                            it.getInt("width"),
+                            it.getInt("height")
+                        )
+                    }
+                }
                 val generalCapabilities = appiumDriverConfig.getJSONObject("DesiredCapabilities").toMap()
                 val devices = appiumDriverConfig.getJSONObject("devices")
                 devices.keys().forEach { deviceName ->

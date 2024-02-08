@@ -90,6 +90,7 @@ class AndroidAppiumDriver : Driver {
     }
 
     private fun getViewportRect(): Coords {
+        AppiumDriverConfig.viewportRect?.let { return it }
         val viewportRect = driver.executeScript("mobile: viewportRect") as Map<*, *>
 
         val left = viewportRect["left"] as Long
