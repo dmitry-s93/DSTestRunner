@@ -15,6 +15,8 @@
 
 package driver.web
 
+import action.actions.ActionType
+import action.actions.TouchAction
 import config.BrowserOptionsConfig
 import config.PreloaderConfig
 import config.ScreenshotConfig
@@ -30,6 +32,7 @@ import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.edge.EdgeOptions
 import org.openqa.selenium.firefox.FirefoxOptions
 import org.openqa.selenium.interactions.Actions
+import org.openqa.selenium.interactions.PointerInput
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.openqa.selenium.safari.SafariOptions
 import org.openqa.selenium.support.ui.Select
@@ -393,6 +396,45 @@ class WebDriver : Driver {
 
     override fun navigateBack() {
         driver.navigate().back()
+    }
+
+    override fun executeTouchAction(locator: Locator, actionList: MutableList<MutableList<TouchAction>>) {
+        DriverHelper().handleStaleElementReferenceException("executeTouchAction", numberOfAttempts) {
+            val element = getWebElement(locator)
+            val center = DriverHelper().getElementCenter(element)
+            actionList.forEach { actionSequence ->
+                val actions = Actions(driver)
+                var isMoved = false
+                actionSequence.forEach { action ->
+                    when (action.actionType) {
+                        ActionType.POINTER_DOWN -> {
+                            actions.clickAndHold()
+                        }
+                        ActionType.POINTER_UP -> {
+                            actions.release()
+                        }
+                        ActionType.POINTER_MOVE -> {
+                            val point = action.point!!
+                            val x = center.x + point.x
+                            val y = center.y + point.y
+                            val duration =
+                                if (action.millis != null)
+                                    Duration.ofMillis(action.millis)
+                                else if (isMoved)
+                                    Duration.ofMillis(500)
+                                else
+                                    Duration.ZERO
+                            actions.tick(actions.activePointer.createPointerMove(duration, PointerInput.Origin.viewport(), x, y))
+                            isMoved = true
+                        }
+                        ActionType.PAUSE -> {
+                            actions.pause(action.millis!!)
+                        }
+                    }
+                }
+                actions.perform()
+            }
+        }
     }
 
     override fun quit() {

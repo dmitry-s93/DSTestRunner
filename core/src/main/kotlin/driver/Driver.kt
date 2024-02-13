@@ -15,6 +15,7 @@
 
 package driver
 
+import action.actions.TouchAction
 import action.helper.Direction
 import pazone.ashot.Screenshot
 import test.element.Locator
@@ -39,6 +40,7 @@ interface Driver {
     fun isNotExist(locator: Locator): Boolean
     fun isEnabled(locator: Locator): Boolean
     fun navigateBack()
+    fun executeTouchAction(locator: Locator, actionList: MutableList<MutableList<TouchAction>>)
     fun quit()
 
     // Web only
