@@ -16,6 +16,8 @@
 
 package driver.mobile
 
+import action.actions.ActionType
+import action.actions.TouchAction
 import action.helper.Direction
 import config.AppiumDriverConfig
 import config.PreloaderConfig
@@ -29,6 +31,7 @@ import io.appium.java_client.ios.IOSDriver
 import org.awaitility.Awaitility
 import org.awaitility.core.ConditionTimeoutException
 import org.openqa.selenium.*
+import org.openqa.selenium.interactions.Pause
 import org.openqa.selenium.interactions.PointerInput
 import org.w3c.dom.Element
 import pazone.ashot.AShot
@@ -445,6 +448,47 @@ class IOSAppiumDriver : Driver {
             return true
         } catch (e: NoAlertPresentException) {
             return false
+        }
+    }
+
+    override fun executeTouchAction(locator: Locator, actionList: MutableList<MutableList<TouchAction>>) {
+        DriverHelper().handleStaleElementReferenceException("executeTouchAction", numberOfAttempts) {
+            val element = getWebElement(locator)
+            val center = DriverHelper().getElementCenter(element)
+            actionList.forEach { actionSequence ->
+                val finger = PointerInput(PointerInput.Kind.TOUCH, "finger")
+                val sequence = org.openqa.selenium.interactions.Sequence(finger, 1)
+                var lastPoint: Point? = null
+                actionSequence.forEach { action ->
+                    when (action.actionType) {
+                        ActionType.POINTER_DOWN -> {
+                            sequence.addAction(finger.createPointerDown(0))
+                        }
+                        ActionType.POINTER_UP -> {
+                            sequence.addAction(finger.createPointerUp(0))
+                        }
+                        ActionType.POINTER_MOVE -> {
+                            val point = action.point!!
+                            val x = center.x + point.x
+                            val y = center.y + point.y
+
+                            var duration = Duration.ZERO
+                            if (action.millis != null) {
+                                duration = Duration.ofMillis(action.millis)
+                            } else if (lastPoint != null) {
+                                duration = countSwipeDuration(lastPoint!!.x, lastPoint!!.y, x, y)
+                            }
+
+                            sequence.addAction(finger.createPointerMove(duration, PointerInput.Origin.viewport(), x, y))
+                            lastPoint = Point(x, y)
+                        }
+                        ActionType.PAUSE -> {
+                            sequence.addAction(Pause(finger, Duration.ofMillis(action.millis!!)))
+                        }
+                    }
+                }
+                driver.perform(listOf(sequence))
+            }
         }
     }
 
