@@ -451,7 +451,7 @@ class IOSAppiumDriver : Driver {
         }
     }
 
-    override fun executeTouchAction(locator: Locator, actionList: MutableList<MutableList<TouchAction>>) {
+    override fun performTouchAction(locator: Locator, actionList: MutableList<MutableList<TouchAction>>) {
         DriverHelper().handleStaleElementReferenceException("executeTouchAction", numberOfAttempts) {
             val element = getWebElement(locator)
             val center = DriverHelper().getElementCenter(element)
@@ -688,6 +688,7 @@ class IOSAppiumDriver : Driver {
         swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY))
         swipe.addAction(finger.createPointerDown(0))
         swipe.addAction(finger.createPointerMove(duration, PointerInput.Origin.viewport(), endX - 1, endY))
+        // To prevent inertial scrolling from working
         swipe.addAction(finger.createPointerMove(Duration.ofMillis(100), PointerInput.Origin.viewport(), endX + 1, endY))
         swipe.addAction(finger.createPointerUp(0))
         driver.perform(listOf(swipe))

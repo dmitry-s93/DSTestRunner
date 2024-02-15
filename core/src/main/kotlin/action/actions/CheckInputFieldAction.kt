@@ -46,14 +46,14 @@ class CheckInputFieldAction(private val elementName: String) : ActionReturn(), A
             val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
             val element = pageData.getElement(elementName)
                 ?: return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.pageName))
-            element.getDisplayName()?.let { elementDisplayName = it }
-            elementLocator = element.getLocator().withReplaceArgs(*locatorArguments.toArray())
+            elementDisplayName = element.displayName
+            elementLocator = element.locator.withReplaceArgs(*locatorArguments.toArray())
             if (elementLocator!!.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
 
-            if (maxSize == null) maxSize = element.getMaxSize()
-            if (pattern == null) pattern = element.getPattern()
-            if (allowedChars.isNullOrEmpty()) allowedChars = element.getAllowedChars()
+            if (maxSize == null) maxSize = element.maxSize
+            if (pattern == null) pattern = element.pattern
+            if (allowedChars.isNullOrEmpty()) allowedChars = element.allowedChars
             if (allowedChars.isNullOrEmpty())
                 allowedChars = "."
             else

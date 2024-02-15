@@ -51,11 +51,11 @@ class PerformTouchAction(private val elementName: String) : ActionReturn(), Acti
             val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
             val element = pageData.getElement(elementName)
                 ?: return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.pageName))
-            element.getDisplayName()?.let { elementDisplayName = it }
-            elementLocator = element.getLocator().withReplaceArgs(*locatorArguments.toArray())
+            elementDisplayName = element.displayName
+            elementLocator = element.locator.withReplaceArgs(*locatorArguments.toArray())
             if (elementLocator!!.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
-            DriverSession.getSession().executeTouchAction(elementLocator!!, touchActions)
+            DriverSession.getSession().performTouchAction(elementLocator!!, touchActions)
         } catch (e: Exception) {
             return broke(Localization.get("PerformTouchAction.GeneralError", e.message), e.stackTraceToString())
         }

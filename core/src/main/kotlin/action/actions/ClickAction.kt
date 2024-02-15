@@ -25,7 +25,6 @@ import storage.PageStorage
 import storage.ValueStorage
 import test.element.Locator
 import java.awt.Point
-import java.util.*
 
 class ClickAction(private val elementName: String) : ActionReturn(), Action {
     private var elementLocator: Locator? = null
@@ -42,8 +41,8 @@ class ClickAction(private val elementName: String) : ActionReturn(), Action {
             val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
             val element = pageData.getElement(elementName)
                 ?: return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.pageName))
-            element.getDisplayName()?.let { elementDisplayName = it }
-            elementLocator = element.getLocator().withReplaceArgs(*locatorArguments.toArray())
+            elementDisplayName = element.displayName
+            elementLocator = element.locator.withReplaceArgs(*locatorArguments.toArray())
             if (elementLocator!!.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
             DriverSession.getSession().click(elementLocator!!, clickPoints)

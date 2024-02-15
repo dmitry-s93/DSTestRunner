@@ -45,7 +45,7 @@ class SetValueToStorageAction(private val name: String, private var value: Strin
                 val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
                 val element = pageData.getElement(elementName)
                     ?: return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.pageName))
-                elementLocator = element.getLocator().withReplaceArgs(*locatorArguments.toArray())
+                elementLocator = element.locator.withReplaceArgs(*locatorArguments.toArray())
                 if (elementLocator!!.value.isEmpty())
                     return broke(Localization.get("General.ElementLocatorNotSpecified"))
                 value = DriverSession.getSession().getElementValue(elementLocator!!)

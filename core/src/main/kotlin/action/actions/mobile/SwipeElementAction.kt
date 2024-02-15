@@ -40,8 +40,8 @@ class SwipeElementAction(private val elementName: String, private val direction:
             val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
             val element = pageData.getElement(elementName)
                 ?: return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.pageName))
-            element.getDisplayName()?.let { elementDisplayName = it }
-            elementLocator = element.getLocator().withReplaceArgs(*locatorArguments.toArray())
+            elementDisplayName = element.displayName
+            elementLocator = element.locator.withReplaceArgs(*locatorArguments.toArray())
             if (elementLocator!!.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
             DriverSession.getSession().swipeElement(elementLocator!!, direction)

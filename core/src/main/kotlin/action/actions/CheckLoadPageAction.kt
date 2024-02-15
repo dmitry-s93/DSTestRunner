@@ -72,7 +72,7 @@ class CheckLoadPageAction(private val page: PageData) : ActionReturn(), Action {
     private fun getElements(pageData: PageData, elements: HashMap<String, List<String>>): Set<Locator> {
         val locators: MutableSet<Locator> = HashSet()
         elements.forEach { (elementName, locatorArguments) ->
-            val locator = pageData.getElement(elementName)?.getLocator()?.withReplaceArgs(*locatorArguments.toTypedArray())
+            val locator = pageData.getElement(elementName)?.locator?.withReplaceArgs(*locatorArguments.toTypedArray())
             if (locator != null)
                 locators.add(locator)
             else
