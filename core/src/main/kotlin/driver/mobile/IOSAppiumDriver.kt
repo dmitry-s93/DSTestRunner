@@ -31,6 +31,7 @@ import io.appium.java_client.ios.IOSDriver
 import org.awaitility.Awaitility
 import org.awaitility.core.ConditionTimeoutException
 import org.openqa.selenium.*
+import org.openqa.selenium.html5.Location
 import org.openqa.selenium.interactions.Pause
 import org.openqa.selenium.interactions.PointerInput
 import org.openqa.selenium.interactions.Sequence
@@ -343,6 +344,11 @@ class IOSAppiumDriver : Driver {
 
     override fun navigateBack() {
         TODO("Not yet implemented")
+    }
+
+    override fun setLocation(latitude: Double, longitude: Double) {
+        // TODO: Refactor when this fix is available: https://github.com/appium/java-client/pull/2109
+        driver.setLocation(Location(latitude, longitude, 1.0))
     }
 
     override fun swipeElement(locator: Locator, direction: Direction) {
