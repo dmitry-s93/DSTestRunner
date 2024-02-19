@@ -33,6 +33,7 @@ import org.awaitility.core.ConditionTimeoutException
 import org.openqa.selenium.*
 import org.openqa.selenium.interactions.Pause
 import org.openqa.selenium.interactions.PointerInput
+import org.openqa.selenium.interactions.Sequence
 import org.w3c.dom.Element
 import pazone.ashot.AShot
 import pazone.ashot.Screenshot
@@ -457,7 +458,7 @@ class IOSAppiumDriver : Driver {
             val center = DriverHelper().getElementCenter(element)
             actionList.forEach { actionSequence ->
                 val finger = PointerInput(PointerInput.Kind.TOUCH, "finger")
-                val sequence = org.openqa.selenium.interactions.Sequence(finger, 1)
+                val sequence = Sequence(finger, 1)
                 var lastPoint: Point? = null
                 actionSequence.forEach { action ->
                     when (action.actionType) {
@@ -469,14 +470,19 @@ class IOSAppiumDriver : Driver {
                         }
                         ActionType.POINTER_MOVE -> {
                             val point = action.point!!
-                            val x = center.x + point.x
-                            val y = center.y + point.y
+                            val x = center.x + (point.x / screenScale)
+                            val y = center.y + (point.y / screenScale)
 
                             var duration = Duration.ZERO
                             if (action.millis != null) {
                                 duration = Duration.ofMillis(action.millis)
                             } else if (lastPoint != null) {
-                                duration = countSwipeDuration(lastPoint!!.x, lastPoint!!.y, x, y)
+                                duration = countSwipeDuration(
+                                    lastPoint!!.x * screenScale,
+                                    lastPoint!!.y * screenScale,
+                                    x * screenScale,
+                                    y * screenScale
+                                )
                             }
 
                             sequence.addAction(finger.createPointerMove(duration, PointerInput.Origin.viewport(), x, y))
