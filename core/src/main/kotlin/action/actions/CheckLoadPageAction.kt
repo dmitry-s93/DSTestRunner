@@ -22,40 +22,45 @@ import logger.Logger
 import storage.PageStorage
 import storage.ValueStorage
 import test.element.Locator
+import test.page.Element
+import test.page.Page
 import test.page.PageData
 
-class CheckLoadPageAction(private val page: PageData) : ActionReturn(), Action {
+class CheckLoadPageAction(private val page: Page) : ActionReturn(), Action {
     private var pageUrl: String? = null
+    private val pageName: String = page.pageData.pageName
     private var screenData: ScreenData? = null
     private val ignoredElements: MutableSet<Locator> = HashSet()
     private var screenshotAreas: MutableSet<Locator> = HashSet()
     private var takeScreenshotClass: TakeScreenshot? = null
 
     override fun getName(): String {
-        return Localization.get("CheckLoadPageAction.DefaultName", page.pageName)
+        return Localization.get("CheckLoadPageAction.DefaultName", pageName)
     }
 
     override fun execute(): ActionResult {
         try {
-            PageStorage.setCurrentPage(page)
-            if (page.urlPath != null) {
-                pageUrl = page.getUrl()
+            PageStorage.setCurrentPage(page.pageData)
+            if (page.pageData.urlPath != null) {
+                pageUrl = page.pageData.getUrl()
                 if (pageUrl.isNullOrEmpty())
                     return broke(Localization.get("General.PageUrlNotSpecified"))
             }
-            if (!DriverSession.getSession().checkLoadPage(pageUrl, page.identifier)) {
+            if (!DriverSession.getSession().checkLoadPage(pageUrl, page.pageData.identifier)) {
                 if (!pageUrl.isNullOrEmpty() && !DriverSession.getSession().getCurrentUrl().startsWith(pageUrl.toString()))
                     return fail(Localization.get("CheckLoadPageAction.UrlDoesNotMatch"))
                 return fail(Localization.get("CheckLoadPageAction.PageDidNotLoad"))
             }
             if (takeScreenshotClass != null) {
-                page.waitTimeBeforeScreenshot?.let { Thread.sleep(it) }
+                page.pageData.waitTimeBeforeScreenshot?.let { Thread.sleep(it) }
                 val longScreenshot = takeScreenshotClass!!.longScreenshot
-                ignoredElements.addAll(page.ignoredElements)
-                ignoredElements.addAll(getElements(page, takeScreenshotClass!!.getIgnoredElements()))
-                screenshotAreas.addAll(getElements(page, takeScreenshotClass!!.getElements()))
+                ignoredElements.addAll(page.pageData.ignoredElements)
+                ignoredElements.addAll(getElements(page.pageData, takeScreenshotClass!!.getIgnoredElements()))
+                ignoredElements.addAll(takeScreenshotClass!!.getElementLocators())
+                screenshotAreas.addAll(getElements(page.pageData, takeScreenshotClass!!.getElements()))
+                screenshotAreas.addAll(takeScreenshotClass!!.getIgnoredElementLocators())
                 if (screenshotAreas.isEmpty())
-                    page.workArea?.let { screenshotAreas.add(it) }
+                    page.pageData.workArea?.let { screenshotAreas.add(it) }
                 val screenshot = DriverSession.getSession().getScreenshot(
                     longScreenshot = longScreenshot,
                     ignoredElements = ignoredElements,
@@ -76,17 +81,17 @@ class CheckLoadPageAction(private val page: PageData) : ActionReturn(), Action {
             if (locator != null)
                 locators.add(locator)
             else
-                Logger.warning(Localization.get("General.ElementIsNotSetOnPage", elementName, page.pageName))
+                Logger.warning(Localization.get("General.ElementIsNotSetOnPage", elementName, pageName))
         }
         return locators
     }
 
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
-        parameters["pageName"] = page.pageName
+        parameters["pageName"] = pageName
         if (pageUrl != null)
             parameters["pageUrl"] = pageUrl.toString()
-        parameters["pageIdentifier"] = page.identifier?.value.toString()
+        parameters["pageIdentifier"] = page.pageData.identifier?.value.toString()
         if (ignoredElements.isNotEmpty()) {
             val elements: MutableSet<String> = HashSet()
             ignoredElements.forEach {
@@ -124,6 +129,8 @@ class CheckLoadPageAction(private val page: PageData) : ActionReturn(), Action {
         var longScreenshot: Boolean = true
         private val elements = HashMap<String, List<String>>()
         private val ignoredElements = HashMap<String, List<String>>()
+        private val elementLocators: MutableSet<Locator> = HashSet()
+        private val ignoredElementLocators: MutableSet<Locator> = HashSet()
 
         fun getElements(): HashMap<String, List<String>> {
             return elements
@@ -162,10 +169,48 @@ class CheckLoadPageAction(private val page: PageData) : ActionReturn(), Action {
             }
             ignoredElements[elementName] = arguments
         }
+
+        fun getElementLocators(): Set<Locator> {
+            return elementLocators
+        }
+
+        fun getIgnoredElementLocators() : Set<Locator> {
+            return ignoredElementLocators
+        }
+
+        /**
+         * Specifies the element to take a screenshot.
+         *
+         * [element] - element.
+         *
+         * [locatorArguments] -  arguments to Substitute in the Locator String.
+         */
+        fun elementScreenshot(element: Element, vararg locatorArguments: String) {
+            val arguments: MutableList<String> = mutableListOf()
+            locatorArguments.forEach {
+                arguments.add(ValueStorage.replace(it))
+            }
+            elementLocators.add(element.locator.withReplaceArgs(*arguments.toTypedArray()))
+        }
+
+        /**
+         * Specifies the element to ignore in the screenshot.
+         *
+         * [element] - element name.
+         *
+         * [locatorArguments] -  arguments to Substitute in the Locator String.
+         */
+        fun ignoreElement(element: Element, vararg locatorArguments: String) {
+            val arguments: MutableList<String> = mutableListOf()
+            locatorArguments.forEach {
+                arguments.add(ValueStorage.replace(it))
+            }
+            ignoredElementLocators.add(element.locator.withReplaceArgs(*arguments.toTypedArray()))
+        }
     }
 }
 
-fun checkLoadPage(page: PageData, function: (CheckLoadPageAction.() -> Unit)? = null): ActionData {
+fun checkLoadPage(page: Page, function: (CheckLoadPageAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
     val action = CheckLoadPageAction(page)
     function?.invoke(action)
@@ -175,4 +220,8 @@ fun checkLoadPage(page: PageData, function: (CheckLoadPageAction.() -> Unit)? = 
     val screenData = action.getScreenData()
     val stopTime = System.currentTimeMillis()
     return ActionData(result, parameters, name, startTime, stopTime, screenData = screenData)
+}
+
+fun checkLoadPage(page: PageData, function: (CheckLoadPageAction.() -> Unit)? = null): ActionData {
+    return  checkLoadPage(Page(page), function)
 }

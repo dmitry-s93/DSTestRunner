@@ -19,35 +19,31 @@ import action.Action
 import action.ActionData
 import action.ActionResult
 import action.ActionReturn
+import action.helper.ActionHelper
 import config.Localization
 import driver.DriverSession
-import storage.PageStorage
 import storage.ValueStorage
 import test.element.Locator
+import test.page.Element
 
-class SetFieldValueAction(private val fieldName: String, value: String) : ActionReturn(), Action {
+class SetFieldValueAction(private val element: Element, value: String) : ActionReturn(), Action {
     private val value: String = ValueStorage.replace(value)
-    private var elementLocator: Locator? = null
-    private var elementDisplayName: String = fieldName
+    private lateinit var elementLocator: Locator
     private var sequenceMode: Boolean = false
     private val locatorArguments = ArrayList<String>()
     @Suppress("MemberVisibilityCanBePrivate")
     var hideKeyboard: Boolean = true
 
     override fun getName(): String {
-        return Localization.get("SetFieldValueAction.DefaultName", value, elementDisplayName)
+        return Localization.get("SetFieldValueAction.DefaultName", value, element.displayName)
     }
 
     override fun execute(): ActionResult {
         try {
-            val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
-            val element = pageData.getElement(fieldName)
-                ?: return broke(Localization.get("General.ElementIsNotSetOnPage", fieldName, pageData.pageName))
-            elementDisplayName = element.displayName
             elementLocator = element.locator.withReplaceArgs(*locatorArguments.toArray())
-            if (elementLocator!!.value.isEmpty())
+            if (elementLocator.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
-            DriverSession.getSession().setValue(elementLocator!!, value, sequenceMode, hideKeyboard)
+            DriverSession.getSession().setValue(elementLocator, value, sequenceMode, hideKeyboard)
         } catch (e: Exception) {
             return broke(Localization.get("SetFieldValueAction.GeneralError", e.message), e.stackTraceToString())
         }
@@ -56,8 +52,8 @@ class SetFieldValueAction(private val fieldName: String, value: String) : Action
 
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
-        parameters["elementName"] = fieldName
-        parameters["elementLocator"] = elementLocator?.value.toString()
+        parameters["elementName"] = element.displayName
+        parameters["elementLocator"] = elementLocator.value
         parameters["value"] = value
         parameters["sequenceMode"] = sequenceMode.toString()
         return parameters
@@ -75,13 +71,22 @@ class SetFieldValueAction(private val fieldName: String, value: String) : Action
     }
 }
 
-fun setFieldValue(fieldName: String, value: String, function: (SetFieldValueAction.() -> Unit)? = null): ActionData {
+fun setFieldValue(element: Element, value: String, function: (SetFieldValueAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = SetFieldValueAction(fieldName, value)
+    val action = SetFieldValueAction(element, value)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()
     val stopTime = System.currentTimeMillis()
     return ActionData(result, parameters, name, startTime, stopTime)
+}
+
+fun setFieldValue(elementName: String, value: String, function: (SetFieldValueAction.() -> Unit)? = null): ActionData {
+    val (element, result) = ActionHelper().getElement(elementName)
+    if (element != null)
+        return setFieldValue(element, value, function)
+    val name = Localization.get("SetFieldValueAction.DefaultName", value, elementName)
+    val time = System.currentTimeMillis()
+    return ActionData(result!!, HashMap(), name, time, time)
 }

@@ -26,9 +26,9 @@ class LoginAndLogoutTest : TestBuilder("TEST_01", "Login and logout") {
             step("03_before", importUser("StandardUser", "user"))
         }
         steps {
-            step("01", setFieldValue("UsernameEdit", "{user_login}"))
-            step("02", setFieldValue("PasswordEdit", "{user_password}"))
-            step("03", click("LoginButton"))
+            step("01", setFieldValue(loginPage.usernameEdit, "{user_login}"))
+            step("02", setFieldValue(loginPage.passwordEdit, "{user_password}"))
+            step("03", click(loginPage.loginButton))
             step("04", checkLoadPage(inventoryPage))
             step("05", click("BurgerMenuButton"))
             step("06", click("LogoutLink"))

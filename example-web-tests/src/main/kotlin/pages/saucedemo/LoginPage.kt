@@ -1,13 +1,14 @@
 package pages.saucedemo
 
-import test.page.PageElements
+import test.element.Locator
+import test.page.Element
+import test.page.Page
+import test.page.PageData
 
-class LoginPage : PageElements() {
-    init {
-        element("UsernameEdit", "//input[@id='user-name']")
-        element("PasswordEdit", "//input[@id='password']")
-        element("LoginButton", "//input[@id='login-button']")
+class LoginPage(pageData: PageData) : Page(pageData) {
+    val usernameEdit = Element(Locator("//input[@id='user-name']"), displayName = "Username")
+    val passwordEdit = Element(Locator("//input[@id='password']"), displayName = "Password")
+    val loginButton = Element(Locator("//input[@id='login-button']"), displayName = "Login")
 
-        element("ErrorMessage", "//div[contains(@class,'error-message-container')]/h3")
-    }
+    val errorMessage = Element(Locator("//div[contains(@class,'error-message-container')]/h3"), displayName = "Error message")
 }

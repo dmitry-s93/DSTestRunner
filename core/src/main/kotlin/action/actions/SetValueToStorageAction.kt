@@ -19,13 +19,14 @@ import action.Action
 import action.ActionData
 import action.ActionResult
 import action.ActionReturn
+import action.helper.ActionHelper
 import config.Localization
 import driver.DriverSession
-import storage.PageStorage
 import storage.ValueStorage
 import test.element.Locator
+import test.page.Element
 
-class SetValueToStorageAction(private val name: String, private var value: String?, private val elementName: String?) : ActionReturn(), Action {
+class SetValueToStorageAction(private val name: String, private var value: String?, private val element: Element?) : ActionReturn(), Action {
     private var elementLocator: Locator? = null
     private val locatorArguments = ArrayList<String>()
 
@@ -37,14 +38,11 @@ class SetValueToStorageAction(private val name: String, private var value: Strin
         try {
             if (name.isEmpty())
                 return broke(Localization.get("SetValueToStorageAction.NameCanNotBeEmpty"))
-            if (value == null && elementName == null)
+            if (value == null && element == null)
                 return broke(Localization.get("SetValueToStorageAction.RequiredParameterNotSpecified"))
             if (value != null)
                 value = ValueStorage.replace(value!!)
-            if (elementName != null) {
-                val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
-                val element = pageData.getElement(elementName)
-                    ?: return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.pageName))
+            if (element != null) {
                 elementLocator = element.locator.withReplaceArgs(*locatorArguments.toArray())
                 if (elementLocator!!.value.isEmpty())
                     return broke(Localization.get("General.ElementLocatorNotSpecified"))
@@ -61,8 +59,8 @@ class SetValueToStorageAction(private val name: String, private var value: Strin
         val parameters = HashMap<String, String>()
         parameters["name"] = name
         parameters["value"] = value.toString()
-        if (elementName != null)
-            parameters["elementName"] = elementName.toString()
+        if (element != null)
+            parameters["elementName"] = element.toString()
         if (elementLocator != null)
             parameters["elementLocator"] = elementLocator!!.value
         return parameters
@@ -83,7 +81,31 @@ class SetValueToStorageAction(private val name: String, private var value: Strin
  */
 fun setValueToStorage(name: String, value: String? = null, elementName: String? = null, function: (SetValueToStorageAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = SetValueToStorageAction(name, value, elementName)
+    if (elementName != null) {
+        val (element, result) = ActionHelper().getElement(elementName)
+        if (element != null)
+            return setValueToStorage(name, element, function)
+        val actionName = Localization.get("SetValueToStorageAction.DefaultName", value, name)
+        val stopTime = System.currentTimeMillis()
+        return ActionData(result!!, HashMap(), actionName, startTime, stopTime)
+    }
+    val action = SetValueToStorageAction(name, value, null)
+    function?.invoke(action)
+    val result = action.execute()
+    val parameters = action.getParameters()
+    val actionName = action.getName()
+    val stopTime = System.currentTimeMillis()
+    return ActionData(result, parameters, actionName, startTime, stopTime)
+}
+
+/**
+ * Adds the value in the test storage
+ *
+ * Requires [element]
+ */
+fun setValueToStorage(name: String, element: Element, function: (SetValueToStorageAction.() -> Unit)? = null): ActionData {
+    val startTime = System.currentTimeMillis()
+    val action = SetValueToStorageAction(name, null, element)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()

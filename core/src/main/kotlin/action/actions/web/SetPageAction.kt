@@ -26,22 +26,24 @@ import org.apache.hc.core5.http.message.BasicNameValuePair
 import org.apache.hc.core5.net.URIBuilder
 import storage.PageStorage
 import storage.ValueStorage
+import test.page.Page
 import test.page.PageData
 
-class SetPageAction(private val page: PageData) : ActionReturn(), Action {
+class SetPageAction(private val page: Page) : ActionReturn(), Action {
     @SuppressWarnings("WeakerAccess")
     var pageUrl: String? = null
+    private val pageName: String = page.pageData.pageName
     private val urlParameters: MutableList<NameValuePair> = mutableListOf()
     private val urlArguments: HashMap<String, String> = HashMap()
 
     override fun getName(): String {
-        return Localization.get("SetPageAction.DefaultName", page.pageName)
+        return Localization.get("SetPageAction.DefaultName", pageName)
     }
 
     override fun execute(): ActionResult {
-        PageStorage.setCurrentPage(page)
+        PageStorage.setCurrentPage(page.pageData)
         if (pageUrl == null)
-            pageUrl = page.getUrl(urlArguments)
+            pageUrl = page.pageData.getUrl(urlArguments)
         if (pageUrl.isNullOrEmpty())
             return broke(Localization.get("General.PageUrlNotSpecified"))
         try {
@@ -55,7 +57,7 @@ class SetPageAction(private val page: PageData) : ActionReturn(), Action {
 
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
-        parameters["pageName"] = page.pageName
+        parameters["pageName"] = pageName
         parameters["pageUrl"] = pageUrl.toString()
         return parameters
     }
@@ -76,9 +78,9 @@ class SetPageAction(private val page: PageData) : ActionReturn(), Action {
 }
 
 /**
- * Goes to page [pageName]
+ * Goes to page [page]
  */
-fun setPage(page: PageData, function: (SetPageAction.() -> Unit)? = null): ActionData {
+fun setPage(page: Page, function: (SetPageAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
     val action = SetPageAction(page)
     function?.invoke(action)
@@ -87,4 +89,11 @@ fun setPage(page: PageData, function: (SetPageAction.() -> Unit)? = null): Actio
     val name = action.getName()
     val stopTime = System.currentTimeMillis()
     return ActionData(result, parameters, name, startTime, stopTime)
+}
+
+/**
+ * Goes to page [page]
+ */
+fun setPage(page: PageData, function: (SetPageAction.() -> Unit)? = null): ActionData {
+    return  setPage(Page(page), function)
 }

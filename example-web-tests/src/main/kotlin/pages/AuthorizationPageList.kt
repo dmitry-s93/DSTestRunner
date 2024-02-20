@@ -6,12 +6,13 @@ import test.page.PageData
 
 class AuthorizationPageList {
     companion object {
-        val loginPage = PageData(
-            pageName = "Login",
-            description = "Login page",
-            urlPath = "",
-            identifier = Locator("//input[@id='login-button']"),
-            elements = LoginPage().getElements()
+        val loginPage = LoginPage(
+            PageData(
+                pageName = "Login",
+                description = "Login page",
+                urlPath = "",
+                identifier = Locator("//input[@id='login-button']")
+            )
         )
     }
 }

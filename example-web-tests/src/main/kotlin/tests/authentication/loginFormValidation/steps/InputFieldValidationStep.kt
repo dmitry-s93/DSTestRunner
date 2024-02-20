@@ -17,8 +17,8 @@ fun inputFieldValidation(id: String, stepName: String, test: Any) {
                     steps {
                         step("01", setPage(loginPage))
                         step("02", checkLoadPage(loginPage))
-                        step("03", click("LoginButton"))
-                        step("04", checkElementValue("ErrorMessage", "{UsernameRequiredMessage}"))
+                        step("03", click(loginPage.loginButton))
+                        step("04", checkElementValue(loginPage.errorMessage, "{UsernameRequiredMessage}"))
                     }
                 }
                 step("02", "Empty login") {
@@ -26,9 +26,9 @@ fun inputFieldValidation(id: String, stepName: String, test: Any) {
                     steps {
                         step("01", setPage(loginPage))
                         step("02", checkLoadPage(loginPage))
-                        step("03", setFieldValue("PasswordEdit", "{user_password}"))
-                        step("04", click("LoginButton"))
-                        step("05", checkElementValue("ErrorMessage", "{UsernameRequiredMessage}"))
+                        step("03", setFieldValue(loginPage.passwordEdit, "{user_password}"))
+                        step("04", click(loginPage.loginButton))
+                        step("05", checkElementValue(loginPage.errorMessage, "{UsernameRequiredMessage}"))
                     }
                 }
                 step("03", "Empty password") {
@@ -36,9 +36,9 @@ fun inputFieldValidation(id: String, stepName: String, test: Any) {
                     steps {
                         step("01", setPage(loginPage))
                         step("02", checkLoadPage(loginPage))
-                        step("03", setFieldValue("UsernameEdit", "{user_login}"))
-                        step("04", click("LoginButton"))
-                        step("05", checkElementValue("ErrorMessage", "{PasswordRequiredMessage}"))
+                        step("03", setFieldValue(loginPage.usernameEdit, "{user_login}"))
+                        step("04", click(loginPage.loginButton))
+                        step("05", checkElementValue(loginPage.errorMessage, "{PasswordRequiredMessage}"))
                     }
                 }
             }
