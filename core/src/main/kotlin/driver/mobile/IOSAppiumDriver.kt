@@ -500,6 +500,7 @@ class IOSAppiumDriver : Driver {
                     }
                 }
                 driver.perform(listOf(sequence))
+                Thread.sleep(250)
             }
         }
     }
