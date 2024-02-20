@@ -19,17 +19,17 @@ import action.Action
 import action.ActionData
 import action.ActionResult
 import action.ActionReturn
+import action.helper.ActionHelper
 import com.github.curiousoddman.rgxgen.RgxGen
 import config.Localization
 import driver.DriverSession
-import storage.PageStorage
 import storage.ValueStorage
 import test.element.Locator
+import test.page.Element
 
 
-class CheckInputFieldAction(private val elementName: String) : ActionReturn(), Action {
-    private var elementLocator: Locator? = null
-    private var elementDisplayName: String = elementName
+class CheckInputFieldAction(private val element: Element) : ActionReturn(), Action {
+    private lateinit var elementLocator: Locator
     private val locatorArguments = ArrayList<String>()
     private var doNotCheckAllowedChars: Boolean = false
 
@@ -38,22 +38,18 @@ class CheckInputFieldAction(private val elementName: String) : ActionReturn(), A
     var allowedChars: String? = null
 
     override fun getName(): String {
-        return Localization.get("CheckFieldAction.DefaultName", elementDisplayName)
+        return Localization.get("CheckFieldAction.DefaultName", element.displayName)
     }
 
     override fun execute(): ActionResult {
         try {
-            val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
-            val element = pageData.getElement(elementName)
-                ?: return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.pageName))
-            element.getDisplayName()?.let { elementDisplayName = it }
-            elementLocator = element.getLocator().withReplaceArgs(*locatorArguments.toArray())
-            if (elementLocator!!.value.isEmpty())
+            elementLocator = element.locator.withReplaceArgs(*locatorArguments.toArray())
+            if (elementLocator.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
 
-            if (maxSize == null) maxSize = element.getMaxSize()
-            if (pattern == null) pattern = element.getPattern()
-            if (allowedChars.isNullOrEmpty()) allowedChars = element.getAllowedChars()
+            if (maxSize == null) maxSize = element.maxSize
+            if (pattern == null) pattern = element.pattern
+            if (allowedChars.isNullOrEmpty()) allowedChars = element.allowedChars
             if (allowedChars.isNullOrEmpty())
                 allowedChars = "."
             else
@@ -74,8 +70,8 @@ class CheckInputFieldAction(private val elementName: String) : ActionReturn(), A
             return ""
         val genCharsCount = maxSize!! * 2
         val generatedString = RgxGen("$allowedChars{$genCharsCount}").generate()
-        DriverSession.getSession().setValue(elementLocator!!, generatedString)
-        val value = DriverSession.getSession().getElementValue(elementLocator!!)
+        DriverSession.getSession().setValue(elementLocator, generatedString)
+        val value = DriverSession.getSession().getElementValue(elementLocator)
         if (value.length != maxSize) {
             val currentSize = if (value.length == genCharsCount) "≥${value.length}" else value.length
             return Localization.get("CheckFieldAction.ValueLengthIsNotAsExpected", currentSize, maxSize) + "\n"
@@ -87,8 +83,8 @@ class CheckInputFieldAction(private val elementName: String) : ActionReturn(), A
         if (doNotCheckAllowedChars)
             return ""
         val generatedString = removeDuplicateChars(RgxGen("$allowedChars{256}").generate())
-        DriverSession.getSession().setValue(elementLocator!!, generatedString)
-        val value = DriverSession.getSession().getElementValue(elementLocator!!)
+        DriverSession.getSession().setValue(elementLocator, generatedString)
+        val value = DriverSession.getSession().getElementValue(elementLocator)
         var valueLength = value.length
         if (generatedString.length < valueLength)
             valueLength = generatedString.length
@@ -108,8 +104,8 @@ class CheckInputFieldAction(private val elementName: String) : ActionReturn(), A
         if (allowedChars == ".")
             return ""
         val generatedString = removeDuplicateChars(RgxGen("$allowedChars{256}").generateNotMatching())
-        DriverSession.getSession().setValue(elementLocator!!, generatedString)
-        val value = DriverSession.getSession().getElementValue(elementLocator!!)
+        DriverSession.getSession().setValue(elementLocator, generatedString)
+        val value = DriverSession.getSession().getElementValue(elementLocator)
         if (value.isNotEmpty())
             return Localization.get("CheckFieldAction.PossibleToEnterUnallowedCharacters", value) + "\n"
         return ""
@@ -119,8 +115,8 @@ class CheckInputFieldAction(private val elementName: String) : ActionReturn(), A
         if (pattern == null)
             return ""
         val generatedString = RgxGen(pattern).generate()
-        DriverSession.getSession().setValue(elementLocator!!, generatedString)
-        val value = DriverSession.getSession().getElementValue(elementLocator!!)
+        DriverSession.getSession().setValue(elementLocator, generatedString)
+        val value = DriverSession.getSession().getElementValue(elementLocator)
         if (value != generatedString)
             return Localization.get("CheckFieldAction.ValueDoesNotMatchExpected", value, generatedString) + "\n"
         return ""
@@ -140,8 +136,8 @@ class CheckInputFieldAction(private val elementName: String) : ActionReturn(), A
 
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
-        parameters["elementName"] = elementName
-        parameters["elementLocator"] = elementLocator?.value.toString()
+        parameters["elementName"] = element.displayName
+        parameters["elementLocator"] = elementLocator.value
         if (maxSize != null)
             parameters["maxSize"] = maxSize.toString()
         if (pattern != null)
@@ -166,15 +162,27 @@ class CheckInputFieldAction(private val elementName: String) : ActionReturn(), A
 }
 
 /**
- * Checks the value of the input field [elementName] against certain parameters
+ * Checks the value of the input field [element] against certain parameters
  */
-fun checkInputField(elementName: String, function: (CheckInputFieldAction.() -> Unit)? = null): ActionData {
+fun checkInputField(element: Element, function: (CheckInputFieldAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = CheckInputFieldAction(elementName)
+    val action = CheckInputFieldAction(element)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()
     val stopTime = System.currentTimeMillis()
     return ActionData(result, parameters, name, startTime, stopTime)
+}
+
+/**
+ * Checks the value of the input field [elementName] against certain parameters
+ */
+fun checkInputField(elementName: String, function: (CheckInputFieldAction.() -> Unit)? = null): ActionData {
+    val (element, result) = ActionHelper().getElement(elementName)
+    if (element != null)
+        return checkInputField(element, function)
+    val name = Localization.get("CheckFieldAction.DefaultName", elementName)
+    val time = System.currentTimeMillis()
+    return ActionData(result!!, HashMap(), name, time, time)
 }

@@ -21,16 +21,17 @@ import action.ActionResult
 import action.ActionReturn
 import config.Localization
 import driver.DriverSession
-import storage.PageStorage
+import test.page.Page
 import test.page.PageData
 
-class SwitchToWindowAction(private val page: PageData?) : ActionReturn(), Action {
-    private val pageUrl: String? = page?.getUrl()
+class SwitchToWindowAction(private val page: Page?) : ActionReturn(), Action {
+    private val pageUrl: String? = page?.pageData?.getUrl()
+    private val pageName: String? = page?.pageData?.pageName
 
     override fun getName(): String {
         if (page == null)
             return Localization.get("SwitchToWindowAction.DefaultName")
-        return Localization.get("SwitchToWindowAction.DefaultNameWithPage", page.pageName)
+        return Localization.get("SwitchToWindowAction.DefaultNameWithPage", pageName)
     }
 
     override fun execute(): ActionResult {
@@ -45,8 +46,8 @@ class SwitchToWindowAction(private val page: PageData?) : ActionReturn(), Action
 
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
-        if (page != null)
-            parameters["pageName"] = page.pageName
+        if (pageName != null)
+            parameters["pageName"] = pageName
         if (!pageUrl.isNullOrEmpty())
             parameters["pageUrl"] = pageUrl
         return parameters
@@ -54,11 +55,11 @@ class SwitchToWindowAction(private val page: PageData?) : ActionReturn(), Action
 }
 
 /**
- * Switches to the window with page [pageName]
+ * Switches to the window with [page]
  *
- * Switches to the first other window (if [pageName] is not specified)
+ * Switches to the first other window (if [page] is not specified)
  */
-fun switchToWindow(page: PageData?, function: (SwitchToWindowAction.() -> Unit)? = null): ActionData {
+fun switchToWindow(page: Page?, function: (SwitchToWindowAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
     val action = SwitchToWindowAction(page)
     function?.invoke(action)
@@ -67,4 +68,16 @@ fun switchToWindow(page: PageData?, function: (SwitchToWindowAction.() -> Unit)?
     val name = action.getName()
     val stopTime = System.currentTimeMillis()
     return ActionData(result, parameters, name, startTime, stopTime)
+}
+
+/**
+ * Switches to the window with [pageData]
+ *
+ * Switches to the first other window (if [pageData] is not specified)
+ */
+fun switchToWindow(pageData: PageData?, function: (SwitchToWindowAction.() -> Unit)? = null): ActionData {
+    var page: Page? = null
+    if (pageData != null)
+        page = Page(pageData)
+    return switchToWindow(page, function)
 }

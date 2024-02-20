@@ -398,7 +398,7 @@ class WebDriver : Driver {
         driver.navigate().back()
     }
 
-    override fun executeTouchAction(locator: Locator, actionList: MutableList<MutableList<TouchAction>>) {
+    override fun performTouchAction(locator: Locator, actionList: MutableList<MutableList<TouchAction>>) {
         DriverHelper().handleStaleElementReferenceException("executeTouchAction", numberOfAttempts) {
             val element = getWebElement(locator)
             val center = DriverHelper().getElementCenter(element)

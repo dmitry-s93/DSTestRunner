@@ -19,6 +19,8 @@ import config.WebDriverConfig
 import test.element.Locator
 import java.net.URI
 
+open class Page(val pageData: PageData)
+
 class PageData(
     val pageName: String,
     val urlPath: String? = null,

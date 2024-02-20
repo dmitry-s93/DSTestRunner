@@ -19,31 +19,27 @@ import action.Action
 import action.ActionData
 import action.ActionResult
 import action.ActionReturn
+import action.helper.ActionHelper
 import config.Localization
 import driver.DriverSession
-import storage.PageStorage
 import storage.ValueStorage
 import test.element.Locator
+import test.page.Element
 
-class IsNotExistAction(private val elementName: String) : ActionReturn(), Action {
-    private var elementLocator: Locator? = null
-    private var elementDisplayName: String = elementName
+class IsNotExistAction(private val element: Element) : ActionReturn(), Action {
+    private lateinit var elementLocator: Locator
     private val locatorArguments = ArrayList<String>()
 
     override fun getName(): String {
-        return Localization.get("IsNotExistAction.DefaultName", elementDisplayName)
+        return Localization.get("IsNotExistAction.DefaultName", element.displayName)
     }
 
     override fun execute(): ActionResult {
         try {
-            val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
-            val element = pageData.getElement(elementName)
-                ?: return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.pageName))
-            element.getDisplayName()?.let { elementDisplayName = it }
-            elementLocator = element.getLocator().withReplaceArgs(*locatorArguments.toArray())
-            if (elementLocator!!.value.isEmpty())
+            elementLocator = element.locator.withReplaceArgs(*locatorArguments.toArray())
+            if (elementLocator.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
-            if (!DriverSession.getSession().isNotExist(elementLocator!!))
+            if (!DriverSession.getSession().isNotExist(elementLocator))
                 return fail(Localization.get("IsNotExistAction.ElementIsPresent"))
         } catch (e: Exception) {
             return broke(Localization.get("IsNotExistAction.GeneralError", e.message), e.stackTraceToString())
@@ -53,8 +49,8 @@ class IsNotExistAction(private val elementName: String) : ActionReturn(), Action
 
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
-        parameters["elementName"] = elementName
-        parameters["elementLocator"] = elementLocator?.value.toString()
+        parameters["elementName"] = element.displayName
+        parameters["elementLocator"] = elementLocator.value
         return parameters
     }
 
@@ -67,15 +63,27 @@ class IsNotExistAction(private val elementName: String) : ActionReturn(), Action
 }
 
 /**
- * Checks for the absence of the element [elementName] on the page
+ * Checks for the absence of the [element] on the page
  */
-fun isNotExist(elementName: String, function: (IsNotExistAction.() -> Unit)? = null): ActionData {
+fun isNotExist(element: Element, function: (IsNotExistAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = IsNotExistAction(elementName)
+    val action = IsNotExistAction(element)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()
     val stopTime = System.currentTimeMillis()
     return ActionData(result, parameters, name, startTime, stopTime)
+}
+
+/**
+ * Checks for the absence of the element [elementName] on the page
+ */
+fun isNotExist(elementName: String, function: (IsNotExistAction.() -> Unit)? = null): ActionData {
+    val (element, result) = ActionHelper().getElement(elementName)
+    if (element != null)
+        return isNotExist(element, function)
+    val name = Localization.get("IsNotExistAction.DefaultName", elementName)
+    val time = System.currentTimeMillis()
+    return ActionData(result!!, HashMap(), name, time, time)
 }

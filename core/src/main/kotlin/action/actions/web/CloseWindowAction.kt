@@ -21,15 +21,15 @@ import action.ActionResult
 import action.ActionReturn
 import config.Localization
 import driver.DriverSession
-import storage.PageStorage
+import test.page.Page
 
-class CloseWindowAction(private val pageName: String?) : ActionReturn(), Action {
-    private val pageUrl: String? = pageName?.let { PageStorage.getPage(it)?.getUrl() }
+class CloseWindowAction(private val page: Page?) : ActionReturn(), Action {
+    private val pageUrl: String? = page?.pageData?.getUrl()
 
     override fun getName(): String {
-        if (pageName.isNullOrEmpty())
+        if (page == null)
             return Localization.get("CloseWindowAction.DefaultName")
-        return Localization.get("CloseWindowAction.DefaultNameWithPage", pageName)
+        return Localization.get("CloseWindowAction.DefaultNameWithPage", page)
     }
 
     override fun execute(): ActionResult {
@@ -44,8 +44,8 @@ class CloseWindowAction(private val pageName: String?) : ActionReturn(), Action 
 
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
-        if (!pageName.isNullOrEmpty())
-            parameters["pageName"] = pageName
+        if (page != null)
+            parameters["pageName"] = page.pageData.pageName
         if (!pageUrl.isNullOrEmpty())
             parameters["pageUrl"] = pageUrl
         return parameters
@@ -53,13 +53,13 @@ class CloseWindowAction(private val pageName: String?) : ActionReturn(), Action 
 }
 
 /**
- * Closes the window with page [pageName]
+ * Closes the window with [page]
  *
- * Closes the active window (if [pageName] is not specified)
+ * Closes the active window (if [page] is not specified)
  */
-fun closeWindow(pageName: String? = null, function: (CloseWindowAction.() -> Unit)? = null): ActionData {
+fun closeWindow(page: Page? = null, function: (CloseWindowAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = CloseWindowAction(pageName)
+    val action = CloseWindowAction(page)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()

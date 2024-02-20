@@ -40,7 +40,7 @@ interface Driver {
     fun isNotExist(locator: Locator): Boolean
     fun isEnabled(locator: Locator): Boolean
     fun navigateBack()
-    fun executeTouchAction(locator: Locator, actionList: MutableList<MutableList<TouchAction>>)
+    fun performTouchAction(locator: Locator, actionList: MutableList<MutableList<TouchAction>>)
     fun quit()
 
     // Web only

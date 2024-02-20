@@ -46,6 +46,7 @@ class AcceptAlertAction(private val buttonLabel: String?) : ActionReturn(), Acti
 
 /**
  * Accepts an alert
+ *
  * [buttonLabel] - button to press (for iOS only)
  */
 fun acceptAlert(buttonLabel: String? = null, function: (AcceptAlertAction.() -> Unit)? = null): ActionData {

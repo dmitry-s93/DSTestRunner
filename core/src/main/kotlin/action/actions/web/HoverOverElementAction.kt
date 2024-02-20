@@ -19,31 +19,27 @@ import action.Action
 import action.ActionData
 import action.ActionResult
 import action.ActionReturn
+import action.helper.ActionHelper
 import config.Localization
 import driver.DriverSession
-import storage.PageStorage
 import storage.ValueStorage
 import test.element.Locator
+import test.page.Element
 
-class HoverOverElementAction(private val elementName: String) : ActionReturn(), Action {
-    private var elementLocator: Locator? = null
-    private var elementDisplayName: String = elementName
+class HoverOverElementAction(private val element: Element) : ActionReturn(), Action {
+    private lateinit var elementLocator: Locator
     private val locatorArguments = ArrayList<String>()
 
     override fun getName(): String {
-        return Localization.get("HoverOverElementAction.DefaultName", elementDisplayName)
+        return Localization.get("HoverOverElementAction.DefaultName", element.displayName)
     }
 
     override fun execute(): ActionResult {
         try {
-            val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
-            val element = pageData.getElement(elementName)
-                ?: return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.pageName))
-            element.getDisplayName()?.let { elementDisplayName = it }
-            elementLocator = element.getLocator().withReplaceArgs(*locatorArguments.toArray())
-            if (elementLocator!!.value.isEmpty())
+            elementLocator = element.locator.withReplaceArgs(*locatorArguments.toArray())
+            if (elementLocator.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
-            DriverSession.getSession().hoverOverElement(elementLocator!!)
+            DriverSession.getSession().hoverOverElement(elementLocator)
         } catch (e: Exception) {
             return broke(Localization.get("HoverOverElementAction.GeneralError", e.message), e.stackTraceToString())
         }
@@ -52,8 +48,8 @@ class HoverOverElementAction(private val elementName: String) : ActionReturn(), 
 
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
-        parameters["elementName"] = elementName
-        parameters["elementLocator"] = elementLocator?.value.toString()
+        parameters["elementName"] = element.displayName
+        parameters["elementLocator"] = elementLocator.value
         return parameters
     }
 
@@ -68,13 +64,25 @@ class HoverOverElementAction(private val elementName: String) : ActionReturn(), 
 /**
  * Moves the cursor over an element
  */
-fun hoverOverElement(elementName: String, function: (HoverOverElementAction.() -> Unit)? = null): ActionData {
+fun hoverOverElement(element: Element, function: (HoverOverElementAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = HoverOverElementAction(elementName)
+    val action = HoverOverElementAction(element)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()
     val stopTime = System.currentTimeMillis()
     return ActionData(result, parameters, name, startTime, stopTime)
+}
+
+/**
+ * Moves the cursor over an element
+ */
+fun hoverOverElement(elementName: String, function: (HoverOverElementAction.() -> Unit)? = null): ActionData {
+    val (element, result) = ActionHelper().getElement(elementName)
+    if (element != null)
+        return hoverOverElement(element, function)
+    val name = Localization.get("HoverOverElementAction.DefaultName", elementName)
+    val time = System.currentTimeMillis()
+    return ActionData(result!!, HashMap(), name, time, time)
 }

@@ -19,31 +19,27 @@ import action.Action
 import action.ActionData
 import action.ActionResult
 import action.ActionReturn
+import action.helper.ActionHelper
 import config.Localization
 import driver.DriverSession
-import storage.PageStorage
 import storage.ValueStorage
 import test.element.Locator
+import test.page.Element
 
-class IsEnabledAction(private val elementName: String) : ActionReturn(), Action {
-    private var elementLocator: Locator? = null
-    private var elementDisplayName: String = elementName
+class IsEnabledAction(private val element: Element) : ActionReturn(), Action {
+    private lateinit var elementLocator: Locator
     private val locatorArguments = ArrayList<String>()
 
     override fun getName(): String {
-        return Localization.get("IsEnabledAction.DefaultName", elementDisplayName)
+        return Localization.get("IsEnabledAction.DefaultName", element.displayName)
     }
 
     override fun execute(): ActionResult {
         try {
-            val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
-            val element = pageData.getElement(elementName)
-                ?: return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.pageName))
-            element.getDisplayName()?.let { elementDisplayName = it }
-            elementLocator = element.getLocator().withReplaceArgs(*locatorArguments.toArray())
-            if (elementLocator!!.value.isEmpty())
+            elementLocator = element.locator.withReplaceArgs(*locatorArguments.toArray())
+            if (elementLocator.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
-            if (!DriverSession.getSession().isEnabled(elementLocator!!))
+            if (!DriverSession.getSession().isEnabled(elementLocator))
                 return fail(Localization.get("IsEnabledAction.ElementIsNotEnabled"))
         } catch (e: Exception) {
             return broke(Localization.get("IsEnabledAction.GeneralError", e.message), e.stackTraceToString())
@@ -53,8 +49,8 @@ class IsEnabledAction(private val elementName: String) : ActionReturn(), Action 
 
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
-        parameters["elementName"] = elementName
-        parameters["elementLocator"] = elementLocator?.value.toString()
+        parameters["elementName"] = element.displayName
+        parameters["elementLocator"] = elementLocator.value
         return parameters
     }
 
@@ -67,15 +63,27 @@ class IsEnabledAction(private val elementName: String) : ActionReturn(), Action 
 }
 
 /**
- * Checks if element [elementName] is enabled
+ * Checks if [element] is enabled
  */
-fun isEnabled(elementName: String, function: (IsEnabledAction.() -> Unit)? = null): ActionData {
+fun isEnabled(element: Element, function: (IsEnabledAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = IsEnabledAction(elementName)
+    val action = IsEnabledAction(element)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()
     val stopTime = System.currentTimeMillis()
     return ActionData(result, parameters, name, startTime, stopTime)
+}
+
+/**
+ * Checks if element [elementName] is enabled
+ */
+fun isEnabled(elementName: String, function: (IsEnabledAction.() -> Unit)? = null): ActionData {
+    val (element, result) = ActionHelper().getElement(elementName)
+    if (element != null)
+        return isEnabled(element, function)
+    val name = Localization.get("IsEnabledAction.DefaultName", elementName)
+    val time = System.currentTimeMillis()
+    return ActionData(result!!, HashMap(), name, time, time)
 }

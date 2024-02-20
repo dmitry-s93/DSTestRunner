@@ -20,32 +20,12 @@ import test.element.Locator
 import test.element.LocatorType
 
 class Element(
-    private val locator: Locator,
-    private val displayName: String? = null,
-    private val maxSize: Int? = null,
-    private val allowedChars: String? = null,
-    private val pattern: String? = null
-) {
-    fun getLocator(): Locator {
-        return locator
-    }
-
-    fun getDisplayName(): String? {
-        return displayName
-    }
-
-    fun getMaxSize(): Int? {
-        return maxSize
-    }
-
-    fun getAllowedChars(): String? {
-        return allowedChars
-    }
-
-    fun getPattern(): String? {
-        return pattern
-    }
-}
+    val locator: Locator,
+    val displayName: String,
+    val maxSize: Int? = null,
+    val allowedChars: String? = null,
+    val pattern: String? = null
+)
 
 open class PageElements {
     private var elements = HashMap<String, Element>()
@@ -56,7 +36,7 @@ open class PageElements {
         name: String,
         locator: String,
         locatorType: LocatorType = LocatorType.XPATH,
-        displayName: String? = null,
+        displayName: String = name,
         maxSize: Int? = null,
         allowedChars: String? = null,
         pattern: String? = null,

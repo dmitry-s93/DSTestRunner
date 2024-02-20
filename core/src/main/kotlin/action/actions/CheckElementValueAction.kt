@@ -19,35 +19,31 @@ import action.Action
 import action.ActionData
 import action.ActionResult
 import action.ActionReturn
+import action.helper.ActionHelper
 import config.Localization
 import driver.DriverSession
 import org.awaitility.Awaitility
 import org.awaitility.core.ConditionTimeoutException
-import storage.PageStorage
 import storage.ValueStorage
 import test.element.Locator
+import test.page.Element
 import java.time.Duration
 
-class CheckElementValueAction(private val elementName: String, expectedValue: String) : ActionReturn(), Action {
-    private var elementLocator: Locator? = null
-    private var elementDisplayName: String = elementName
+class CheckElementValueAction(private val element: Element, expectedValue: String) : ActionReturn(), Action {
+    private lateinit var elementLocator: Locator
     private val expectedValue: String = ValueStorage.replace(expectedValue)
     private var elementValue: String? = null
     private val locatorArguments = ArrayList<String>()
     private var waitForExpectedValue: Boolean = false
 
     override fun getName(): String {
-        return Localization.get("CheckElementValueAction.DefaultName", elementDisplayName)
+        return Localization.get("CheckElementValueAction.DefaultName", element.displayName)
     }
 
     override fun execute(): ActionResult {
         try {
-            val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
-            val element = pageData.getElement(elementName)
-                ?: return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.pageName))
-            element.getDisplayName()?.let { elementDisplayName = it }
-            elementLocator = element.getLocator().withReplaceArgs(*locatorArguments.toArray())
-            if (elementLocator!!.value.isEmpty())
+            elementLocator = element.locator.withReplaceArgs(*locatorArguments.toArray())
+            if (elementLocator.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
             val driverSession = DriverSession.getSession()
             if (waitForExpectedValue) {
@@ -57,14 +53,14 @@ class CheckElementValueAction(private val elementName: String, expectedValue: St
                         .pollDelay(Duration.ofMillis(100))
                         .atMost(Duration.ofMillis(driverSession.getElementTimeout()))
                         .until {
-                            elementValue = driverSession.getElementValue(elementLocator!!)
+                            elementValue = driverSession.getElementValue(elementLocator)
                             elementValue == expectedValue
                         }
                 } catch (_: ConditionTimeoutException) {
                     return fail(Localization.get("CheckElementValueAction.ElementValueNotMatch", elementValue, expectedValue))
                 }
             } else {
-                elementValue = driverSession.getElementValue(elementLocator!!)
+                elementValue = driverSession.getElementValue(elementLocator)
                 if (elementValue != expectedValue)
                     return fail(Localization.get("CheckElementValueAction.ElementValueNotMatch", elementValue, expectedValue))
             }
@@ -76,8 +72,8 @@ class CheckElementValueAction(private val elementName: String, expectedValue: St
 
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
-        parameters["elementName"] = elementName
-        parameters["elementLocator"] = elementLocator?.value.toString()
+        parameters["elementName"] = element.displayName
+        parameters["elementLocator"] = elementLocator.value
         parameters["elementValue"] = elementValue.toString()
         if (expectedValue != elementValue)
             parameters["expectedValue"] = expectedValue
@@ -101,16 +97,29 @@ class CheckElementValueAction(private val elementName: String, expectedValue: St
 }
 
 fun checkElementValue(
-    elementName: String,
+    element: Element,
     expectedValue: String,
     function: (CheckElementValueAction.() -> Unit)? = null
 ): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = CheckElementValueAction(elementName, expectedValue)
+    val action = CheckElementValueAction(element, expectedValue)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()
     val stopTime = System.currentTimeMillis()
     return ActionData(result, parameters, name, startTime, stopTime)
+}
+
+fun checkElementValue(
+    elementName: String,
+    expectedValue: String,
+    function: (CheckElementValueAction.() -> Unit)? = null
+): ActionData {
+    val (element, result) = ActionHelper().getElement(elementName)
+    if (element != null)
+        return checkElementValue(element, expectedValue, function)
+    val name = Localization.get("CheckElementValueAction.DefaultName", elementName)
+    val time = System.currentTimeMillis()
+    return ActionData(result!!, HashMap(), name, time, time)
 }

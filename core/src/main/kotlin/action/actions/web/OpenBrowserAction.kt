@@ -22,18 +22,19 @@ import action.ActionReturn
 import config.Localization
 import driver.DriverSession
 import storage.PageStorage
+import test.page.Page
 import test.page.PageData
 
-class OpenBrowserAction(private val page: PageData) : ActionReturn(), Action {
-    private var pageUrl: String = ""
+class OpenBrowserAction(private val page: Page) : ActionReturn(), Action {
+    private val pageUrl: String = page.pageData.getUrl()
+    private val pageName: String = page.pageData.pageName
 
     override fun getName(): String {
-        return Localization.get("OpenBrowserAction.DefaultName", page.pageName)
+        return Localization.get("OpenBrowserAction.DefaultName", pageName)
     }
 
     override fun execute(): ActionResult {
-        PageStorage.setCurrentPage(page)
-        pageUrl = page.getUrl()
+        PageStorage.setCurrentPage(page.pageData)
         if (pageUrl.isEmpty())
             return broke(Localization.get("General.PageUrlNotSpecified"))
         try {
@@ -47,13 +48,13 @@ class OpenBrowserAction(private val page: PageData) : ActionReturn(), Action {
 
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
-        parameters["pageName"] = page.pageName
+        parameters["pageName"] = pageName
         parameters["pageUrl"] = pageUrl
         return parameters
     }
 }
 
-fun openBrowser(page: PageData, function: (OpenBrowserAction.() -> Unit)? = null): ActionData {
+fun openBrowser(page: Page, function: (OpenBrowserAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
     val action = OpenBrowserAction(page)
     function?.invoke(action)
@@ -62,4 +63,8 @@ fun openBrowser(page: PageData, function: (OpenBrowserAction.() -> Unit)? = null
     val name = action.getName()
     val stopTime = System.currentTimeMillis()
     return ActionData(result, parameters, name, startTime, stopTime)
+}
+
+fun openBrowser(page: PageData, function: (OpenBrowserAction.() -> Unit)? = null): ActionData {
+    return  openBrowser(Page(page), function)
 }

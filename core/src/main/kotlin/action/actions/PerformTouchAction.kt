@@ -19,13 +19,13 @@ import action.Action
 import action.ActionData
 import action.ActionResult
 import action.ActionReturn
+import action.helper.ActionHelper
 import config.Localization
 import driver.DriverSession
-import storage.PageStorage
 import storage.ValueStorage
 import test.element.Locator
+import test.page.Element
 import java.awt.Point
-import java.util.*
 
 enum class ActionType {
     PAUSE,
@@ -36,26 +36,21 @@ enum class ActionType {
 
 class TouchAction(val actionType: ActionType, val point: Point? = null, val millis: Long? = null)
 
-class PerformTouchAction(private val elementName: String) : ActionReturn(), Action {
-    private var elementLocator: Locator? = null
-    private var elementDisplayName: String = elementName
+class PerformTouchAction(private val element: Element) : ActionReturn(), Action {
+    private lateinit var elementLocator: Locator
     private val locatorArguments = ArrayList<String>()
     private val touchActions: MutableList<MutableList<TouchAction>> = mutableListOf()
 
     override fun getName(): String {
-        return Localization.get("PerformTouchAction.DefaultName", elementDisplayName)
+        return Localization.get("PerformTouchAction.DefaultName", element.displayName)
     }
 
     override fun execute(): ActionResult {
         try {
-            val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
-            val element = pageData.getElement(elementName)
-                ?: return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.pageName))
-            element.getDisplayName()?.let { elementDisplayName = it }
-            elementLocator = element.getLocator().withReplaceArgs(*locatorArguments.toArray())
-            if (elementLocator!!.value.isEmpty())
+            elementLocator = element.locator.withReplaceArgs(*locatorArguments.toArray())
+            if (elementLocator.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
-            DriverSession.getSession().executeTouchAction(elementLocator!!, touchActions)
+            DriverSession.getSession().performTouchAction(elementLocator, touchActions)
         } catch (e: Exception) {
             return broke(Localization.get("PerformTouchAction.GeneralError", e.message), e.stackTraceToString())
         }
@@ -64,8 +59,8 @@ class PerformTouchAction(private val elementName: String) : ActionReturn(), Acti
 
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
-        parameters["elementName"] = elementName
-        parameters["elementLocator"] = elementLocator?.value.toString()
+        parameters["elementName"] = element.displayName
+        parameters["elementLocator"] = elementLocator.value
         return parameters
     }
 
@@ -122,13 +117,22 @@ class PerformTouchAction(private val elementName: String) : ActionReturn(), Acti
     }
 }
 
-fun performTouchAction(elementName: String, function: (PerformTouchAction.() -> Unit)? = null): ActionData {
+fun performTouchAction(element: Element, function: (PerformTouchAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = PerformTouchAction(elementName)
+    val action = PerformTouchAction(element)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()
     val stopTime = System.currentTimeMillis()
     return ActionData(result, parameters, name, startTime, stopTime)
+}
+
+fun performTouchAction(elementName: String, function: (PerformTouchAction.() -> Unit)? = null): ActionData {
+    val (element, result) = ActionHelper().getElement(elementName)
+    if (element != null)
+        return performTouchAction(element, function)
+    val name = Localization.get("PerformTouchAction.DefaultName", elementName)
+    val time = System.currentTimeMillis()
+    return ActionData(result!!, HashMap(), name, time, time)
 }

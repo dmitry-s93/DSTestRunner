@@ -46,6 +46,7 @@ class DismissAlertAction(private val buttonLabel: String?) : ActionReturn(), Act
 
 /**
  * Dismisses an alert
+ *
  * [buttonLabel] - button to press (for iOS only)
  */
 fun dismissAlert(buttonLabel: String? = null, function: (DismissAlertAction.() -> Unit)? = null): ActionData {
