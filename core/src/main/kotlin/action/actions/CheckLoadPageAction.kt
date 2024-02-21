@@ -56,9 +56,9 @@ class CheckLoadPageAction(private val page: Page) : ActionReturn(), Action {
                 val longScreenshot = takeScreenshotClass!!.longScreenshot
                 ignoredElements.addAll(page.pageData.ignoredElements)
                 ignoredElements.addAll(getElements(page.pageData, takeScreenshotClass!!.getIgnoredElements()))
-                ignoredElements.addAll(takeScreenshotClass!!.getElementLocators())
+                ignoredElements.addAll(takeScreenshotClass!!.getIgnoredElementLocators())
                 screenshotAreas.addAll(getElements(page.pageData, takeScreenshotClass!!.getElements()))
-                screenshotAreas.addAll(takeScreenshotClass!!.getIgnoredElementLocators())
+                screenshotAreas.addAll(takeScreenshotClass!!.getElementLocators())
                 if (screenshotAreas.isEmpty())
                     page.pageData.workArea?.let { screenshotAreas.add(it) }
                 val screenshot = DriverSession.getSession().getScreenshot(

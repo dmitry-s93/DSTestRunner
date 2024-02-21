@@ -19,32 +19,28 @@ import action.Action
 import action.ActionData
 import action.ActionResult
 import action.ActionReturn
+import action.helper.ActionHelper
 import action.helper.Direction
 import config.Localization
 import driver.DriverSession
-import storage.PageStorage
 import storage.ValueStorage
 import test.element.Locator
+import test.page.Element
 
-class SwipeElementAction(private val elementName: String, private val direction: Direction) : ActionReturn(), Action {
-    private var elementLocator: Locator? = null
-    private var elementDisplayName: String = elementName
+class SwipeElementAction(private val element: Element, private val direction: Direction) : ActionReturn(), Action {
+    private lateinit var elementLocator: Locator
     private val locatorArguments = ArrayList<String>()
 
     override fun getName(): String {
-        return Localization.get("SwipeElementAction.DefaultName", elementDisplayName)
+        return Localization.get("SwipeElementAction.DefaultName", element.displayName)
     }
 
     override fun execute(): ActionResult {
         try {
-            val pageData = PageStorage.getCurrentPage() ?: return broke(Localization.get("General.CurrentPageIsNotSet"))
-            val element = pageData.getElement(elementName)
-                ?: return broke(Localization.get("General.ElementIsNotSetOnPage", elementName, pageData.pageName))
-            elementDisplayName = element.displayName
             elementLocator = element.locator.withReplaceArgs(*locatorArguments.toArray())
-            if (elementLocator!!.value.isEmpty())
+            if (elementLocator.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
-            DriverSession.getSession().swipeElement(elementLocator!!, direction)
+            DriverSession.getSession().swipeElement(elementLocator, direction)
         } catch (e: Exception) {
             return broke(Localization.get("SwipeElementAction.GeneralError", e.message), e.stackTraceToString())
         }
@@ -53,8 +49,8 @@ class SwipeElementAction(private val elementName: String, private val direction:
 
     override fun getParameters(): HashMap<String, String> {
         val parameters = HashMap<String, String>()
-        parameters["elementName"] = elementName
-        parameters["elementLocator"] = elementLocator?.value.toString()
+        parameters["elementName"] = element.displayName
+        parameters["elementLocator"] = elementLocator.value
         parameters["direction"] = direction.value
         return parameters
     }
@@ -67,13 +63,22 @@ class SwipeElementAction(private val elementName: String, private val direction:
     }
 }
 
-fun swipeElement(elementName: String, direction: Direction, function: (SwipeElementAction.() -> Unit)? = null): ActionData {
+fun swipeElement(element: Element, direction: Direction, function: (SwipeElementAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = SwipeElementAction(elementName, direction)
+    val action = SwipeElementAction(element, direction)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()
     val stopTime = System.currentTimeMillis()
     return ActionData(result, parameters, name, startTime, stopTime)
+}
+
+fun swipeElement(elementName: String, direction: Direction, function: (SwipeElementAction.() -> Unit)? = null): ActionData {
+    val (element, result) = ActionHelper().getElement(elementName)
+    if (element != null)
+        return swipeElement(element, direction, function)
+    val name = Localization.get("SwipeElementAction.DefaultName", elementName)
+    val time = System.currentTimeMillis()
+    return ActionData(result!!, HashMap(), name, time, time)
 }

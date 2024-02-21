@@ -19,7 +19,7 @@ import logger.Logger
 import test.element.Locator
 import test.element.LocatorType
 
-class Element(
+open class Element(
     val locator: Locator,
     val displayName: String,
     val maxSize: Int? = null,
