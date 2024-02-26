@@ -11,7 +11,7 @@ enum class LocatorType(val value: String) {
     IOS_PREDICATE_STRING("iOS Predicate String")
 }
 
-class Locator(value: String, val type: LocatorType? = null) {
+class Locator(value: String, val type: LocatorType? = null, val ignoreVisibility: Boolean = false) {
     var value = value
         private set
     fun withReplaceArgs(vararg args: Any?):Locator {

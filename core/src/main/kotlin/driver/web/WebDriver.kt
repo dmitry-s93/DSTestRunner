@@ -270,7 +270,7 @@ class WebDriver : Driver {
 
     private fun getWebElements(locator: Locator, onlyDisplayed: Boolean, scrollToCheckVisibility: Boolean = false): List<WebElement> {
         val elements = driver.findElements(byDetect(locator))
-        if (onlyDisplayed) {
+        if (onlyDisplayed && !locator.ignoreVisibility) {
             val displayedElements: MutableList<WebElement> = mutableListOf()
             elements.forEach { element ->
                 if (scrollToCheckVisibility)
