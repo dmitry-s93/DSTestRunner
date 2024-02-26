@@ -539,7 +539,10 @@ class IOSAppiumDriver : Driver {
     }
 
     private fun getWebElements(locator: Locator, onlyDisplayed: Boolean, scrollToFind: Boolean): List<WebElement> {
-        var elements = filterElements(driver.findElements(byDetect(locator)), onlyDisplayed)
+        var onlyDisplayedVar = onlyDisplayed
+        if (locator.ignoreVisibility)
+            onlyDisplayedVar = false
+        var elements = filterElements(driver.findElements(byDetect(locator)), onlyDisplayedVar)
         if (elements.isNotEmpty() || !scrollToFind)
             return elements
         var swipeCount = 0
@@ -557,7 +560,7 @@ class IOSAppiumDriver : Driver {
                     else -> break
                 }
             }
-            elements = filterElements(driver.findElements(byDetect(locator)), onlyDisplayed)
+            elements = filterElements(driver.findElements(byDetect(locator)), onlyDisplayedVar)
             swipeCount++
         }
 
