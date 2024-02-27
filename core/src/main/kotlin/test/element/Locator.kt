@@ -15,6 +15,6 @@ class Locator(value: String, val type: LocatorType? = null, val ignoreVisibility
     var value = value
         private set
     fun withReplaceArgs(vararg args: Any?):Locator {
-        return Locator(String.format(value, *args), type)
+        return Locator(String.format(value, *args), type, ignoreVisibility)
     }
 }
