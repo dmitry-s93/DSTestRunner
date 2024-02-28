@@ -66,10 +66,12 @@ class ClickAction(private val element: Element) : ActionReturn(), Action {
      * Sets the point to click inside the specified element.
      * You must specify the offset of the coordinate relative to the center of the element.
      */
+    @Deprecated("Use performTouchAction instead")
     fun clickPoint(xOffset: Int, yOffset: Int) {
         clickPoints.add(Pair(Point(xOffset, yOffset), null))
     }
 
+    @Deprecated("Use performTouchAction instead")
     fun clickAndMovePoint(startX: Int, startY: Int, endX: Int, endY: Int) {
         clickPoints.add(Pair(Point(startX, startY), Point(endX, endY)))
     }
