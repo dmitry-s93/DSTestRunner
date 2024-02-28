@@ -114,6 +114,14 @@ class PerformTouchAction(private val element: Element) : ActionReturn(), Action 
             actions.add(TouchAction(ActionType.POINTER_UP))
             return PointerActionFactory(actions)
         }
+
+        fun longPress(x: Int, y: Int, millis: Long? = 500): PointerActionFactory {
+            actions.add(TouchAction(ActionType.POINTER_MOVE, point = Point(x, y)))
+            actions.add(TouchAction(ActionType.POINTER_DOWN))
+            actions.add(TouchAction(ActionType.PAUSE, millis = millis))
+            actions.add(TouchAction(ActionType.POINTER_UP))
+            return PointerActionFactory(actions)
+        }
     }
 }
 
