@@ -45,6 +45,7 @@ import pazone.ashot.cropper.indent.IndentFilerFactory.blur
 import test.element.Locator
 import test.element.LocatorType
 import java.awt.Point
+import java.awt.Rectangle
 import java.net.URL
 import java.time.Duration
 
@@ -197,7 +198,12 @@ class WebDriver : Driver {
         return value ?: ""
     }
 
-    override fun getScreenshot(longScreenshot: Boolean, ignoredElements: Set<Locator>, screenshotAreas: Set<Locator>): Screenshot {
+    override fun getScreenshot(
+        longScreenshot: Boolean,
+        ignoredElements: Set<Locator>,
+        ignoredRectangles: Set<Rectangle>,
+        screenshotAreas: Set<Locator>
+    ): Screenshot {
         ScreenshotConfig.executeJavaScriptBeforeScreenshot?.let { executeJavaScript(it) }
         scrollToTop()
         removeFocus()
@@ -209,9 +215,12 @@ class WebDriver : Driver {
                 ShootingStrategies.viewportPasting(100)
             else
                 ShootingStrategies.simple()
+        val ignoredAreas: MutableSet<Coords> = HashSet()
+        ignoredAreas.addAll(getIgnoredAreas(ignoredElements))
+        ignoredAreas.addAll(DriverHelper().rectanglesToCoords(ignoredRectangles))
         val screenshot = with(AShot()) {
             shootingStrategy(strategy)
-            ignoredAreas(getIgnoredAreas(ignoredElements))
+            ignoredAreas(ignoredAreas)
             if (screenshotAreas.isNotEmpty()) {
                 val webElements: MutableList<WebElement> = mutableListOf()
                 screenshotAreas.forEach { locator ->

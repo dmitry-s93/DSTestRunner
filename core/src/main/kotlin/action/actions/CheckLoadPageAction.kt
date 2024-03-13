@@ -64,6 +64,7 @@ class CheckLoadPageAction(private val page: Page) : ActionReturn(), Action {
                 val screenshot = DriverSession.getSession().getScreenshot(
                     longScreenshot = longScreenshot,
                     ignoredElements = ignoredElements,
+                    ignoredRectangles = page.pageData.ignoredRectangles,
                     screenshotAreas = screenshotAreas
                 )
                 screenData = ScreenData(screenshot)
