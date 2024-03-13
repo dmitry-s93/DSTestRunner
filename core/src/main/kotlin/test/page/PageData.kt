@@ -17,6 +17,7 @@ package test.page
 
 import config.WebDriverConfig
 import test.element.Locator
+import java.awt.Rectangle
 import java.net.URI
 
 open class Page(val pageData: PageData)
@@ -29,6 +30,7 @@ class PageData(
     private val elements: HashMap<String, Element>? = null,
     val workArea: Locator? = null,
     val ignoredElements: Set<Locator> = HashSet(),
+    val ignoredRectangles: Set<Rectangle> = HashSet(),
     val waitTimeBeforeScreenshot: Long? = null
 ) {
     fun getUrl(urlArguments: HashMap<String, String>? = null): String {

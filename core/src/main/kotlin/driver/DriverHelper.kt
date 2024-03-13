@@ -21,7 +21,9 @@ import org.openqa.selenium.WebElement
 import org.w3c.dom.Document
 import org.w3c.dom.NodeList
 import org.xml.sax.InputSource
+import pazone.ashot.coordinates.Coords
 import java.awt.Point
+import java.awt.Rectangle
 import java.io.StringReader
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.xpath.XPathConstants
@@ -60,5 +62,13 @@ class DriverHelper {
         val xpath = xPathFactory.newXPath()
         val expr = xpath.compile(expression)
         return expr.evaluate(document, XPathConstants.NODESET) as NodeList
+    }
+
+    fun rectanglesToCoords(rectangles: Set<Rectangle>): Set<Coords> {
+        val coords: MutableSet<Coords> = HashSet()
+        rectangles.forEach {
+            coords.add(Coords(it))
+        }
+        return coords
     }
 }

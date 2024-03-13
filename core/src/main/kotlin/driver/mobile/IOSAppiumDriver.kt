@@ -46,6 +46,7 @@ import test.element.Locator
 import test.element.LocatorType
 import utils.ImageUtils
 import java.awt.Point
+import java.awt.Rectangle
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.net.URL
@@ -161,17 +162,22 @@ class IOSAppiumDriver : Driver {
         return value
     }
 
-    override fun getScreenshot(longScreenshot: Boolean, ignoredElements: Set<Locator>, screenshotAreas: Set<Locator>): Screenshot {
+    override fun getScreenshot(
+        longScreenshot: Boolean,
+        ignoredElements: Set<Locator>,
+        ignoredRectangles: Set<Rectangle>,
+        screenshotAreas: Set<Locator>
+    ): Screenshot {
         hideKeyboard()
         val waitTime = ScreenshotConfig.waitTimeBeforeScreenshot
         if (waitTime > 0)
             Thread.sleep(waitTime)
         if (longScreenshot && screenshotAreas.isEmpty() && isPageDoesNotFitOnScreen())
-            return getLongScreenshot(ignoredElements, screenshotAreas)
-        return getSingleScreenshot(ignoredElements, screenshotAreas)
+            return getLongScreenshot(ignoredElements, ignoredRectangles, screenshotAreas)
+        return getSingleScreenshot(ignoredElements, ignoredRectangles, screenshotAreas)
     }
 
-    private fun getSingleScreenshot(ignoredElements: Set<Locator>, screenshotAreas: Set<Locator>): Screenshot {
+    private fun getSingleScreenshot(ignoredElements: Set<Locator>, ignoredRectangles: Set<Rectangle>, screenshotAreas: Set<Locator>): Screenshot {
         val screenshot: Screenshot
         if (screenshotAreas.isNotEmpty()) {
             screenshot = with(AShot()) {
@@ -183,14 +189,16 @@ class IOSAppiumDriver : Driver {
             screenshot = Screenshot(takeScreenshot(viewportArea))
             screenshot.originShift = viewportArea
         }
-        val ignoredAreas = getElementCoordinates(ignoredElements, screenshot.originShift)
+        val ignoredAreas: MutableSet<Coords> = HashSet()
+        ignoredAreas.addAll(getElementCoordinates(ignoredElements, screenshot.originShift))
+        ignoredAreas.addAll(DriverHelper().rectanglesToCoords(ignoredRectangles))
         screenshot.ignoredAreas = Coords.intersection(screenshot.coordsToCompare, ignoredAreas)
         return screenshot
     }
 
-    private fun getLongScreenshot(ignoredElements: Set<Locator>, screenshotAreas: Set<Locator>): Screenshot {
+    private fun getLongScreenshot(ignoredElements: Set<Locator>, ignoredRectangles: Set<Rectangle>, screenshotAreas: Set<Locator>): Screenshot {
         val pauseAtExtremePoints: Long = 250
-        val scrollableArea = getScrollableArea(screenScale) ?: return getSingleScreenshot(ignoredElements, screenshotAreas)
+        val scrollableArea = getScrollableArea(screenScale) ?: return getSingleScreenshot(ignoredElements, ignoredRectangles, screenshotAreas)
         scrollToTop()
         Thread.sleep(pauseAtExtremePoints)
 
@@ -202,6 +210,7 @@ class IOSAppiumDriver : Driver {
         var originShift = Coords(viewportArea.x, viewportArea.y, viewportArea.width,  imageHeight)
         bufferedImageList.add(takeScreenshot(originShift))
         ignoredAreas.addAll(getElementCoordinates(ignoredElements, originShift))
+        ignoredAreas.addAll(DriverHelper().rectanglesToCoords(ignoredRectangles))
 
         do {
             val elementPositionsBefore = getElementPositions()

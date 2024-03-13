@@ -20,6 +20,7 @@ import action.helper.Direction
 import pazone.ashot.Screenshot
 import test.element.Locator
 import java.awt.Point
+import java.awt.Rectangle
 
 private const val notImplementedMessage = "Method not implemented for this driver instance"
 
@@ -31,6 +32,7 @@ interface Driver {
     fun getScreenshot(
         longScreenshot: Boolean = false,
         ignoredElements: Set<Locator> = HashSet(),
+        ignoredRectangles: Set<Rectangle> = HashSet(),
         screenshotAreas: Set<Locator> = HashSet()
     ): Screenshot
 
