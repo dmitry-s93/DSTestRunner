@@ -25,12 +25,14 @@ import test.element.Locator
 import test.page.Element
 import test.page.Page
 import test.page.PageData
+import java.awt.Rectangle
 
 class CheckLoadPageAction(private val page: Page) : ActionReturn(), Action {
     private var pageUrl: String? = null
     private val pageName: String = page.pageData.pageName
     private var screenData: ScreenData? = null
     private val ignoredElements: MutableSet<Locator> = HashSet()
+    private val ignoredRectangles: MutableSet<Rectangle> = HashSet()
     private var screenshotAreas: MutableSet<Locator> = HashSet()
     private var takeScreenshotClass: TakeScreenshot? = null
 
@@ -57,6 +59,8 @@ class CheckLoadPageAction(private val page: Page) : ActionReturn(), Action {
                 ignoredElements.addAll(page.pageData.ignoredElements)
                 ignoredElements.addAll(getElements(page.pageData, takeScreenshotClass!!.getIgnoredElements()))
                 ignoredElements.addAll(takeScreenshotClass!!.getIgnoredElementLocators())
+                ignoredRectangles.addAll(page.pageData.ignoredRectangles)
+                ignoredRectangles.addAll(takeScreenshotClass!!.getIgnoredRectangles())
                 screenshotAreas.addAll(getElements(page.pageData, takeScreenshotClass!!.getElements()))
                 screenshotAreas.addAll(takeScreenshotClass!!.getElementLocators())
                 if (screenshotAreas.isEmpty())
@@ -64,7 +68,7 @@ class CheckLoadPageAction(private val page: Page) : ActionReturn(), Action {
                 val screenshot = DriverSession.getSession().getScreenshot(
                     longScreenshot = longScreenshot,
                     ignoredElements = ignoredElements,
-                    ignoredRectangles = page.pageData.ignoredRectangles,
+                    ignoredRectangles = ignoredRectangles,
                     screenshotAreas = screenshotAreas
                 )
                 screenData = ScreenData(screenshot)
@@ -100,6 +104,9 @@ class CheckLoadPageAction(private val page: Page) : ActionReturn(), Action {
             }
             parameters["ignoredElements"] = elements.toString()
         }
+        if (ignoredRectangles.isNotEmpty()) {
+            parameters["ignoredRectangles"] = ignoredRectangles.toString()
+        }
         if (screenshotAreas.isNotEmpty()) {
             val elements: MutableSet<String> = HashSet()
             screenshotAreas.forEach {
@@ -132,13 +139,18 @@ class CheckLoadPageAction(private val page: Page) : ActionReturn(), Action {
         private val ignoredElements = HashMap<String, List<String>>()
         private val elementLocators: MutableSet<Locator> = HashSet()
         private val ignoredElementLocators: MutableSet<Locator> = HashSet()
+        private val ignoredRectangles: MutableSet<Rectangle> = HashSet()
 
         fun getElements(): HashMap<String, List<String>> {
             return elements
         }
 
-        fun getIgnoredElements() : HashMap<String, List<String>> {
+        fun getIgnoredElements(): HashMap<String, List<String>> {
             return ignoredElements
+        }
+
+        fun getIgnoredRectangles(): MutableSet<Rectangle> {
+            return ignoredRectangles
         }
 
         /**
@@ -169,6 +181,13 @@ class CheckLoadPageAction(private val page: Page) : ActionReturn(), Action {
                 arguments.add(ValueStorage.replace(it))
             }
             ignoredElements[elementName] = arguments
+        }
+
+        /**
+         * Specifies the rectangle to ignore in the screenshot.
+         */
+        fun ignoreElement(rectangle: Rectangle) {
+            ignoredRectangles.add(rectangle)
         }
 
         fun getElementLocators(): Set<Locator> {
