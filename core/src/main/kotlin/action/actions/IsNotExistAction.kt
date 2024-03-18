@@ -29,6 +29,8 @@ import test.page.Element
 class IsNotExistAction(private val element: Element) : ActionReturn(), Action {
     private lateinit var elementLocator: Locator
     private val locatorArguments = ArrayList<String>()
+    @Suppress("MemberVisibilityCanBePrivate")
+    var waitAtMostMillis: Long? = null
 
     override fun getName(): String {
         return Localization.get("IsNotExistAction.DefaultName", element.displayName)
@@ -39,7 +41,7 @@ class IsNotExistAction(private val element: Element) : ActionReturn(), Action {
             elementLocator = element.locator.withReplaceArgs(*locatorArguments.toArray())
             if (elementLocator.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
-            if (!DriverSession.getSession().isNotExist(elementLocator))
+            if (!DriverSession.getSession().isNotExist(elementLocator, waitAtMostMillis))
                 return fail(Localization.get("IsNotExistAction.ElementIsPresent"))
         } catch (e: Exception) {
             return broke(Localization.get("IsNotExistAction.GeneralError", e.message), e.stackTraceToString())
@@ -51,6 +53,8 @@ class IsNotExistAction(private val element: Element) : ActionReturn(), Action {
         val parameters = HashMap<String, String>()
         parameters["elementName"] = element.displayName
         parameters["elementLocator"] = elementLocator.value
+        if (waitAtMostMillis != null)
+            parameters["waitAtMostMillis"] = waitAtMostMillis.toString()
         return parameters
     }
 

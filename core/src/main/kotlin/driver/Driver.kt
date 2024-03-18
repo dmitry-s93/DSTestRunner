@@ -38,8 +38,8 @@ interface Driver {
 
     fun setValue(locator: Locator, value: String, sequenceMode: Boolean = false, hideKeyboard: Boolean = true)
     fun setSelectValue(locator: Locator, value: String)
-    fun isExist(locator: Locator): Boolean
-    fun isNotExist(locator: Locator): Boolean
+    fun isExist(locator: Locator, waitAtMostMillis: Long? = null): Boolean
+    fun isNotExist(locator: Locator, waitAtMostMillis: Long? = null): Boolean
     fun isEnabled(locator: Locator): Boolean
     fun navigateBack()
     fun performTouchAction(locator: Locator, actionList: MutableList<MutableList<TouchAction>>)

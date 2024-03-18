@@ -319,13 +319,20 @@ class IOSAppiumDriver : Driver {
         TODO("Not yet implemented")
     }
 
-    override fun isExist(locator: Locator): Boolean {
+    override fun isExist(locator: Locator, waitAtMostMillis: Long?): Boolean {
+        var waitAtMost = elementTimeout
+        if (waitAtMostMillis != null) {
+            if (waitAtMostMillis > 0)
+                waitAtMost = waitAtMostMillis
+            else
+                getWebElements(locator, onlyDisplayed = false, scrollToFind = false).isNotEmpty()
+        }
         return try {
             Awaitility.await()
                 .ignoreException(StaleElementReferenceException::class.java)
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
-                .atMost(Duration.ofMillis(elementTimeout))
+                .atMost(Duration.ofMillis(waitAtMost))
                 .until { getWebElements(locator, onlyDisplayed = false, scrollToFind = false).isNotEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
@@ -333,13 +340,20 @@ class IOSAppiumDriver : Driver {
         }
     }
 
-    override fun isNotExist(locator: Locator): Boolean {
+    override fun isNotExist(locator: Locator, waitAtMostMillis: Long?): Boolean {
+        var waitAtMost = elementTimeout
+        if (waitAtMostMillis != null) {
+            if (waitAtMostMillis > 0)
+                waitAtMost = waitAtMostMillis
+            else
+                getWebElements(locator, onlyDisplayed = false, scrollToFind = false).isEmpty()
+        }
         return try {
             Awaitility.await()
                 .ignoreException(StaleElementReferenceException::class.java)
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
-                .atMost(Duration.ofMillis(elementTimeout))
+                .atMost(Duration.ofMillis(waitAtMost))
                 .until { getWebElements(locator, onlyDisplayed = false, scrollToFind = false).isEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
