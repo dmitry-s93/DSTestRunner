@@ -17,6 +17,7 @@ package driver
 
 import action.actions.TouchAction
 import action.helper.Direction
+import io.appium.java_client.Location
 import pazone.ashot.Screenshot
 import test.element.Locator
 import java.awt.Point
@@ -84,6 +85,10 @@ interface Driver {
     }
 
     fun setLocation(latitude: Double, longitude: Double) {
+        throw NotImplementedError(notImplementedMessage)
+    }
+
+    fun getLocation(): Location {
         throw NotImplementedError(notImplementedMessage)
     }
 

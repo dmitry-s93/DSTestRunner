@@ -28,6 +28,7 @@ import driver.mobile.device.Device
 import driver.mobile.device.DeviceFactory
 import io.appium.java_client.AppiumBy.ByAccessibilityId
 import io.appium.java_client.AppiumBy.ByAndroidUIAutomator
+import io.appium.java_client.Location
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.android.geolocation.AndroidGeoLocation
 import logger.Logger
@@ -613,6 +614,10 @@ class AndroidAppiumDriver : Driver {
 
     override fun setLocation(latitude: Double, longitude: Double) {
         driver.setLocation(AndroidGeoLocation(latitude, longitude))
+    }
+
+    override fun getLocation(): Location {
+        return driver.location
     }
 
     override fun installApp(appPath: String?) {
