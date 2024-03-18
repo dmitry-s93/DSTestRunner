@@ -27,11 +27,11 @@ import driver.DriverHelper
 import driver.mobile.device.Device
 import driver.mobile.device.DeviceFactory
 import io.appium.java_client.AppiumBy
+import io.appium.java_client.Location
 import io.appium.java_client.ios.IOSDriver
 import org.awaitility.Awaitility
 import org.awaitility.core.ConditionTimeoutException
 import org.openqa.selenium.*
-import org.openqa.selenium.html5.Location
 import org.openqa.selenium.interactions.Pause
 import org.openqa.selenium.interactions.PointerInput
 import org.openqa.selenium.interactions.Sequence
@@ -319,13 +319,20 @@ class IOSAppiumDriver : Driver {
         TODO("Not yet implemented")
     }
 
-    override fun isExist(locator: Locator): Boolean {
+    override fun isExist(locator: Locator, waitAtMostMillis: Long?): Boolean {
+        var waitAtMost = elementTimeout
+        if (waitAtMostMillis != null) {
+            if (waitAtMostMillis > 0)
+                waitAtMost = waitAtMostMillis
+            else
+                getWebElements(locator, onlyDisplayed = false, scrollToFind = false).isNotEmpty()
+        }
         return try {
             Awaitility.await()
                 .ignoreException(StaleElementReferenceException::class.java)
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
-                .atMost(Duration.ofMillis(elementTimeout))
+                .atMost(Duration.ofMillis(waitAtMost))
                 .until { getWebElements(locator, onlyDisplayed = false, scrollToFind = false).isNotEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
@@ -333,13 +340,20 @@ class IOSAppiumDriver : Driver {
         }
     }
 
-    override fun isNotExist(locator: Locator): Boolean {
+    override fun isNotExist(locator: Locator, waitAtMostMillis: Long?): Boolean {
+        var waitAtMost = elementTimeout
+        if (waitAtMostMillis != null) {
+            if (waitAtMostMillis > 0)
+                waitAtMost = waitAtMostMillis
+            else
+                getWebElements(locator, onlyDisplayed = false, scrollToFind = false).isEmpty()
+        }
         return try {
             Awaitility.await()
                 .ignoreException(StaleElementReferenceException::class.java)
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
-                .atMost(Duration.ofMillis(elementTimeout))
+                .atMost(Duration.ofMillis(waitAtMost))
                 .until { getWebElements(locator, onlyDisplayed = false, scrollToFind = false).isEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
@@ -357,7 +371,11 @@ class IOSAppiumDriver : Driver {
 
     override fun setLocation(latitude: Double, longitude: Double) {
         // TODO: Refactor when this fix is available: https://github.com/appium/java-client/pull/2109
-        driver.setLocation(Location(latitude, longitude, 1.0))
+        driver.setLocation(org.openqa.selenium.html5.Location(latitude, longitude, 1.0))
+    }
+
+    override fun getLocation(): Location {
+        return driver.location
     }
 
     override fun swipeElement(locator: Locator, direction: Direction) {

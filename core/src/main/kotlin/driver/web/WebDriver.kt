@@ -215,12 +215,9 @@ class WebDriver : Driver {
                 ShootingStrategies.viewportPasting(100)
             else
                 ShootingStrategies.simple()
-        val ignoredAreas: MutableSet<Coords> = HashSet()
-        ignoredAreas.addAll(getIgnoredAreas(ignoredElements))
-        ignoredAreas.addAll(DriverHelper().rectanglesToCoords(ignoredRectangles))
         val screenshot = with(AShot()) {
             shootingStrategy(strategy)
-            ignoredAreas(ignoredAreas)
+            ignoredAreas(getIgnoredAreas(ignoredElements))
             if (screenshotAreas.isNotEmpty()) {
                 val webElements: MutableList<WebElement> = mutableListOf()
                 screenshotAreas.forEach { locator ->
@@ -232,6 +229,7 @@ class WebDriver : Driver {
                 takeScreenshot(driver)
             }
         }
+        screenshot.ignoredAreas.addAll(DriverHelper().rectanglesToCoords(ignoredRectangles))
         ScreenshotConfig.executeJavaScriptAfterScreenshot?.let { executeJavaScript(it) }
         return screenshot
     }
@@ -360,13 +358,20 @@ class WebDriver : Driver {
         webElement.sendKeys(file)
     }
 
-    override fun isExist(locator: Locator): Boolean {
+    override fun isExist(locator: Locator, waitAtMostMillis: Long?): Boolean {
+        var waitAtMost = elementTimeout
+        if (waitAtMostMillis != null) {
+            if (waitAtMostMillis > 0)
+                waitAtMost = waitAtMostMillis
+            else
+                getWebElements(locator, onlyDisplayed = true, scrollToCheckVisibility = true).isNotEmpty()
+        }
         return try {
             await()
                 .ignoreException(StaleElementReferenceException::class.java)
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
-                .atMost(Duration.ofMillis(elementTimeout))
+                .atMost(Duration.ofMillis(waitAtMost))
                 .until { getWebElements(locator, onlyDisplayed = true, scrollToCheckVisibility = true).isNotEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
@@ -374,13 +379,20 @@ class WebDriver : Driver {
         }
     }
 
-    override fun isNotExist(locator: Locator): Boolean {
+    override fun isNotExist(locator: Locator, waitAtMostMillis: Long?): Boolean {
+        var waitAtMost = elementTimeout
+        if (waitAtMostMillis != null) {
+            if (waitAtMostMillis > 0)
+                waitAtMost = waitAtMostMillis
+            else
+                getWebElements(locator, onlyDisplayed = true, scrollToCheckVisibility = true).isEmpty()
+        }
         return try {
             await()
                 .ignoreException(StaleElementReferenceException::class.java)
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
-                .atMost(Duration.ofMillis(elementTimeout))
+                .atMost(Duration.ofMillis(waitAtMost))
                 .until { getWebElements(locator, onlyDisplayed = true, scrollToCheckVisibility = true).isEmpty() }
             true
         } catch (e: ConditionTimeoutException) {

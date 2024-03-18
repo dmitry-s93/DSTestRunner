@@ -28,6 +28,7 @@ import driver.mobile.device.Device
 import driver.mobile.device.DeviceFactory
 import io.appium.java_client.AppiumBy.ByAccessibilityId
 import io.appium.java_client.AppiumBy.ByAndroidUIAutomator
+import io.appium.java_client.Location
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.android.geolocation.AndroidGeoLocation
 import logger.Logger
@@ -536,13 +537,20 @@ class AndroidAppiumDriver : Driver {
         TODO("Not yet implemented")
     }
 
-    override fun isExist(locator: Locator): Boolean {
+    override fun isExist(locator: Locator, waitAtMostMillis: Long?): Boolean {
+        var waitAtMost = elementTimeout
+        if (waitAtMostMillis != null) {
+            if (waitAtMostMillis > 0)
+                waitAtMost = waitAtMostMillis
+            else
+                return getWebElements(locator, scrollToFind = false).isNotEmpty()
+        }
         return try {
             Awaitility.await()
                 .ignoreException(StaleElementReferenceException::class.java)
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
-                .atMost(Duration.ofMillis(elementTimeout))
+                .atMost(Duration.ofMillis(waitAtMost))
                 .until { getWebElements(locator, scrollToFind = true).isNotEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
@@ -550,13 +558,20 @@ class AndroidAppiumDriver : Driver {
         }
     }
 
-    override fun isNotExist(locator: Locator): Boolean {
+    override fun isNotExist(locator: Locator, waitAtMostMillis: Long?): Boolean {
+        var waitAtMost = elementTimeout
+        if (waitAtMostMillis != null) {
+            if (waitAtMostMillis > 0)
+                waitAtMost = waitAtMostMillis
+            else
+                getWebElements(locator, scrollToFind = false).isEmpty()
+        }
         return try {
             Awaitility.await()
                 .ignoreException(StaleElementReferenceException::class.java)
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
-                .atMost(Duration.ofMillis(elementTimeout))
+                .atMost(Duration.ofMillis(waitAtMost))
                 .until { getWebElements(locator, scrollToFind = true).isEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
@@ -599,6 +614,10 @@ class AndroidAppiumDriver : Driver {
 
     override fun setLocation(latitude: Double, longitude: Double) {
         driver.setLocation(AndroidGeoLocation(latitude, longitude))
+    }
+
+    override fun getLocation(): Location {
+        return driver.location
     }
 
     override fun installApp(appPath: String?) {
