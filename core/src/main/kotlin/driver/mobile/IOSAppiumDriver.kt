@@ -172,7 +172,7 @@ class IOSAppiumDriver : Driver {
         val waitTime = ScreenshotConfig.waitTimeBeforeScreenshot
         if (waitTime > 0)
             Thread.sleep(waitTime)
-        if (longScreenshot && screenshotAreas.isEmpty() && isPageDoesNotFitOnScreen())
+        if (longScreenshot && screenshotAreas.isEmpty() && isPageScrollable())
             return getLongScreenshot(ignoredElements, ignoredRectangles, screenshotAreas)
         return getSingleScreenshot(ignoredElements, ignoredRectangles, screenshotAreas)
     }
@@ -245,9 +245,26 @@ class IOSAppiumDriver : Driver {
         return screenshot
     }
 
-    private fun isPageDoesNotFitOnScreen(): Boolean {
-        val height = (viewportArea.y + viewportArea.height) / screenScale
-        return DriverHelper().getNodesByXpath(getPageSource(), "//*[self::XCUIElementTypeScrollView or self::XCUIElementTypeTable]//*[((@y + @height) > $height or @y < 0)]").length > 0
+    private fun isPageScrollable(): Boolean {
+        val pageSource = getPageSource()
+        val scrollableElementXpath = "//*[self::XCUIElementTypeScrollView or self::XCUIElementTypeTable]"
+        val nodes = DriverHelper().getNodesByXpath(pageSource, scrollableElementXpath)
+        for (i in 0 until nodes.length) {
+            val scrollableElement = nodes.item(i) as Element
+            val scrollableElementY = scrollableElement.getAttribute("y").toInt()
+            val scrollableElementHeight = scrollableElement.getAttribute("height").toInt()
+            val childNodes = scrollableElement.childNodes
+            for (j in 0 until childNodes.length) {
+                if (childNodes.item(j).nodeType.toInt() == 1) {
+                    val childNode = childNodes.item(j) as Element
+                    val childNodeY = childNode.getAttribute("y").toInt()
+                    val childNodeHeight = childNode.getAttribute("height").toInt()
+                    if (childNodeY + childNodeHeight > scrollableElementY + scrollableElementHeight || childNodeY < scrollableElementY)
+                        return true
+                }
+            }
+        }
+        return false
     }
 
     private fun takeScreenshot(area: Coords): BufferedImage {
