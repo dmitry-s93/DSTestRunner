@@ -29,7 +29,7 @@ val commonsIOVersion = "2.15.1"
 val awaitilityVersion = "4.2.0"
 val openCsvVersion = "5.9"
 val httpClient5Version = "5.3"
-val postgresqlVersion = "42.7.1"
+val postgresqlVersion = "42.7.3"
 val rgxgenVersion = "1.4"
 
 dependencies {
