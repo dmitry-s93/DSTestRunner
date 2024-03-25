@@ -32,6 +32,7 @@ class CheckLocationAction(private val latitude: Double, private val longitude: D
     private var distance : Double = 0.0
     @Suppress("MemberVisibilityCanBePrivate")
     var maxDistanceInMeters: Double = 10.0
+
     override fun getName(): String {
         return Localization.get("CheckLocationAction.DefaultName")
     }
