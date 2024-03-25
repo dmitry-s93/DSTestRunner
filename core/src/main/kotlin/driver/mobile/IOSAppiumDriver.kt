@@ -387,8 +387,7 @@ class IOSAppiumDriver : Driver {
     }
 
     override fun setLocation(latitude: Double, longitude: Double) {
-        // TODO: Refactor when this fix is available: https://github.com/appium/java-client/pull/2109
-        driver.setLocation(org.openqa.selenium.html5.Location(latitude, longitude, 1.0))
+        driver.location = Location(latitude, longitude)
     }
 
     override fun getLocation(): Location {
