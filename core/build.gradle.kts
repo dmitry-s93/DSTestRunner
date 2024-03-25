@@ -22,7 +22,7 @@ repositories {
     mavenCentral()
 }
 
-val seleniumJavaVersion = "4.16.1"
+val seleniumJavaVersion = "4.18.1"
 val appiumJavaClientVersion = "9.2.0"
 val jsonVersion = "20240303"
 val commonsIOVersion = "2.15.1"
