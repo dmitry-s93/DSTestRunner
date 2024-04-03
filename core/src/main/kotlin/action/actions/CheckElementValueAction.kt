@@ -35,6 +35,7 @@ class CheckElementValueAction(private val element: Element, expectedValue: Strin
     private var elementValue: String? = null
     private val locatorArguments = ArrayList<String>()
     private var waitForExpectedValue: Boolean = false
+    private var regexMode: Boolean = false
 
     override fun getName(): String {
         return Localization.get("CheckElementValueAction.DefaultName", element.displayName)
@@ -54,20 +55,26 @@ class CheckElementValueAction(private val element: Element, expectedValue: Strin
                         .atMost(Duration.ofMillis(driverSession.getElementTimeout()))
                         .until {
                             elementValue = driverSession.getElementValue(elementLocator)
-                            elementValue == expectedValue
+                            isValueMatch(elementValue!!, expectedValue)
                         }
                 } catch (_: ConditionTimeoutException) {
                     return fail(Localization.get("CheckElementValueAction.ElementValueNotMatch", elementValue, expectedValue))
                 }
             } else {
                 elementValue = driverSession.getElementValue(elementLocator)
-                if (elementValue != expectedValue)
+                if (!isValueMatch(elementValue!!, expectedValue))
                     return fail(Localization.get("CheckElementValueAction.ElementValueNotMatch", elementValue, expectedValue))
             }
         } catch (e: Exception) {
             return broke(Localization.get("CheckElementValueAction.GeneralError", e.message), e.stackTraceToString())
         }
         return pass()
+    }
+
+    private fun isValueMatch(currentValue: String, expectedValue: String): Boolean {
+        if (regexMode)
+            return currentValue.matches(Regex(expectedValue))
+        return currentValue == expectedValue
     }
 
     override fun getParameters(): HashMap<String, String> {
@@ -78,6 +85,8 @@ class CheckElementValueAction(private val element: Element, expectedValue: Strin
         if (expectedValue != elementValue)
             parameters["expectedValue"] = expectedValue
         parameters["waitForExpectedValue"] = waitForExpectedValue.toString()
+        if (regexMode)
+            parameters["regexMode"] = "true"
         return parameters
     }
 
@@ -93,6 +102,13 @@ class CheckElementValueAction(private val element: Element, expectedValue: Strin
      */
     fun waitForExpectedValue() {
         waitForExpectedValue = true
+    }
+
+    /**
+     * Check expected value as regular expression
+     */
+    fun regexMode() {
+        regexMode = true
     }
 }
 
