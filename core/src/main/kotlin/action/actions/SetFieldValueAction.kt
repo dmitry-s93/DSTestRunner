@@ -28,7 +28,7 @@ import test.page.Element
 
 class SetFieldValueAction(private val element: Element, value: String) : ActionReturn(), Action {
     private val value: String = ValueStorage.replace(value)
-    private lateinit var elementLocator: Locator
+    private var elementLocator: Locator = Locator(element.locator.value, element.locator.type)
     private var sequenceMode: Boolean = false
     private val locatorArguments = ArrayList<String>()
     @Suppress("MemberVisibilityCanBePrivate")

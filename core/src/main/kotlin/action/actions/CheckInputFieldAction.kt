@@ -29,7 +29,7 @@ import test.page.Element
 
 
 class CheckInputFieldAction(private val element: Element) : ActionReturn(), Action {
-    private lateinit var elementLocator: Locator
+    private var elementLocator: Locator = Locator(element.locator.value, element.locator.type)
     private val locatorArguments = ArrayList<String>()
     private var doNotCheckAllowedChars: Boolean = false
 

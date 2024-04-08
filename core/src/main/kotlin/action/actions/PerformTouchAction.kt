@@ -37,7 +37,7 @@ enum class ActionType {
 class TouchAction(val actionType: ActionType, val point: Point? = null, val millis: Long? = null)
 
 class PerformTouchAction(private val element: Element) : ActionReturn(), Action {
-    private lateinit var elementLocator: Locator
+    private var elementLocator: Locator = Locator(element.locator.value, element.locator.type)
     private val locatorArguments = ArrayList<String>()
     private val touchActions: MutableList<MutableList<TouchAction>> = mutableListOf()
 

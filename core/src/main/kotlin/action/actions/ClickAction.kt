@@ -28,7 +28,7 @@ import test.page.Element
 import java.awt.Point
 
 class ClickAction(private val element: Element) : ActionReturn(), Action {
-    private lateinit var elementLocator: Locator
+    private var elementLocator: Locator = Locator(element.locator.value, element.locator.type)
     private val locatorArguments = ArrayList<String>()
     private val clickPoints = ArrayList<Pair<Point, Point?>>()
 

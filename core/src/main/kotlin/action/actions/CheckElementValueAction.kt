@@ -30,7 +30,7 @@ import test.page.Element
 import java.time.Duration
 
 class CheckElementValueAction(private val element: Element, expectedValue: String) : ActionReturn(), Action {
-    private lateinit var elementLocator: Locator
+    private var elementLocator: Locator = Locator(element.locator.value, element.locator.type)
     private val expectedValue: String = ValueStorage.replace(expectedValue)
     private var elementValue: String? = null
     private val locatorArguments = ArrayList<String>()
