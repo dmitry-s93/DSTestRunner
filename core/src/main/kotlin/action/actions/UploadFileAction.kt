@@ -29,7 +29,7 @@ import java.io.File
 
 class UploadFileAction(private val element: Element, filePath: String) : ActionReturn(), Action {
     private val file: String = ValueStorage.replace(filePath)
-    private lateinit var elementLocator: Locator
+    private var elementLocator: Locator = Locator(element.locator.value, element.locator.type)
     private val locatorArguments = ArrayList<String>()
 
     override fun getName(): String {

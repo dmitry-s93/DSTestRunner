@@ -27,7 +27,7 @@ import test.element.Locator
 import test.page.Element
 
 class IsEnabledAction(private val element: Element) : ActionReturn(), Action {
-    private lateinit var elementLocator: Locator
+    private var elementLocator: Locator = Locator(element.locator.value, element.locator.type)
     private val locatorArguments = ArrayList<String>()
 
     override fun getName(): String {
