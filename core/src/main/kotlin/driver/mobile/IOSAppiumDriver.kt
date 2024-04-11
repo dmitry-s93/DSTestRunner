@@ -701,13 +701,19 @@ class IOSAppiumDriver : Driver {
     }
 
     private fun getElementPositions(): Map<String, Coords> {
-        val nodes = DriverHelper().getNodesByXpath(getPageSource(), "//*[string-length(@name) > 0]")
+        val nodes = DriverHelper().getNodesByXpath(getPageSource(), "//*[string-length(@name) > 0 or string-length(@label) > 0]")
         val result: MutableMap<String, Coords> = HashMap()
         val duplicateKeys: MutableSet<String> = HashSet()
 
         for (i in 0 until nodes.length) {
             val element = nodes.item(i) as Element
-            val key = element.tagName + "|" + element.getAttribute("name")
+            val elementName = element.getAttribute("name")
+            val elementLabel = element.getAttribute("label")
+            val key =
+                if (elementName == elementLabel)
+                    "${element.tagName}|$elementName"
+                else
+                    "${element.tagName}|$elementName|$elementLabel"
             val x = element.getAttribute("x")
             val y = element.getAttribute("y")
             val width = element.getAttribute("width")
@@ -732,7 +738,7 @@ class IOSAppiumDriver : Driver {
             "mobile: source",
             mapOf(
                 Pair("format", "xml"),
-                Pair("excludedAttributes", "type,value,label,enabled,visible,accessible,index")
+                Pair("excludedAttributes", "type,value,enabled,visible,accessible,index")
             )
         ).toString()
     }
@@ -743,7 +749,7 @@ class IOSAppiumDriver : Driver {
             endX * screenScale, endY * screenScale
         )
         val finger = PointerInput(PointerInput.Kind.TOUCH, "finger")
-        val swipe = org.openqa.selenium.interactions.Sequence(finger, 1)
+        val swipe = Sequence(finger, 1)
         swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY))
         swipe.addAction(finger.createPointerDown(0))
         swipe.addAction(finger.createPointerMove(duration, PointerInput.Origin.viewport(), endX - 1, endY))
