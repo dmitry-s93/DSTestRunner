@@ -26,6 +26,7 @@ import driver.Driver
 import driver.DriverHelper
 import driver.mobile.device.Device
 import driver.mobile.device.DeviceFactory
+import driver.mobile.device.NoDeviceException
 import io.appium.java_client.AppiumBy
 import io.appium.java_client.Location
 import io.appium.java_client.ios.IOSDriver
@@ -72,11 +73,21 @@ class IOSAppiumDriver : Driver {
 
 
     init {
-        device = DeviceFactory.importDevice()
-        startSession(retry = true)
+        importDeviceAndStartSession()
         driver.manage().timeouts().implicitlyWait(Duration.ofMillis(0))
         viewportArea = getViewportRect()
         screenScale = getScreenScale()
+    }
+
+    private fun importDeviceAndStartSession() {
+        try {
+            device = DeviceFactory.importDevice()
+            startSession(retry = true)
+        } catch (e: NoDeviceException) {
+            throw e
+        } catch (e: Exception) {
+            importDeviceAndStartSession()
+        }
     }
 
     private fun startSession(retry: Boolean) {
@@ -88,6 +99,7 @@ class IOSAppiumDriver : Driver {
             if (retry)
                 return startSession(retry = false)
             DeviceFactory.addDeviceToBlocklist(device!!)
+            device = null
             throw e
         }
     }

@@ -33,7 +33,7 @@ class DeviceFactory {
             Logger.info("Device added: '${device.name}'", LOG_SOURCE)
         }
 
-        fun importDevice(): Device? {
+        fun importDevice(): Device {
             var device = getDevice()
             if (device == null && usedDevices.isNotEmpty()) {
                 Logger.info("No free devices. Waiting for device.", LOG_SOURCE)
@@ -49,7 +49,9 @@ class DeviceFactory {
                     Logger.info("No free devices appeared within the allotted time", LOG_SOURCE)
                 }
             }
-            return device
+            if (device == null)
+                throw NoDeviceException("No devices available")
+            return device!!
         }
 
         @Synchronized
