@@ -13,12 +13,12 @@
  * limitations under the License.
  */
 
-package config
+package config.browser
 
 import logger.Logger
 import org.json.JSONObject
 
-class BrowserOptionsConfig {
+class ChromeOptionsConfig {
     companion object {
         var arguments: MutableList<String> = mutableListOf()
             private set
@@ -26,14 +26,14 @@ class BrowserOptionsConfig {
         @Synchronized
         fun load(config: JSONObject) {
             try {
-                if (config.has("BrowserOptions")) {
-                    Logger.debug("Reading parameters from config", "BrowserOptionsConfig")
-                    config.getJSONArray("BrowserOptions").forEach {
+                if (config.has("ChromeOptions")) {
+                    Logger.debug("Reading parameters from config", "ChromeOptionsConfig")
+                    config.getJSONArray("ChromeOptions").forEach {
                         arguments.add(it.toString())
                     }
                 }
             } catch (e: org.json.JSONException) {
-                Logger.error("An error occurred while reading the config", "BrowserOptionsConfig")
+                Logger.error("An error occurred while reading the config", "ChromeOptionsConfig")
                 throw e
             }
         }

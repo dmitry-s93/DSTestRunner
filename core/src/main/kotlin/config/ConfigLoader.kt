@@ -15,6 +15,10 @@
 
 package config
 
+import config.browser.ChromeOptionsConfig
+import config.browser.EdgeOptionsConfig
+import config.browser.FirefoxOptionsConfig
+import config.browser.SafariOptionsConfig
 import config.reporter.AllureReporterConfig
 import config.reporter.CsvReporterConfig
 import logger.Logger
@@ -34,7 +38,12 @@ class ConfigLoader {
             if (MainConfig.driverImpl.contains("driver.mobile"))
                 AppiumDriverConfig.load(config)
             ScreenshotConfig.load(config)
-            BrowserOptionsConfig.load(config)
+
+            ChromeOptionsConfig.load(config)
+            FirefoxOptionsConfig.load(config)
+            EdgeOptionsConfig.load(config)
+            SafariOptionsConfig.load(config)
+
             PreloaderConfig.load(config)
             DatabaseListConfig.load(config)
             UserListConfig.load(config)

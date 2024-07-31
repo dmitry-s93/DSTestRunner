@@ -20,12 +20,15 @@ import action.ActionData
 import action.ActionResult
 import action.ActionReturn
 import config.Localization
+import config.WebDriverConfig
 import driver.DriverSession
+import driver.web.BrowserType
+import driver.web.CurrentBrowser
 import storage.PageStorage
 import test.page.Page
 import test.page.PageData
 
-class OpenBrowserAction(private val page: Page) : ActionReturn(), Action {
+class OpenBrowserAction(private val page: Page, private val browserType: BrowserType) : ActionReturn(), Action {
     private val pageUrl: String = page.pageData.getUrl()
     private val pageName: String = page.pageData.pageName
 
@@ -38,6 +41,7 @@ class OpenBrowserAction(private val page: Page) : ActionReturn(), Action {
         if (pageUrl.isEmpty())
             return broke(Localization.get("General.PageUrlNotSpecified"))
         try {
+            CurrentBrowser.setBrowserType(browserType)
             DriverSession.createSession()
             DriverSession.getSession().setPage(pageUrl)
         } catch (e: Exception) {
@@ -54,9 +58,9 @@ class OpenBrowserAction(private val page: Page) : ActionReturn(), Action {
     }
 }
 
-fun openBrowser(page: Page, function: (OpenBrowserAction.() -> Unit)? = null): ActionData {
+fun openBrowser(page: Page, browserType: BrowserType = WebDriverConfig.browserType, function: (OpenBrowserAction.() -> Unit)? = null): ActionData {
     val startTime = System.currentTimeMillis()
-    val action = OpenBrowserAction(page)
+    val action = OpenBrowserAction(page, browserType)
     function?.invoke(action)
     val result = action.execute()
     val parameters = action.getParameters()
@@ -65,6 +69,6 @@ fun openBrowser(page: Page, function: (OpenBrowserAction.() -> Unit)? = null): A
     return ActionData(result, parameters, name, startTime, stopTime)
 }
 
-fun openBrowser(page: PageData, function: (OpenBrowserAction.() -> Unit)? = null): ActionData {
-    return  openBrowser(Page(page), function)
+fun openBrowser(page: PageData, browserType: BrowserType = WebDriverConfig.browserType, function: (OpenBrowserAction.() -> Unit)? = null): ActionData {
+    return  openBrowser(Page(page), browserType, function)
 }
