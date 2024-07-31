@@ -30,8 +30,8 @@ class LoginAndLogoutTest : TestBuilder("TEST_01", "Login and logout") {
             step("02", setFieldValue(loginPage.passwordEdit, "{user_password}"))
             step("03", click(loginPage.loginButton))
             step("04", checkLoadPage(inventoryPage))
-            step("05", click("BurgerMenuButton"))
-            step("06", click("LogoutLink"))
+            step("05", click(inventoryPage.burgerMenuButton))
+            step("06", click(inventoryPage.logoutLink))
             step("07", checkLoadPage(loginPage))
         }
         after {
