@@ -29,9 +29,13 @@
     "pageLoadTimeout": 20000,
     "elementTimeout": 10000
   },
-  "BrowserOptions": [
+  "ChromeOptions": [
     "window-size=1280,1024",
     "force-device-scale-factor=1"
+  ],
+  "FirefoxOptions": [
+    "--width=1280",
+    "--height=1024"
   ],
   "PreloaderElements": [
     "//div[contains(@class,'example-preloader')]"

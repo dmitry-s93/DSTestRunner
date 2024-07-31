@@ -17,10 +17,12 @@ package driver.web
 
 import action.actions.ActionType
 import action.actions.TouchAction
-import config.BrowserOptionsConfig
 import config.PreloaderConfig
 import config.ScreenshotConfig
 import config.WebDriverConfig
+import config.browser.ChromeOptionsConfig
+import config.browser.EdgeOptionsConfig
+import config.browser.FirefoxOptionsConfig
 import driver.Driver
 import driver.DriverHelper
 import logger.Logger
@@ -58,23 +60,23 @@ class WebDriver : Driver {
     private val poolDelay: Long = 50
     private val preloaderElements: List<Locator> = PreloaderConfig.elements
     private val numberOfAttempts = 3
-    private val browserType = WebDriverConfig.browserType
+    private val browserType = CurrentBrowser.getBrowserType()
 
     init {
         when(browserType) {
             BrowserType.CHROME -> {
                 val chromeOptions = ChromeOptions()
-                chromeOptions.addArguments(BrowserOptionsConfig.arguments)
+                chromeOptions.addArguments(ChromeOptionsConfig.arguments)
                 driver = RemoteWebDriver(URL(WebDriverConfig.remoteAddress), chromeOptions)
             }
             BrowserType.FIREFOX -> {
                 val firefoxOptions = FirefoxOptions()
-                firefoxOptions.addArguments(BrowserOptionsConfig.arguments)
+                firefoxOptions.addArguments(FirefoxOptionsConfig.arguments)
                 driver = RemoteWebDriver(URL(WebDriverConfig.remoteAddress), firefoxOptions)
             }
             BrowserType.EDGE -> {
                 val edgeOptions = EdgeOptions()
-                edgeOptions.addArguments(BrowserOptionsConfig.arguments)
+                edgeOptions.addArguments(EdgeOptionsConfig.arguments)
                 driver = RemoteWebDriver(URL(WebDriverConfig.remoteAddress), edgeOptions)
             }
             BrowserType.SAFARI -> {
