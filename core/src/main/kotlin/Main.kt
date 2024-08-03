@@ -26,33 +26,39 @@ fun main(args: Array<String>) {
     println("Program arguments: ${args.joinToString()}")
 
     val argsHashMap = parseArguments(args)
-    var configurationFile = argsHashMap["-configuration"]
-    if (configurationFile.isNullOrEmpty())
-        configurationFile = "configuration.json"
-    ConfigLoader().loadConfiguration(configurationFile)
+    ConfigLoader().loadConfiguration(getConfigurationFile(argsHashMap))
 
-    var threadCount = argsHashMap["-threads"]?.toInt()
-    if (threadCount == null)
-        threadCount = MainConfig.threads
+    val threadCount = getThreadCount(argsHashMap)
+    val testList = getTestList(getSpecifiedTests(argsHashMap))
 
-    val executor = Executors.newFixedThreadPool(threadCount)
-
-    val specifiedTests = argsHashMap["-tests"]?.split(",")
-    val testList = getTestList(specifiedTests)
-
-    Logger.info("Number of tests to run: ${testList.size}")
-
-    testList.forEach {
-        val worker: Runnable = WorkerThread(it.qualifiedName!!)
-        executor.execute(worker)
-    }
-
-    executor.shutdown()
-    while (!executor.isTerminated) {}
-    Logger.info("Finished all threads")
+    executeTests(testList, threadCount)
 }
 
-fun getTestList(specifiedTests: List<String>?): List<KClass<out TestBuilder>> {
+private fun parseArguments(args: Array<String>): HashMap<String, String> {
+    val argsHashMap = HashMap<String, String>()
+    args.forEach {
+        val delimiterIndex = it.indexOf("=")
+        argsHashMap[it.substring(0, delimiterIndex)] = it.substring(delimiterIndex + 1)
+    }
+    return argsHashMap
+}
+
+private fun getConfigurationFile(argsHashMap: HashMap<String, String>): String {
+    val configurationFile = argsHashMap["-configuration"]
+    if (configurationFile.isNullOrEmpty())
+        return "configuration.json"
+    return configurationFile
+}
+
+private fun getThreadCount(argsHashMap: HashMap<String, String>): Int {
+    return argsHashMap["-threads"]?.toInt() ?: MainConfig.threads
+}
+
+private fun getSpecifiedTests(argsHashMap: HashMap<String, String>):  List<String>? {
+    return argsHashMap["-tests"]?.split(",")
+}
+
+private fun getTestList(specifiedTests: List<String>?): List<KClass<out TestBuilder>> {
     val fullTestList = TestListFactory().getTestSource(MainConfig.testSource).getTestList()
     if (specifiedTests == null)
         return fullTestList
@@ -66,11 +72,14 @@ fun getTestList(specifiedTests: List<String>?): List<KClass<out TestBuilder>> {
     return resTestList
 }
 
-fun parseArguments(args: Array<String>): HashMap<String, String> {
-    val argsHashMap = HashMap<String, String>()
-    args.forEach {
-        val delimiterIndex = it.indexOf("=")
-        argsHashMap[it.substring(0, delimiterIndex)] = it.substring(delimiterIndex + 1)
+private fun executeTests(testList: List<KClass<out TestBuilder>>, threads: Int) {
+    Logger.info("Number of tests to run: ${testList.size}")
+    val executor = Executors.newFixedThreadPool(threads)
+    testList.forEach {
+        val worker: Runnable = WorkerThread(it.qualifiedName!!)
+        executor.execute(worker)
     }
-    return argsHashMap
+    executor.shutdown()
+    while (!executor.isTerminated) { }
+    Logger.info("Finished all threads")
 }
