@@ -23,7 +23,7 @@ repositories {
 }
 
 val seleniumJavaVersion = "4.23.0"
-val appiumJavaClientVersion = "9.2.3"
+val appiumJavaClientVersion = "9.3.0"
 val jsonVersion = "20240303"
 val commonsIOVersion = "2.16.1"
 val awaitilityVersion = "4.2.1"
