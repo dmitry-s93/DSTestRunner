@@ -44,8 +44,8 @@ class ImageUtils {
 
             val fileName = "${parentId.replace(".", "_")}_${stepId}"
             val templateImageRelativePath = Paths.get(testId, "${fileName}.png")
-            val currentImageRelativePath = Paths.get(MainConfig.sessionId, testId, "${fileName}.png")
-            val markedImageRelativePath = Paths.get(MainConfig.sessionId, testId, "${fileName}_marked.png")
+            val currentImageRelativePath = Paths.get(MainConfig.sessionId.toString(), testId, "${fileName}.png")
+            val markedImageRelativePath = Paths.get(MainConfig.sessionId.toString(), testId, "${fileName}_marked.png")
 
             val currentImageFile = Paths.get(currentScreenshotDir, currentImageRelativePath.toString()).toFile()
             val templateImageFile = Paths.get(templateScreenshotDir, templateImageRelativePath.toString()).toFile()

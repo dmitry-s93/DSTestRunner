@@ -31,6 +31,7 @@ val openCsvVersion = "5.9"
 val httpClient5Version = "5.3.1"
 val postgresqlVersion = "42.7.3"
 val rgxgenVersion = "1.4"
+val exposedVersion = "0.53.0"
 
 dependencies {
     // https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java
@@ -53,4 +54,8 @@ dependencies {
     implementation(files("libs/ashot-1.6.1-e1f84e5-modified.jar"))
     // https://mvnrepository.com/artifact/io.appium/java-client
     implementation("io.appium:java-client:$appiumJavaClientVersion")
+    // https://mvnrepository.com/artifact/org.jetbrains.exposed/exposed-core
+    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+    // https://mvnrepository.com/artifact/org.jetbrains.exposed/exposed-kotlin-datetime
+    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposedVersion")
 }

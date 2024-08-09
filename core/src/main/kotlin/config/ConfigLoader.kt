@@ -21,6 +21,7 @@ import config.browser.FirefoxOptionsConfig
 import config.browser.SafariOptionsConfig
 import config.reporter.AllureReporterConfig
 import config.reporter.CsvReporterConfig
+import config.reporter.DatabaseReporterConfig
 import logger.Logger
 import org.json.JSONObject
 import utils.ResourceUtils
@@ -50,8 +51,10 @@ class ConfigLoader {
 
             if (MainConfig.reporterImpl == "reporter.allure.AllureReporter")
                 AllureReporterConfig.load(config)
-            if (MainConfig.reporterImpl == "reporter.allure.CsvReporter")
+            if (MainConfig.reporterImpl == "reporter.csv.CsvReporter")
                 CsvReporterConfig.load(config)
+            if (MainConfig.reporterImpl == "reporter.database.DatabaseReporter")
+                DatabaseReporterConfig.load(config)
         } catch (e: Exception) {
             Logger.error("An error occurred while reading the config", "ConfigLoader")
             throw e

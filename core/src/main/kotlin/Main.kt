@@ -16,6 +16,7 @@
 import config.ConfigLoader
 import config.MainConfig
 import logger.Logger
+import storage.SessionParametersStorage
 import test.TestBuilder
 import test.TestListFactory
 import java.util.concurrent.Executors
@@ -30,6 +31,9 @@ fun main(args: Array<String>) {
 
     val threadCount = getThreadCount(argsHashMap)
     val testList = getTestList(getSpecifiedTests(argsHashMap))
+
+    SessionParametersStorage.threadCount = threadCount
+    SessionParametersStorage.testCount = testList.size
 
     executeTests(testList, threadCount)
 }

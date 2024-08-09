@@ -33,7 +33,7 @@ class MainConfig {
             private set
         var consoleLogLevel: Int = 1
             private set
-        val sessionId: String = System.currentTimeMillis().toString()
+        val sessionId: Long = System.currentTimeMillis()
 
         @Synchronized
         fun load(config: JSONObject) {
