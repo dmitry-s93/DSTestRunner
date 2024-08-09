@@ -56,6 +56,8 @@ dependencies {
     implementation("io.appium:java-client:$appiumJavaClientVersion")
     // https://mvnrepository.com/artifact/org.jetbrains.exposed/exposed-core
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+    // https://mvnrepository.com/artifact/org.jetbrains.exposed/exposed-jdbc
+    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
     // https://mvnrepository.com/artifact/org.jetbrains.exposed/exposed-kotlin-datetime
     implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposedVersion")
 }
