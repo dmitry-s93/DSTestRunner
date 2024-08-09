@@ -266,5 +266,9 @@ class AllureReporter : Reporter {
 }
 
 fun allure(function: AllureReporter.() -> Unit) {
-    function.invoke(ReporterSession.getSession() as AllureReporter)
+    try {
+        function.invoke(ReporterSession.getSession() as AllureReporter)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
