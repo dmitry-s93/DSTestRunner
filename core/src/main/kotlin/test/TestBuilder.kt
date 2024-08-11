@@ -19,7 +19,7 @@ import action.ActionData
 import action.ActionResult
 import action.ActionStatus
 import logger.TestLogger
-import reporter.ReporterSession
+import reporter.ReporterHelper
 import test.error.TestFailedError
 import utils.ImageUtils
 
@@ -40,7 +40,7 @@ open class TestBuilder(id: String, name: String) {
         testId = id
         parentId = id
         testName = name
-        ReporterSession.getSession().setTestInfo(testId, testName)
+        ReporterHelper.setTestInfo(testId, testName)
     }
 
     fun before(function: () -> Unit) {
@@ -91,7 +91,7 @@ open class TestBuilder(id: String, name: String) {
                 screenData = compareScreenData
                 stopTime = System.currentTimeMillis()
             }
-            ReporterSession.getSession().addStep(id, parentId, stepName, stepParams, stepResult, screenData, startTime, stopTime)
+            ReporterHelper.addStep(id, parentId, stepName, stepParams, stepResult, screenData, startTime, stopTime)
         }
         TestLogger.log(id, parentId, stepName, stepResult)
         name = ""
@@ -119,7 +119,7 @@ open class TestBuilder(id: String, name: String) {
             parentId = currentTestId
             TestLogger.log(id, parentId, name, ActionResult(status))
             if (!(before || after) || status != ActionStatus.PASSED)
-                ReporterSession.getSession().addStep(id, parentId, name, HashMap(), ActionResult(status), null, startTime, stopTime)
+                ReporterHelper.addStep(id, parentId, name, HashMap(), ActionResult(status), null, startTime, stopTime)
             if (currentStatus > status)
                 status = currentStatus
             required = true

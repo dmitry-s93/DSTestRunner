@@ -49,11 +49,11 @@ class ConfigLoader {
             DatabaseListConfig.load(config)
             UserListConfig.load(config)
 
-            if (MainConfig.reporterImpl == "reporter.allure.AllureReporter")
+            if (MainConfig.reporterImpl.contains("reporter.allure.AllureReporter"))
                 AllureReporterConfig.load(config)
-            if (MainConfig.reporterImpl == "reporter.csv.CsvReporter")
+            if (MainConfig.reporterImpl.contains("reporter.csv.CsvReporter"))
                 CsvReporterConfig.load(config)
-            if (MainConfig.reporterImpl == "reporter.database.DatabaseReporter")
+            if (MainConfig.reporterImpl.contains("reporter.database.DatabaseReporter"))
                 DatabaseReporterConfig.load(config)
         } catch (e: Exception) {
             Logger.error("An error occurred while reading the config", "ConfigLoader")
