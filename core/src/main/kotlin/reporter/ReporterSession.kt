@@ -21,29 +21,39 @@ import logger.Logger
 
 class ReporterSession {
     companion object {
-        private var reporterSession = ThreadLocal<Reporter>()
+        private val reporterSessions = ThreadLocal<List<Reporter>>()
 
         @Synchronized
         fun createSession() {
-            try {
-                reporterSession.set(ReporterFactory().createReporter(MainConfig.reporterImpl))
-            } catch (e: Exception) {
-                Logger.error("Failed to create reporter session\n${e.cause}", "createSession")
+            val reporters: MutableList<Reporter> = mutableListOf()
+            MainConfig.reporterImpl.forEach {
+                try {
+                    reporters.add(ReporterFactory().createReporter(it))
+                } catch (e: Exception) {
+                    Logger.error("Failed to create reporter session for '$it'", "createSession")
+                }
             }
+            if (reporters.isEmpty()) {
+                Logger.error("Test results will not be saved", "createSession")
+            }
+            reporterSessions.set(reporters)
         }
 
-        fun getSession(): Reporter {
-            if (reporterSession.get() == null)
+        fun getSession(): List<Reporter> {
+            if (reporterSessions.get() == null)
                 Logger.error("Reporter session not created", "getSession")
-            return reporterSession.get()
+            return reporterSessions.get()
         }
 
         fun closeSession() {
-            if (reporterSession.get() != null) {
-                reporterSession.get().quit()
-                reporterSession.set(null)
-            } else
+            if (reporterSessions.get() != null) {
+                reporterSessions.get().forEach { session ->
+                    session.quit()
+                }
+                reporterSessions.set(null)
+            } else {
                 Logger.warning("Reporter session not created", "closeSession")
+            }
         }
     }
 }

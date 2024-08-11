@@ -17,6 +17,7 @@ package config
 
 import logger.LogLevel
 import logger.Logger
+import org.json.JSONArray
 import org.json.JSONObject
 
 class MainConfig {
@@ -27,8 +28,7 @@ class MainConfig {
             private set
         var driverImpl: String = ""
             private set
-        var reporterImpl: String = ""
-            private set
+        val reporterImpl: MutableList<String> = mutableListOf()
         var testSource: String = ""
             private set
         var consoleLogLevel: Int = 1
@@ -42,7 +42,16 @@ class MainConfig {
                 name = mainConfig.getString("name")
                 threads = mainConfig.getInt("threads")
                 driverImpl = mainConfig.getString("driverImpl")
-                reporterImpl = mainConfig.getString("reporterImpl")
+
+                val reporter = mainConfig["reporterImpl"]
+                if (reporter is String) {
+                    reporterImpl.add(reporter)
+                } else if (reporter is JSONArray) {
+                    reporter.forEach {
+                        reporterImpl.add(it.toString())
+                    }
+                }
+
                 testSource = mainConfig.getString("testSource")
                 val consoleLogLevelString = mainConfig.getString("consoleLogLevel").uppercase()
                 try {
