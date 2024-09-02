@@ -16,7 +16,7 @@
 package reporter.database
 
 import action.ActionResult
-import action.ScreenData
+import action.ImageComparisonData
 import config.MainConfig
 import config.reporter.DatabaseReporterConfig
 import kotlinx.datetime.Clock
@@ -30,6 +30,8 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import reporter.Reporter
+import java.io.ByteArrayOutputStream
+import javax.imageio.ImageIO
 
 
 @Suppress("unused")
@@ -48,7 +50,8 @@ class DatabaseReporter : Reporter {
         val result: ActionResult,
         val parameters: HashMap<String, String>,
         val startTime: Instant,
-        val stopTime: Instant
+        val stopTime: Instant,
+        val imageComparisonData: ImageComparisonData?
     )
 
     override fun setTestInfo(testId: String, testName: String) {
@@ -59,7 +62,7 @@ class DatabaseReporter : Reporter {
         transaction {
             dbTestId = TestsTable.insert { table ->
                 table[projectIdRow] = dbProjectId!!
-                table[sessionIdRow] = MainConfig.sessionId
+                table[launchIdRow] = MainConfig.sessionId
                 table[identifierRow] = testId
                 table[nameRow] = truncateString(testName, nameRow)
                 table[startTimeRow] = testStartTime
@@ -73,7 +76,7 @@ class DatabaseReporter : Reporter {
         name: String,
         parameters: HashMap<String, String>,
         actionResult: ActionResult,
-        screenData: ScreenData?,
+        imageComparisonData: ImageComparisonData?,
         startTime: Long,
         stopTime: Long
     ) {
@@ -86,6 +89,7 @@ class DatabaseReporter : Reporter {
             name = name,
             result = actionResult,
             parameters = parameters,
+            imageComparisonData = imageComparisonData,
             startTime = fromEpochMilliseconds(startTime),
             stopTime = fromEpochMilliseconds(stopTime)
         )
@@ -117,10 +121,15 @@ class DatabaseReporter : Reporter {
                 table[parentStepIdRow] = parentStepId
                 table[identifierRow] = stepItem.key
                 table[nameRow] = truncateString(step.name, nameRow)
-                table[statusRow] = step.result.getStatus().value
-                table[messageRow] =
-                    step.result.getMessage()?.let { truncateString(it, columnWithNullableString = messageRow) }
-                table[traceRow] = step.result.getTrace()?.let { truncateString(it, columnWithNullableString = traceRow) }
+                if (!steps.containsKey(stepItem.key)) {
+                    table[statusRow] = step.result.getStatus().name
+                }
+                table[messageRow] = step.result.getMessage()?.let {
+                    truncateString(it, columnWithNullableString = messageRow)
+                }
+                table[traceRow] = step.result.getTrace()?.let {
+                    truncateString(it, columnWithNullableString = traceRow)
+                }
                 table[startTimeRow] = step.startTime
                 table[endTimeRow] = step.stopTime
             } get StepsTable.idRow
@@ -130,6 +139,24 @@ class DatabaseReporter : Reporter {
                     table[stepIdRow] = stepId
                     table[nameRow] = parameter.key
                     table[valueRow] = truncateString(parameter.value, valueRow)
+                }
+            }
+
+            step.result.getErrorImage()?.let { image ->
+                val byteArrayOutputStream = ByteArrayOutputStream()
+                ImageIO.write(image, "png", byteArrayOutputStream)
+                ErrorImagesTable.insert { table ->
+                    table[stepIdRow] = stepId
+                    table[imageRow] = byteArrayOutputStream.toByteArray()
+                }
+            }
+
+            step.imageComparisonData?.let { imagesData ->
+                ImageComparisonInfoTable.insert { table ->
+                    table[stepIdRow] = stepId
+                    table[templateImagePathRow] = imagesData.templateImagePath
+                    table[currentImagePathRow] = imagesData.currentImagePath
+                    table[markedImagePathRow] = imagesData.markedImagePath
                 }
             }
 

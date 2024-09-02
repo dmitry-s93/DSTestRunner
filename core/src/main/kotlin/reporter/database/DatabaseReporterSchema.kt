@@ -29,7 +29,7 @@ object ProjectsTable : Table("projects") {
     override val primaryKey = PrimaryKey(idRow)
 }
 
-object SessionsTable : Table("sessions") {
+object LaunchesTable : Table("launches") {
     val idRow: Column<Long> = long("id")
     val projectIdRow: Column<Long> = (long("project_id") references ProjectsTable.idRow)
     val threadsRow: Column<Int> = integer("threads")
@@ -41,8 +41,8 @@ object SessionsTable : Table("sessions") {
 object TestsTable : Table("tests") {
     val idRow: Column<Long> = long("id").autoIncrement()
     val projectIdRow: Column<Long> = (long("project_id") references ProjectsTable.idRow)
-    val sessionIdRow: Column<Long> = (long("session_id")  references SessionsTable.idRow)
-    val identifierRow: Column<String> = varchar("identifier", length = 100)
+    val launchIdRow: Column<Long> = (long("launch_id")  references LaunchesTable.idRow)
+    val identifierRow: Column<String> = varchar("identifier", length = 100).index()
     val nameRow: Column<String> = varchar("name", length = 200)
     val startTimeRow: Column<Instant> = timestamp("start_time")
     val endTimeRow: Column<Instant?> = timestamp("end_time").nullable()
@@ -54,9 +54,9 @@ object StepsTable : Table("steps") {
     val idRow: Column<Long> = long("id").autoIncrement()
     val testIdRow: Column<Long> = (long("test_id") references TestsTable.idRow)
     val parentStepIdRow: Column<Long?> = long("parent_step_id").nullable()
-    val identifierRow: Column<String> = varchar("identifier", length = 200)
+    val identifierRow: Column<String> = varchar("identifier", length = 200).index()
     val nameRow: Column<String> = varchar("name", length = 500)
-    val statusRow: Column<Int> = integer("status")
+    val statusRow: Column<String?> = varchar("status", length = 6).nullable()
     val messageRow: Column<String?> = varchar("message", length = 4000).nullable()
     val traceRow: Column<String?> = varchar("trace", length = 10000).nullable()
     val startTimeRow: Column<Instant> = timestamp("start_time")
@@ -69,4 +69,16 @@ object StepParametersTable : Table("step_parameters") {
     val stepIdRow: Column<Long> = (long("step_id") references StepsTable.idRow).index()
     val nameRow: Column<String> = varchar("name", length = 100)
     val valueRow: Column<String> = varchar("value", length = 2000)
+}
+
+object ErrorImagesTable : Table("error_images") {
+    val stepIdRow: Column<Long> = (long("step_id") references StepsTable.idRow).index()
+    val imageRow: Column<ByteArray> = binary("image")
+}
+
+object ImageComparisonInfoTable : Table("image_comparison_info") {
+    val stepIdRow: Column<Long> = (long("step_id") references StepsTable.idRow).index()
+    val templateImagePathRow: Column<String?> = varchar("template_image_path", length = 250).nullable()
+    val currentImagePathRow: Column<String?> = varchar("current_image_path", length = 250).nullable()
+    val markedImagePathRow: Column<String?> = varchar("marked_image_path", length = 250).nullable()
 }

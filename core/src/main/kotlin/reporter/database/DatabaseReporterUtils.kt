@@ -46,15 +46,23 @@ class DatabaseReporterUtils {
     }
 
     fun createSchema() {
-        SchemaUtils.create(ProjectsTable, SessionsTable, TestsTable, StepsTable, StepParametersTable)
+        SchemaUtils.create(
+            ProjectsTable,
+            LaunchesTable,
+            TestsTable,
+            StepsTable,
+            StepParametersTable,
+            ErrorImagesTable,
+            ImageComparisonInfoTable
+        )
     }
 
     @Synchronized
     fun createSession(projectId: Long) {
-        val session = SessionsTable.select(SessionsTable.idRow).where(SessionsTable.idRow eq MainConfig.sessionId)
+        val session = LaunchesTable.select(LaunchesTable.idRow).where(LaunchesTable.idRow eq MainConfig.sessionId)
             .singleOrNull()
         if (session == null) {
-            SessionsTable.insert {
+            LaunchesTable.insert {
                 it[idRow] = MainConfig.sessionId
                 it[projectIdRow] = projectId
                 it[threadsRow] = SessionParametersStorage.threadCount
