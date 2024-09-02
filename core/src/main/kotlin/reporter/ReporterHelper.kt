@@ -16,7 +16,7 @@
 package reporter
 
 import action.ActionResult
-import action.ScreenData
+import action.ImageComparisonData
 
 class ReporterHelper {
     companion object {
@@ -32,12 +32,12 @@ class ReporterHelper {
             name: String,
             parameters: HashMap<String, String>,
             actionResult: ActionResult,
-            screenData: ScreenData?,
+            imageComparisonData: ImageComparisonData?,
             startTime: Long,
             stopTime: Long
         ) {
             ReporterSession.getSession().forEach { session ->
-                session.addStep(id, parentId, name, parameters, actionResult, screenData, startTime, stopTime)
+                session.addStep(id, parentId, name, parameters, actionResult, imageComparisonData, startTime, stopTime)
             }
         }
     }

@@ -17,7 +17,7 @@ package reporter.allure
 
 import action.ActionResult
 import action.ActionStatus
-import action.ScreenData
+import action.ImageComparisonData
 import config.Localization
 import config.reporter.AllureReporterConfig
 import logger.Logger
@@ -59,23 +59,17 @@ class AllureReporter : Reporter {
         name: String,
         parameters: HashMap<String, String>,
         actionResult: ActionResult,
-        screenData: ScreenData?,
+        imageComparisonData: ImageComparisonData?,
         startTime: Long,
         stopTime: Long
     ) {
         val step = JSONObject()
         val status = actionResult.getStatus()
-        val attachments = screenData?.let { getScreenDataAttachments(it) } ?: getErrorImageAttachment(actionResult)
-        if (screenData != null) {
-            val currentImagePath = screenData.currentImagePath
-            val templateImagePath = screenData.templateImagePath
-            val markedImagePath = screenData.markedImagePath
-            if (currentImagePath != null)
-                parameters["currentImagePath"] = currentImagePath
-            if (templateImagePath != null)
-                parameters["templateImagePath"] = templateImagePath
-            if (markedImagePath != null)
-                parameters["markedImagePath"] = markedImagePath
+        val attachments = imageComparisonData?.let { getScreenDataAttachments(it) } ?: getErrorImageAttachment(actionResult)
+        imageComparisonData?.let { imagesData ->
+            imagesData.currentImagePath?.let { parameters["currentImagePath"] = it }
+            imagesData.templateImagePath?.let {  parameters["templateImagePath"] = it }
+            imagesData.markedImagePath?.let { parameters["markedImagePath"] = it }
         }
         with(step) {
             put("name", name)
@@ -239,16 +233,17 @@ class AllureReporter : Reporter {
         return attachments
     }
 
-    private fun getScreenDataAttachments(screenData: ScreenData): JSONArray {
+    private fun getScreenDataAttachments(imageComparisonData: ImageComparisonData): JSONArray {
         val attachments = JSONArray()
-        val currentImage = screenData.getCurrentImage()
-        val templateImage = screenData.templateImage
-        val markedImage = screenData.markedImage
-        attachments.put(attachImage(Localization.get("AllureReporter.CurrentScreenshot"), currentImage.image))
-        if (templateImage != null)
-            attachments.put(attachImage(Localization.get("AllureReporter.ReferenceScreenshot"), templateImage))
-        if (markedImage != null)
-            attachments.put(attachImage(Localization.get("AllureReporter.MarkedScreenshot"), markedImage))
+        attachments.put(attachImage(Localization.get("AllureReporter.CurrentScreenshot"), imageComparisonData.currentImage))
+        if (imageComparisonData.markedImage != null) {
+            imageComparisonData.templateImage?.let {
+                attachments.put(attachImage(Localization.get("AllureReporter.ReferenceScreenshot"), it))
+            }
+            imageComparisonData.markedImage?.let {
+                attachments.put(attachImage(Localization.get("AllureReporter.MarkedScreenshot"), it))
+            }
+        }
         return attachments
     }
 

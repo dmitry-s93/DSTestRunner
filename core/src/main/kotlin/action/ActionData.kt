@@ -16,34 +16,14 @@
 package action
 
 class ActionData(
-    private val actionResult: ActionResult,
-    private val actionParameters: HashMap<String, String>,
-    private val actionName: String,
-    private val startTime: Long,
-    private val stopTime: Long,
-    private val screenData: ScreenData? = null
+    val actionResult: ActionResult,
+    val actionParameters: HashMap<String, String>,
+    val actionName: String,
+    val startTime: Long,
+    val stopTime: Long,
+    val screenshot: ScreenshotData? = null
 ) {
     fun getResult(): ActionResult {
         return actionResult
-    }
-
-    fun getParameters(): HashMap<String, String> {
-        return actionParameters
-    }
-
-    fun getName(): String {
-        return actionName
-    }
-
-    fun getStartTime(): Long {
-        return startTime
-    }
-
-    fun getStopTime(): Long {
-        return stopTime
-    }
-
-    fun getScreenData(): ScreenData? {
-        return screenData
     }
 }
