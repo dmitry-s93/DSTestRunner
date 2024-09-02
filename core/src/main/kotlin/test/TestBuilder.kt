@@ -18,10 +18,11 @@ package test
 import action.ActionData
 import action.ActionResult
 import action.ActionStatus
+import action.ImageComparisonData
 import logger.TestLogger
 import reporter.ReporterHelper
 import test.error.TestFailedError
-import utils.ImageUtils
+import utils.ImageComparison
 
 open class TestBuilder(id: String, name: String) {
     private val testId: String
@@ -76,22 +77,23 @@ open class TestBuilder(id: String, name: String) {
     fun step(id: String, actionData: ActionData) {
         var stepName = name
         if (stepName.isEmpty())
-            stepName = actionData.getName()
-        var stepResult = actionData.getResult()
-        val stepParams = actionData.getParameters()
-        var screenData = actionData.getScreenData()
-        val startTime = actionData.getStartTime()
-        var stopTime = actionData.getStopTime()
+            stepName = actionData.actionName
+        var stepResult = actionData.actionResult
+        val stepParams = actionData.actionParameters
+        val screenshot = actionData.screenshot
+        val startTime = actionData.startTime
+        var stopTime = actionData.stopTime
         if (!(before || after) || stepResult.getStatus() != ActionStatus.PASSED) {
-            if (screenData != null && stepResult.getStatus() == ActionStatus.PASSED) {
+            var imageComparisonData: ImageComparisonData? = null
+            if (screenshot != null && stepResult.getStatus() == ActionStatus.PASSED) {
                 required = false
-                val (compareStepResult, compareScreenData) = ImageUtils().compare(id, testId, parentId, screenData)
+                val (compareStepResult, compareScreenData) = ImageComparison(id, testId, parentId, screenshot).compare()
                 stepName += " \uD83D\uDDBC"
                 stepResult = compareStepResult
-                screenData = compareScreenData
+                imageComparisonData = compareScreenData
                 stopTime = System.currentTimeMillis()
             }
-            ReporterHelper.addStep(id, parentId, stepName, stepParams, stepResult, screenData, startTime, stopTime)
+            ReporterHelper.addStep(id, parentId, stepName, stepParams, stepResult, imageComparisonData, startTime, stopTime)
         }
         TestLogger.log(id, parentId, stepName, stepResult)
         name = ""

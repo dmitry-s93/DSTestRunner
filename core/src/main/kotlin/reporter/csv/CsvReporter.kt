@@ -16,7 +16,7 @@
 package reporter.csv
 
 import action.ActionResult
-import action.ScreenData
+import action.ImageComparisonData
 import com.opencsv.CSVWriterBuilder
 import config.reporter.CsvReporterConfig
 import reporter.Reporter
@@ -44,7 +44,7 @@ class CsvReporter : Reporter {
         name: String,
         parameters: HashMap<String, String>,
         actionResult: ActionResult,
-        screenData: ScreenData?,
+        imageComparisonData: ImageComparisonData?,
         startTime: Long,
         stopTime: Long
     ) {

@@ -13,23 +13,23 @@
  * limitations under the License.
  */
 
-package reporter
 
-import action.ActionResult
-import action.ImageComparisonData
+package action
 
-interface Reporter {
-    fun setTestInfo(testId: String, testName: String)
-    fun addStep(
-        id: String,
-        parentId: String,
-        name: String,
-        parameters: HashMap<String, String>,
-        actionResult: ActionResult,
-        imageComparisonData: ImageComparisonData?,
-        startTime: Long,
-        stopTime: Long
-    )
+import pazone.ashot.coordinates.Coords
+import java.awt.image.BufferedImage
 
-    fun quit()
-}
+class ImageComparisonData(
+    val currentImage: BufferedImage,
+    val currentImagePath: String? = null,
+    var templateImage: BufferedImage? = null,
+    var templateImagePath: String? = null,
+    var markedImage: BufferedImage? = null,
+    var markedImagePath: String? = null
+)
+
+class ScreenshotData(
+    val image: BufferedImage,
+    val ignoredAreas: Set<Coords>,
+    val coordsToCompare: Set<Coords>
+)

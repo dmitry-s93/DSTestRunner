@@ -30,7 +30,7 @@ import java.awt.Rectangle
 class CheckLoadPageAction(private val page: Page) : ActionReturn(), Action {
     private var pageUrl: String? = null
     private val pageName: String = page.pageData.pageName
-    private var screenData: ScreenData? = null
+    private var screenshot: ScreenshotData? = null
     private val ignoredElements: MutableSet<Locator> = HashSet()
     private val ignoredRectangles: MutableSet<Rectangle> = HashSet()
     private var screenshotAreas: MutableSet<Locator> = HashSet()
@@ -71,7 +71,11 @@ class CheckLoadPageAction(private val page: Page) : ActionReturn(), Action {
                     ignoredRectangles = ignoredRectangles,
                     screenshotAreas = screenshotAreas
                 )
-                screenData = ScreenData(screenshot)
+                this.screenshot = ScreenshotData(
+                    image = screenshot.image,
+                    ignoredAreas = screenshot.ignoredAreas,
+                    coordsToCompare = screenshot.coordsToCompare,
+                )
             }
         } catch (e: Exception) {
             return broke(Localization.get("CheckLoadPageAction.GeneralError", e.message), e.stackTraceToString())
@@ -117,8 +121,8 @@ class CheckLoadPageAction(private val page: Page) : ActionReturn(), Action {
         return parameters
     }
 
-    fun getScreenData(): ScreenData? {
-        return screenData
+    fun getScreenshot(): ScreenshotData? {
+        return screenshot
     }
 
     /**
@@ -237,9 +241,9 @@ fun checkLoadPage(page: Page, function: (CheckLoadPageAction.() -> Unit)? = null
     val result = action.execute()
     val parameters = action.getParameters()
     val name = action.getName()
-    val screenData = action.getScreenData()
+    val screenshot = action.getScreenshot()
     val stopTime = System.currentTimeMillis()
-    return ActionData(result, parameters, name, startTime, stopTime, screenData = screenData)
+    return ActionData(result, parameters, name, startTime, stopTime, screenshot = screenshot)
 }
 
 fun checkLoadPage(page: PageData, function: (CheckLoadPageAction.() -> Unit)? = null): ActionData {
