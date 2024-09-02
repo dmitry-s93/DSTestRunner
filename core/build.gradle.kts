@@ -31,7 +31,7 @@ val openCsvVersion = "5.9"
 val httpClient5Version = "5.3.1"
 val postgresqlVersion = "42.7.3"
 val rgxgenVersion = "1.4"
-val exposedVersion = "0.53.0"
+val exposedVersion = "0.54.0"
 
 dependencies {
     // https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java
