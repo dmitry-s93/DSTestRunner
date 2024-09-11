@@ -20,14 +20,13 @@ import action.helper.Direction
 import io.appium.java_client.Location
 import pazone.ashot.Screenshot
 import test.element.Locator
-import java.awt.Point
 import java.awt.Rectangle
 
 private const val notImplementedMessage = "Method not implemented for this driver instance"
 
 interface Driver {
     fun getElementTimeout(): Long
-    fun click(locator: Locator, points: ArrayList<Pair<Point, Point?>>? = null)
+    fun click(locator: Locator, scrollToFindElement: Boolean? = null)
     fun checkLoadPage(url: String?, identifier: Locator?): Boolean
     fun getElementValue(locator: Locator): String
     fun getScreenshot(
@@ -39,8 +38,8 @@ interface Driver {
 
     fun setValue(locator: Locator, value: String, sequenceMode: Boolean = false, hideKeyboard: Boolean = true)
     fun setSelectValue(locator: Locator, value: String)
-    fun isExist(locator: Locator, waitAtMostMillis: Long? = null): Boolean
-    fun isNotExist(locator: Locator, waitAtMostMillis: Long? = null): Boolean
+    fun isExist(locator: Locator, scrollToFindElement: Boolean? = null, waitAtMostMillis: Long? = null): Boolean
+    fun isNotExist(locator: Locator, scrollToFindElement: Boolean? = null, waitAtMostMillis: Long? = null): Boolean
     fun isEnabled(locator: Locator): Boolean
     fun navigateBack()
     fun performTouchAction(locator: Locator, actionList: MutableList<MutableList<TouchAction>>)

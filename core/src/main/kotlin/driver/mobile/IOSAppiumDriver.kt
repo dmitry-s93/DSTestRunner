@@ -126,13 +126,12 @@ class IOSAppiumDriver : Driver {
         return elementTimeout
     }
 
-    override fun click(locator: Locator, points: ArrayList<Pair<Point, Point?>>?) {
+    override fun click(locator: Locator, scrollToFindElement: Boolean?) {
         DriverHelper().handleStaleElementReferenceException("click", numberOfAttempts) {
-            val element = getWebElement(locator)
-            if (points.isNullOrEmpty()) {
-                element.click()
+            if (scrollToFindElement != null) {
+                getWebElement(locator, scrollToFindElement).click()
             } else {
-                throw NotImplementedError("Not yet implemented")
+                getWebElement(locator).click()
             }
         }
     }
@@ -348,13 +347,14 @@ class IOSAppiumDriver : Driver {
         TODO("Not yet implemented")
     }
 
-    override fun isExist(locator: Locator, waitAtMostMillis: Long?): Boolean {
+    override fun isExist(locator: Locator, scrollToFindElement: Boolean?, waitAtMostMillis: Long?): Boolean {
+        var scrollToFind = if (scrollToFindElement != null) { scrollToFindElement } else { false }
         var waitAtMost = elementTimeout
         if (waitAtMostMillis != null) {
             if (waitAtMostMillis > 0)
                 waitAtMost = waitAtMostMillis
             else
-                getWebElements(locator, onlyDisplayed = false, scrollToFind = false).isNotEmpty()
+                return getWebElements(locator, onlyDisplayed = false, scrollToFind = false).isNotEmpty()
         }
         return try {
             Awaitility.await()
@@ -362,20 +362,21 @@ class IOSAppiumDriver : Driver {
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(waitAtMost))
-                .until { getWebElements(locator, onlyDisplayed = false, scrollToFind = false).isNotEmpty() }
+                .until { getWebElements(locator, onlyDisplayed = false, scrollToFind = scrollToFind).isNotEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
             getWebElements(locator, onlyDisplayed = false, scrollToFind = false).isNotEmpty()
         }
     }
 
-    override fun isNotExist(locator: Locator, waitAtMostMillis: Long?): Boolean {
+    override fun isNotExist(locator: Locator, scrollToFindElement: Boolean?, waitAtMostMillis: Long?): Boolean {
+        var scrollToFind = if (scrollToFindElement != null) { scrollToFindElement } else { false }
         var waitAtMost = elementTimeout
         if (waitAtMostMillis != null) {
             if (waitAtMostMillis > 0)
                 waitAtMost = waitAtMostMillis
             else
-                getWebElements(locator, onlyDisplayed = false, scrollToFind = false).isEmpty()
+                return getWebElements(locator, onlyDisplayed = false, scrollToFind = false).isEmpty()
         }
         return try {
             Awaitility.await()
@@ -383,7 +384,7 @@ class IOSAppiumDriver : Driver {
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(waitAtMost))
-                .until { getWebElements(locator, onlyDisplayed = false, scrollToFind = false).isEmpty() }
+                .until { getWebElements(locator, onlyDisplayed = false, scrollToFind = scrollToFind).isEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
             getWebElements(locator, onlyDisplayed = false, scrollToFind = false).isEmpty()
@@ -571,7 +572,7 @@ class IOSAppiumDriver : Driver {
         }
     }
 
-    private fun getWebElement(locator: Locator): WebElement {
+    private fun getWebElement(locator: Locator, scrollToFind: Boolean = true): WebElement {
         var element: WebElement? = null
         try {
             Awaitility.await()
@@ -580,7 +581,7 @@ class IOSAppiumDriver : Driver {
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(elementTimeout))
                 .until {
-                    val elements = getWebElements(locator, onlyDisplayed = false, scrollToFind = true)
+                    val elements = getWebElements(locator, onlyDisplayed = false, scrollToFind = scrollToFind)
                     if (elements.isNotEmpty()) {
                         element = elements[0]
                         return@until true

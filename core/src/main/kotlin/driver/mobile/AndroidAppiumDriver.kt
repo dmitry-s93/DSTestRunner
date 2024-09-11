@@ -121,26 +121,12 @@ class AndroidAppiumDriver : Driver {
         return elementTimeout
     }
 
-    override fun click(locator: Locator, points: ArrayList<Pair<Point, Point?>>?) {
+    override fun click(locator: Locator, scrollToFindElement: Boolean?) {
         DriverHelper().handleStaleElementReferenceException("click", numberOfAttempts) {
-            val element = getWebElement(locator)
-            if (points.isNullOrEmpty()) {
-                element.click()
+            if (scrollToFindElement != null) {
+                getWebElement(locator, scrollToFindElement).click()
             } else {
-                val center = DriverHelper().getElementCenter(element)
-                points.forEach {
-                    val point1 = it.first
-                    val point2 = it.second
-                    if (point2 != null) {
-                        throw NotImplementedError("Not yet implemented")
-                    } else {
-                        tapOnPoint(
-                            center.x + point1.x,
-                            center.y + point1.y
-                        )
-                    }
-                    Thread.sleep(300)
-                }
+                getWebElement(locator).click()
             }
         }
     }
@@ -299,7 +285,7 @@ class AndroidAppiumDriver : Driver {
         return ignoredAreas
     }
 
-    private fun getWebElement(locator: Locator): WebElement {
+    private fun getWebElement(locator: Locator, scrollToFind: Boolean = true): WebElement {
         var element: WebElement? = null
         try {
             Awaitility.await()
@@ -308,7 +294,7 @@ class AndroidAppiumDriver : Driver {
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(elementTimeout))
                 .until {
-                    val elements = getWebElements(locator, scrollToFind = true)
+                    val elements = getWebElements(locator, scrollToFind = scrollToFind)
                     if (elements.isNotEmpty()) {
                         element = elements[0]
                         return@until true
@@ -548,7 +534,8 @@ class AndroidAppiumDriver : Driver {
         TODO("Not yet implemented")
     }
 
-    override fun isExist(locator: Locator, waitAtMostMillis: Long?): Boolean {
+    override fun isExist(locator: Locator, scrollToFindElement: Boolean?, waitAtMostMillis: Long?): Boolean {
+        var scrollToFind = if (scrollToFindElement != null) { scrollToFindElement } else { false }
         var waitAtMost = elementTimeout
         if (waitAtMostMillis != null) {
             if (waitAtMostMillis > 0)
@@ -562,20 +549,21 @@ class AndroidAppiumDriver : Driver {
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(waitAtMost))
-                .until { getWebElements(locator, scrollToFind = true).isNotEmpty() }
+                .until { getWebElements(locator, scrollToFind = scrollToFind).isNotEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
             getWebElements(locator, scrollToFind = false).isNotEmpty()
         }
     }
 
-    override fun isNotExist(locator: Locator, waitAtMostMillis: Long?): Boolean {
+    override fun isNotExist(locator: Locator, scrollToFindElement: Boolean?, waitAtMostMillis: Long?): Boolean {
+        var scrollToFind = if (scrollToFindElement != null) { scrollToFindElement } else { true }
         var waitAtMost = elementTimeout
         if (waitAtMostMillis != null) {
             if (waitAtMostMillis > 0)
                 waitAtMost = waitAtMostMillis
             else
-                getWebElements(locator, scrollToFind = false).isEmpty()
+                return getWebElements(locator, scrollToFind = false).isEmpty()
         }
         return try {
             Awaitility.await()
@@ -583,7 +571,7 @@ class AndroidAppiumDriver : Driver {
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(waitAtMost))
-                .until { getWebElements(locator, scrollToFind = true).isEmpty() }
+                .until { getWebElements(locator, scrollToFind = scrollToFind).isEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
             getWebElements(locator, scrollToFind = false).isEmpty()
