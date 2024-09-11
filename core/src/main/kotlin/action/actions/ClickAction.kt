@@ -25,12 +25,11 @@ import driver.DriverSession
 import storage.ValueStorage
 import test.element.Locator
 import test.page.Element
-import java.awt.Point
 
 class ClickAction(private val element: Element) : ActionReturn(), Action {
     private var elementLocator: Locator = Locator(element.locator.value, element.locator.type)
     private val locatorArguments = ArrayList<String>()
-    private val clickPoints = ArrayList<Pair<Point, Point?>>()
+    var scrollToFindElement: Boolean? = null
 
     override fun getName(): String {
         return Localization.get("ClickAction.DefaultName", element.displayName)
@@ -41,7 +40,7 @@ class ClickAction(private val element: Element) : ActionReturn(), Action {
             elementLocator = element.locator.withReplaceArgs(*locatorArguments.toArray())
             if (elementLocator.value.isEmpty())
                 return broke(Localization.get("General.ElementLocatorNotSpecified"))
-            DriverSession.getSession().click(elementLocator, clickPoints)
+            DriverSession.getSession().click(elementLocator, scrollToFindElement)
         } catch (e: Exception) {
             return broke(Localization.get("ClickAction.GeneralError", e.message), e.stackTraceToString())
         }
@@ -60,20 +59,6 @@ class ClickAction(private val element: Element) : ActionReturn(), Action {
      */
     fun locatorArgument(value: String) {
         locatorArguments.add(ValueStorage.replace(value))
-    }
-
-    /**
-     * Sets the point to click inside the specified element.
-     * You must specify the offset of the coordinate relative to the center of the element.
-     */
-    @Deprecated("Use performTouchAction instead")
-    fun clickPoint(xOffset: Int, yOffset: Int) {
-        clickPoints.add(Pair(Point(xOffset, yOffset), null))
-    }
-
-    @Deprecated("Use performTouchAction instead")
-    fun clickAndMovePoint(startX: Int, startY: Int, endX: Int, endY: Int) {
-        clickPoints.add(Pair(Point(startX, startY), Point(endX, endY)))
     }
 }
 

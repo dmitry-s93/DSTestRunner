@@ -46,7 +46,6 @@ import pazone.ashot.cropper.indent.IndentCropper
 import pazone.ashot.cropper.indent.IndentFilerFactory.blur
 import test.element.Locator
 import test.element.LocatorType
-import java.awt.Point
 import java.awt.Rectangle
 import java.net.URL
 import java.time.Duration
@@ -92,28 +91,12 @@ class WebDriver : Driver {
         return elementTimeout
     }
 
-    override fun click(locator: Locator, points: ArrayList<Pair<Point, Point?>>?) {
+    override fun click(locator: Locator, scrollToFindElement: Boolean?) {
         DriverHelper().handleStaleElementReferenceException("click", numberOfAttempts) {
-            val element = getWebElement(locator)
-            if (points.isNullOrEmpty()) {
-                element.click()
+            if (scrollToFindElement != null) {
+                getWebElement(locator, scrollToFindElement).click()
             } else {
-                val center = DriverHelper().getElementCenter(element)
-                val action = Actions(driver)
-                points.forEach {
-                    val point1 = it.first
-                    val point2 = it.second
-                    if (point2 != null) {
-                        action.moveToLocation(center.x + point1.x, center.y + point1.y)
-                        action.clickAndHold()
-                        action.moveToLocation(center.x + point2.x, center.y + point2.y)
-                        action.release()
-                    } else {
-                        action.moveToLocation(center.x + point1.x, center.y + point1.y)
-                        action.click()
-                    }
-                }
-                action.perform()
+                getWebElement(locator).click()
             }
             hideCursor()
         }
@@ -253,7 +236,7 @@ class WebDriver : Driver {
         return ignoredAreas
     }
 
-    private fun getWebElement(locator: Locator): WebElement {
+    private fun getWebElement(locator: Locator, scrollToFindElement: Boolean = true): WebElement {
         var element: WebElement? = null
         try {
             await()
@@ -262,7 +245,7 @@ class WebDriver : Driver {
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(elementTimeout))
                 .until {
-                    val elements = getWebElements(locator, onlyDisplayed = true, scrollToCheckVisibility = true)
+                    val elements = getWebElements(locator, onlyDisplayed = true, scrollToCheckVisibility = scrollToFindElement)
                     if (elements.isNotEmpty()) {
                         element = elements[0]
                         return@until true
@@ -271,8 +254,10 @@ class WebDriver : Driver {
                 }
         } catch (_: ConditionTimeoutException) {}
         if (element != null) {
-            scrollToElement(element!!)
-            return element as WebElement
+            if (scrollToFindElement) {
+                scrollToElement(element)
+            }
+            return element
         }
         return driver.findElement(byDetect(locator))
     }
@@ -360,13 +345,14 @@ class WebDriver : Driver {
         webElement.sendKeys(file)
     }
 
-    override fun isExist(locator: Locator, waitAtMostMillis: Long?): Boolean {
+    override fun isExist(locator: Locator, scrollToFindElement: Boolean?, waitAtMostMillis: Long?): Boolean {
+        var scrollToCheckVisibility = if (scrollToFindElement != null) { scrollToFindElement } else { true }
         var waitAtMost = elementTimeout
         if (waitAtMostMillis != null) {
             if (waitAtMostMillis > 0)
                 waitAtMost = waitAtMostMillis
             else
-                getWebElements(locator, onlyDisplayed = true, scrollToCheckVisibility = true).isNotEmpty()
+                return getWebElements(locator, onlyDisplayed = true, scrollToCheckVisibility = scrollToCheckVisibility).isNotEmpty()
         }
         return try {
             await()
@@ -374,20 +360,21 @@ class WebDriver : Driver {
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(waitAtMost))
-                .until { getWebElements(locator, onlyDisplayed = true, scrollToCheckVisibility = true).isNotEmpty() }
+                .until { getWebElements(locator, onlyDisplayed = true, scrollToCheckVisibility = scrollToCheckVisibility).isNotEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
             false
         }
     }
 
-    override fun isNotExist(locator: Locator, waitAtMostMillis: Long?): Boolean {
+    override fun isNotExist(locator: Locator, scrollToFindElement: Boolean?, waitAtMostMillis: Long?): Boolean {
+        var scrollToCheckVisibility = if (scrollToFindElement != null) { scrollToFindElement } else { true }
         var waitAtMost = elementTimeout
         if (waitAtMostMillis != null) {
             if (waitAtMostMillis > 0)
                 waitAtMost = waitAtMostMillis
             else
-                getWebElements(locator, onlyDisplayed = true, scrollToCheckVisibility = true).isEmpty()
+                return getWebElements(locator, onlyDisplayed = true, scrollToCheckVisibility = scrollToCheckVisibility).isEmpty()
         }
         return try {
             await()
@@ -395,7 +382,7 @@ class WebDriver : Driver {
                 .atLeast(Duration.ofMillis(0))
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(waitAtMost))
-                .until { getWebElements(locator, onlyDisplayed = true, scrollToCheckVisibility = true).isEmpty() }
+                .until { getWebElements(locator, onlyDisplayed = true, scrollToCheckVisibility = scrollToCheckVisibility).isEmpty() }
             true
         } catch (e: ConditionTimeoutException) {
             false
