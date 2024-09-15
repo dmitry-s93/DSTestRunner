@@ -160,10 +160,16 @@ class AndroidAppiumDriver : Driver {
         return false
     }
 
-    override fun getElementValue(locator: Locator): String {
+    override fun getElementValue(locator: Locator, scrollToFindElement: Boolean?): String {
         var value = ""
         DriverHelper().handleStaleElementReferenceException("getElementValue", numberOfAttempts) {
-            value = getWebElement(locator).text
+            val element =
+                if (scrollToFindElement != null) {
+                    getWebElement(locator, scrollToFindElement)
+                } else {
+                    getWebElement(locator)
+                }
+            value = element.text
         }
         return value
     }
@@ -535,7 +541,7 @@ class AndroidAppiumDriver : Driver {
     }
 
     override fun isExist(locator: Locator, scrollToFindElement: Boolean?, waitAtMostMillis: Long?): Boolean {
-        var scrollToFind = if (scrollToFindElement != null) { scrollToFindElement } else { false }
+        var scrollToFind = if (scrollToFindElement != null) { scrollToFindElement } else { true }
         var waitAtMost = elementTimeout
         if (waitAtMostMillis != null) {
             if (waitAtMostMillis > 0)
