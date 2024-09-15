@@ -36,6 +36,7 @@ class CheckElementValueAction(private val element: Element, expectedValue: Strin
     private val locatorArguments = ArrayList<String>()
     private var waitForExpectedValue: Boolean = false
     private var regexMode: Boolean = false
+    var scrollToFindElement: Boolean? = null
 
     override fun getName(): String {
         return Localization.get("CheckElementValueAction.DefaultName", element.displayName)
@@ -54,14 +55,14 @@ class CheckElementValueAction(private val element: Element, expectedValue: Strin
                         .pollDelay(Duration.ofMillis(100))
                         .atMost(Duration.ofMillis(driverSession.getElementTimeout()))
                         .until {
-                            elementValue = driverSession.getElementValue(elementLocator)
+                            elementValue = driverSession.getElementValue(elementLocator, scrollToFindElement)
                             isValueMatch(elementValue!!, expectedValue)
                         }
                 } catch (_: ConditionTimeoutException) {
                     return fail(Localization.get("CheckElementValueAction.ElementValueNotMatch", elementValue, expectedValue))
                 }
             } else {
-                elementValue = driverSession.getElementValue(elementLocator)
+                elementValue = driverSession.getElementValue(elementLocator, scrollToFindElement)
                 if (!isValueMatch(elementValue!!, expectedValue))
                     return fail(Localization.get("CheckElementValueAction.ElementValueNotMatch", elementValue, expectedValue))
             }

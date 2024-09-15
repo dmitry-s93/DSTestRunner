@@ -172,10 +172,15 @@ class WebDriver : Driver {
         return driver.currentUrl
     }
 
-    override fun getElementValue(locator: Locator): String {
+    override fun getElementValue(locator: Locator, scrollToFindElement: Boolean?): String {
         var value: String? = ""
         DriverHelper().handleStaleElementReferenceException("getElementValue", numberOfAttempts) {
-            val element = getWebElement(locator)
+            val element =
+                if (scrollToFindElement != null) {
+                    getWebElement(locator, scrollToFindElement)
+                } else {
+                    getWebElement(locator)
+                }
             value = element.text
             if (value.isNullOrEmpty())
                 value = element.getAttribute("value")

@@ -28,7 +28,7 @@ interface Driver {
     fun getElementTimeout(): Long
     fun click(locator: Locator, scrollToFindElement: Boolean? = null)
     fun checkLoadPage(url: String?, identifier: Locator?): Boolean
-    fun getElementValue(locator: Locator): String
+    fun getElementValue(locator: Locator, scrollToFindElement: Boolean? = null): String
     fun getScreenshot(
         longScreenshot: Boolean = false,
         ignoredElements: Set<Locator> = HashSet(),
