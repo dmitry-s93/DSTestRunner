@@ -72,12 +72,12 @@ object StepParametersTable : Table("step_parameters") {
 }
 
 object ErrorImagesTable : Table("error_images") {
-    val stepIdRow: Column<Long> = (long("step_id") references StepsTable.idRow).index()
+    val stepIdRow: Column<Long> = (long("step_id") references StepsTable.idRow).uniqueIndex()
     val imageRow: Column<ByteArray> = binary("image")
 }
 
 object ImageComparisonInfoTable : Table("image_comparison_info") {
-    val stepIdRow: Column<Long> = (long("step_id") references StepsTable.idRow).index()
+    val stepIdRow: Column<Long> = (long("step_id") references StepsTable.idRow).uniqueIndex()
     val templateImagePathRow: Column<String?> = varchar("template_image_path", length = 250).nullable()
     val currentImagePathRow: Column<String?> = varchar("current_image_path", length = 250).nullable()
     val markedImagePathRow: Column<String?> = varchar("marked_image_path", length = 250).nullable()
