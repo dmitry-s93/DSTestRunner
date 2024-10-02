@@ -75,6 +75,7 @@ fun switchToWindow(page: Page?, function: (SwitchToWindowAction.() -> Unit)? = n
  *
  * Switches to the first other window (if [pageData] is not specified)
  */
+@Deprecated("Use Page class object instead of PageData")
 fun switchToWindow(pageData: PageData?, function: (SwitchToWindowAction.() -> Unit)? = null): ActionData {
     var page: Page? = null
     if (pageData != null)

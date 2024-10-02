@@ -94,6 +94,7 @@ fun setPage(page: Page, function: (SetPageAction.() -> Unit)? = null): ActionDat
 /**
  * Goes to page [page]
  */
+@Deprecated("Use Page class object instead of PageData")
 fun setPage(page: PageData, function: (SetPageAction.() -> Unit)? = null): ActionData {
     return  setPage(Page(page), function)
 }

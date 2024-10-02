@@ -76,6 +76,7 @@ fun isDisabled(element: Element, function: (IsDisabledAction.() -> Unit)? = null
     return ActionData(result, parameters, name, startTime, stopTime)
 }
 
+@Deprecated("Use an Element class object instead of a string")
 fun isDisabled(elementName: String, function: (IsDisabledAction.() -> Unit)? = null): ActionData {
     val (element, result) = ActionHelper().getElement(elementName)
     if (element != null)

@@ -246,6 +246,7 @@ fun checkLoadPage(page: Page, function: (CheckLoadPageAction.() -> Unit)? = null
     return ActionData(result, parameters, name, startTime, stopTime, screenshot = screenshot)
 }
 
+@Deprecated("Use Page class object instead of PageData")
 fun checkLoadPage(page: PageData, function: (CheckLoadPageAction.() -> Unit)? = null): ActionData {
     return  checkLoadPage(Page(page), function)
 }

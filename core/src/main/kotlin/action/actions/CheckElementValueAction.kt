@@ -128,6 +128,7 @@ fun checkElementValue(
     return ActionData(result, parameters, name, startTime, stopTime)
 }
 
+@Deprecated("Use an Element class object instead of a string")
 fun checkElementValue(
     elementName: String,
     expectedValue: String,

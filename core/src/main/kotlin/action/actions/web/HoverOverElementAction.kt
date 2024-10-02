@@ -78,6 +78,7 @@ fun hoverOverElement(element: Element, function: (HoverOverElementAction.() -> U
 /**
  * Moves the cursor over an element
  */
+@Deprecated("Use an Element class object instead of a string")
 fun hoverOverElement(elementName: String, function: (HoverOverElementAction.() -> Unit)? = null): ActionData {
     val (element, result) = ActionHelper().getElement(elementName)
     if (element != null)

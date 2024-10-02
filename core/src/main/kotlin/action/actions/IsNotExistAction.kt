@@ -83,6 +83,7 @@ fun isNotExist(element: Element, function: (IsNotExistAction.() -> Unit)? = null
 /**
  * Checks for the absence of the element [elementName] on the page
  */
+@Deprecated("Use an Element class object instead of a string")
 fun isNotExist(elementName: String, function: (IsNotExistAction.() -> Unit)? = null): ActionData {
     val (element, result) = ActionHelper().getElement(elementName)
     if (element != null)

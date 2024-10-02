@@ -83,6 +83,7 @@ fun isExist(element: Element, function: (IsExistAction.() -> Unit)? = null): Act
 /**
  * Checks for the presence of the element [elementName] on the page
  */
+@Deprecated("Use an Element class object instead of a string")
 fun isExist(elementName: String, function: (IsExistAction.() -> Unit)? = null): ActionData {
     val (element, result) = ActionHelper().getElement(elementName)
     if (element != null)

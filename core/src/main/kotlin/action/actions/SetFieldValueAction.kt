@@ -82,6 +82,7 @@ fun setFieldValue(element: Element, value: String, function: (SetFieldValueActio
     return ActionData(result, parameters, name, startTime, stopTime)
 }
 
+@Deprecated("Use an Element class object instead of a string")
 fun setFieldValue(elementName: String, value: String, function: (SetFieldValueAction.() -> Unit)? = null): ActionData {
     val (element, result) = ActionHelper().getElement(elementName)
     if (element != null)
