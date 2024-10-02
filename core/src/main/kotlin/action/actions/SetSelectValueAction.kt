@@ -80,6 +80,7 @@ fun setSelectValue(element: Element, value: String, function: (SetSelectValueAct
 /**
  * Sets the [value] in the dropdown list named [elementName]
  */
+@Deprecated("Use an Element class object instead of a string")
 fun setSelectValue(elementName: String, value: String, function: (SetSelectValueAction.() -> Unit)? = null): ActionData {
     val (element, result) = ActionHelper().getElement(elementName)
     if (element != null)

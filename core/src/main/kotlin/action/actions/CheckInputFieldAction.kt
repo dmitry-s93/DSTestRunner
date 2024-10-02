@@ -178,6 +178,7 @@ fun checkInputField(element: Element, function: (CheckInputFieldAction.() -> Uni
 /**
  * Checks the value of the input field [elementName] against certain parameters
  */
+@Deprecated("Use an Element class object instead of a string")
 fun checkInputField(elementName: String, function: (CheckInputFieldAction.() -> Unit)? = null): ActionData {
     val (element, result) = ActionHelper().getElement(elementName)
     if (element != null)

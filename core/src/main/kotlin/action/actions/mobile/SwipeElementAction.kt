@@ -74,6 +74,7 @@ fun swipeElement(element: Element, direction: Direction, function: (SwipeElement
     return ActionData(result, parameters, name, startTime, stopTime)
 }
 
+@Deprecated("Use an Element class object instead of a string")
 fun swipeElement(elementName: String, direction: Direction, function: (SwipeElementAction.() -> Unit)? = null): ActionData {
     val (element, result) = ActionHelper().getElement(elementName)
     if (element != null)

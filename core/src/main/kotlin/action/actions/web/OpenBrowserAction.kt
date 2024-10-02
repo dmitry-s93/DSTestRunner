@@ -69,6 +69,7 @@ fun openBrowser(page: Page, browserType: BrowserType = WebDriverConfig.browserTy
     return ActionData(result, parameters, name, startTime, stopTime)
 }
 
+@Deprecated("Use Page class object instead of PageData")
 fun openBrowser(page: PageData, browserType: BrowserType = WebDriverConfig.browserType, function: (OpenBrowserAction.() -> Unit)? = null): ActionData {
     return  openBrowser(Page(page), browserType, function)
 }

@@ -81,6 +81,7 @@ fun uploadFile(element: Element, filePath: String, function: (UploadFileAction.(
 /**
  * Uploads the file in the file upload field
  */
+@Deprecated("Use an Element class object instead of a string")
 fun uploadFile(elementName: String, filePath: String, function: (UploadFileAction.() -> Unit)? = null): ActionData {
     val (element, result) = ActionHelper().getElement(elementName)
     if (element != null)

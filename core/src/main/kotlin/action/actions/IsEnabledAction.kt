@@ -79,6 +79,7 @@ fun isEnabled(element: Element, function: (IsEnabledAction.() -> Unit)? = null):
 /**
  * Checks if element [elementName] is enabled
  */
+@Deprecated("Use an Element class object instead of a string")
 fun isEnabled(elementName: String, function: (IsEnabledAction.() -> Unit)? = null): ActionData {
     val (element, result) = ActionHelper().getElement(elementName)
     if (element != null)

@@ -136,6 +136,7 @@ fun performTouchAction(element: Element, function: (PerformTouchAction.() -> Uni
     return ActionData(result, parameters, name, startTime, stopTime)
 }
 
+@Deprecated("Use an Element class object instead of a string")
 fun performTouchAction(elementName: String, function: (PerformTouchAction.() -> Unit)? = null): ActionData {
     val (element, result) = ActionHelper().getElement(elementName)
     if (element != null)

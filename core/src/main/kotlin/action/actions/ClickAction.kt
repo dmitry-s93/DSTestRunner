@@ -73,6 +73,7 @@ fun click(element: Element, function: (ClickAction.() -> Unit)? = null): ActionD
     return ActionData(result, parameters, name, startTime, stopTime)
 }
 
+@Deprecated("Use an Element class object instead of a string")
 fun click(elementName: String, function: (ClickAction.() -> Unit)? = null): ActionData {
     val (element, result) = ActionHelper().getElement(elementName)
     if (element != null)
