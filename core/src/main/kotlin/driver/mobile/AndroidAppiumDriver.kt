@@ -398,7 +398,7 @@ class AndroidAppiumDriver : Driver {
         val x1y1x2y2 = bounds.substring(1, bounds.length - 1).split("][")
 
         val x1y1 = x1y1x2y2[0].split(",")
-        val x2y2 = x1y1x2y2[0].split(",")
+        val x2y2 = x1y1x2y2[1].split(",")
 
         val x1 = x1y1[0].toInt()
         val y1 = x1y1[1].toInt()
