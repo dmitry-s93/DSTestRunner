@@ -232,7 +232,7 @@ class AndroidAppiumDriver : Driver {
             val elementPositionsBefore = getElementPositions()
             if (!scroll(Direction.UP))
                 break
-            val scrollSize = getScrollSize(elementPositionsBefore, getElementPositions())
+            val scrollSize = getScrollSize(elementPositionsBefore, getElementPositions(), Direction.UP)
             if (scrollSize > 0) {
                 val y = scrollableArea.y + scrollableArea.height - scrollSize
                 originShift = Coords(viewportArea.x, y, viewportArea.width, scrollSize)
@@ -325,7 +325,7 @@ class AndroidAppiumDriver : Driver {
             val elementPositionsBefore = getElementPositions()
             if (!scroll(direction))
                 break
-            if (getScrollSize(elementPositionsBefore, getElementPositions()) == 0) {
+            if (getScrollSize(elementPositionsBefore, getElementPositions(), direction) == 0) {
                 direction = when(direction) {
                     Direction.UP -> break
                     Direction.DOWN -> Direction.UP
@@ -339,7 +339,28 @@ class AndroidAppiumDriver : Driver {
         return elements
     }
 
-    private fun getScrollSize(elementCoords1: Map<String, Coords>, elementCoords2: Map<String, Coords>): Int {
+    private fun getScrollSize(elementCoords1: Map<String, Coords>, elementCoords2: Map<String, Coords>, scrollDirection: Direction? = null): Int {
+        val scrollSizes = getScrollSizes(elementCoords1, elementCoords2)
+
+        var scrollSize = 0
+        var maxCount = 0
+        scrollSizes.forEach {
+            val size = it.key
+            val count = it.value
+            if (size != 0 && count > maxCount) {
+                if (scrollDirection == Direction.UP && size < 0)
+                    return@forEach
+                if (scrollDirection == Direction.DOWN && size > 0)
+                    return@forEach
+                scrollSize = size
+                maxCount = count
+            }
+        }
+
+        return scrollSize
+    }
+
+    private fun getScrollSizes(elementCoords1: Map<String, Coords>, elementCoords2: Map<String, Coords>): HashMap<Int, Int> {
         val scrollSizes = HashMap<Int, Int>()
 
         elementCoords1.forEach {
@@ -357,16 +378,7 @@ class AndroidAppiumDriver : Driver {
             }
         }
 
-        var scrollSize = 0
-        var maxCount = 0
-        scrollSizes.forEach {
-            if (it.key != 0 && it.value > maxCount) {
-                scrollSize = it.key
-                maxCount = it.value
-            }
-        }
-
-        return scrollSize
+        return scrollSizes
     }
 
     private fun getElementPositions(): Map<String, Coords> {
