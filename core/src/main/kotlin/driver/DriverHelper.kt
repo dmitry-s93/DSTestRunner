@@ -71,4 +71,19 @@ class DriverHelper {
         }
         return coords
     }
+
+    fun reduceAreaByPercent(coords: Coords?, percent: Byte): Coords? {
+        if (coords == null)
+            return null
+
+        val reduceWidthPx = (coords.width * percent * 0.01).toInt()
+        val reduceHeightPx = (coords.height * percent * 0.01).toInt()
+
+        val x = coords.x + (reduceWidthPx / 2)
+        val y = coords.y + (reduceHeightPx / 2)
+        val width = coords.width - reduceWidthPx
+        val height = coords.height - reduceHeightPx
+
+        return Coords(x, y, width, height)
+    }
 }
