@@ -164,6 +164,7 @@ class CheckLoadPageAction(private val page: Page) : ActionReturn(), Action {
          *
          * [locatorArguments] -  arguments to Substitute in the Locator String.
          */
+        @Deprecated("Use an Element class object instead of a string")
         fun elementScreenshot(elementName: String, vararg locatorArguments: String) {
             val arguments: MutableList<String> = mutableListOf()
             locatorArguments.forEach {
@@ -179,6 +180,7 @@ class CheckLoadPageAction(private val page: Page) : ActionReturn(), Action {
          *
          * [locatorArguments] -  arguments to Substitute in the Locator String.
          */
+        @Deprecated("Use an Element class object instead of a string")
         fun ignoreElement(elementName: String, vararg locatorArguments: String) {
             val arguments: MutableList<String> = mutableListOf()
             locatorArguments.forEach {
