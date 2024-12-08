@@ -214,7 +214,8 @@ class AndroidAppiumDriver : Driver {
 
     private fun getLongScreenshot(ignoredElements: Set<Locator>, ignoredRectangles: Set<Rectangle>, screenshotAreas: Set<Locator>): Screenshot {
         val pauseAtExtremePoints: Long = 250
-        val scrollableArea = getScrollableArea() ?: return getSingleScreenshot(ignoredElements, ignoredRectangles, screenshotAreas)
+        val scrollableArea = DriverHelper().reduceAreaByPercent(getScrollableArea(), percent = 10)
+            ?: return getSingleScreenshot(ignoredElements, ignoredRectangles, screenshotAreas)
         scrollToTop()
         Thread.sleep(pauseAtExtremePoints)
 
@@ -246,9 +247,11 @@ class AndroidAppiumDriver : Driver {
             Thread.sleep(pauseAtExtremePoints)
             val y = scrollableArea.y + scrollableArea.height
             val height = viewportArea.y + viewportArea.height - y
-            originShift = Coords(viewportArea.x, y, viewportArea.width, height)
-            bufferedImageList.add(takeScreenshot(originShift))
-            ignoredAreas.addAll(getIgnoredAreas(ignoredElements, originShift, imageHeight))
+            if (height > 0) {
+                originShift = Coords(viewportArea.x, y, viewportArea.width, height)
+                bufferedImageList.add(takeScreenshot(originShift))
+                ignoredAreas.addAll(getIgnoredAreas(ignoredElements, originShift, imageHeight))
+            }
         }
 
         var bufferedImage = ImageUtils().concatImageList(bufferedImageList)
@@ -433,7 +436,7 @@ class AndroidAppiumDriver : Driver {
     }
 
     private fun scroll(direction: Direction): Boolean {
-        val scrollableArea = getScrollableArea() ?: return false
+        val scrollableArea = DriverHelper().reduceAreaByPercent(getScrollableArea(), percent = 50) ?: return false
 
         val centerX = (scrollableArea.width / 2) + scrollableArea.x
         val startY: Int
@@ -509,15 +512,12 @@ class AndroidAppiumDriver : Driver {
             }
         }
 
-        val location = scrollable.location
-        val size = scrollable.size
-
-        val x = location.x
-        val y = location.y + (size.height / 4)
-        val width = size.width
-        val height = size.height / 2
-
-        return Coords(x, y, width, height)
+        return Coords(
+            scrollable.location.x,
+            scrollable.location.y,
+            scrollable.size.width,
+            scrollable.size.height
+        )
     }
 
     override fun setValue(locator: Locator, value: String, sequenceMode: Boolean, hideKeyboard: Boolean) {

@@ -215,7 +215,8 @@ class IOSAppiumDriver : Driver {
 
     private fun getLongScreenshot(ignoredElements: Set<Locator>, ignoredRectangles: Set<Rectangle>, screenshotAreas: Set<Locator>): Screenshot {
         val pauseAtExtremePoints: Long = 250
-        val scrollableArea = getScrollableArea(screenScale) ?: return getSingleScreenshot(ignoredElements, ignoredRectangles, screenshotAreas)
+        val scrollableArea = DriverHelper().reduceAreaByPercent(getScrollableArea(screenScale), percent = 10)
+            ?: return getSingleScreenshot(ignoredElements, ignoredRectangles, screenshotAreas)
         scrollToTop()
         Thread.sleep(pauseAtExtremePoints)
 
@@ -247,9 +248,11 @@ class IOSAppiumDriver : Driver {
             Thread.sleep(pauseAtExtremePoints)
             val y = scrollableArea.y + scrollableArea.height
             val height = viewportArea.y + viewportArea.height - y
-            originShift = Coords(viewportArea.x, y, viewportArea.width, height)
-            bufferedImageList.add(takeScreenshot(originShift))
-            ignoredAreas.addAll(getElementCoordinates(ignoredElements, originShift, imageHeight))
+            if (height > 0) {
+                originShift = Coords(viewportArea.x, y, viewportArea.width, height)
+                bufferedImageList.add(takeScreenshot(originShift))
+                ignoredAreas.addAll(getElementCoordinates(ignoredElements, originShift, imageHeight))
+            }
         }
 
         var bufferedImage = ImageUtils().concatImageList(bufferedImageList)
@@ -304,7 +307,7 @@ class IOSAppiumDriver : Driver {
     }
 
     private fun getElementCoordinates(locators: Set<Locator>, originShift: Coords? = null, yOffset: Int = 0): Set<Coords> {
-        val ignoredAreas: HashSet<Coords> = HashSet()
+        val coordinates: HashSet<Coords> = HashSet()
         var originShiftX = 0
         var originShiftY = 0
         if (originShift != null) {
@@ -322,12 +325,12 @@ class IOSAppiumDriver : Driver {
                         val y = elementLocation.y * screenScale - originShiftY + yOffset
                         val width = elementSize.width * screenScale
                         val height = elementSize.height * screenScale
-                        ignoredAreas.add(Coords(x, y, width, height))
+                        coordinates.add(Coords(x, y, width, height))
                     }
                 }
             }
         }
-        return ignoredAreas
+        return coordinates
     }
 
     override fun setValue(locator: Locator, value: String, sequenceMode: Boolean, hideKeyboard: Boolean) {
@@ -665,7 +668,7 @@ class IOSAppiumDriver : Driver {
     }
 
     private fun scroll(direction: Direction): Boolean {
-        val scrollableArea = getScrollableArea() ?: return false
+        val scrollableArea = DriverHelper().reduceAreaByPercent(getScrollableArea(), percent = 50) ?: return false
 
         val centerX = (scrollableArea.width / 2) + scrollableArea.x
         val startY: Int
@@ -690,6 +693,21 @@ class IOSAppiumDriver : Driver {
     }
 
     private fun getScrollSize(elementCoords1: Map<String, Coords>, elementCoords2: Map<String, Coords>): Int {
+        val scrollSizes = getScrollSizes(elementCoords1, elementCoords2)
+
+        var scrollSize = 0
+        var maxCount = 0
+        scrollSizes.forEach {
+            if (it.key != 0 && it.value > maxCount) {
+                scrollSize = it.key
+                maxCount = it.value
+            }
+        }
+
+        return scrollSize
+    }
+
+    private fun getScrollSizes(elementCoords1: Map<String, Coords>, elementCoords2: Map<String, Coords>): HashMap<Int, Int> {
         val scrollSizes = HashMap<Int, Int>()
 
         elementCoords1.forEach {
@@ -707,16 +725,7 @@ class IOSAppiumDriver : Driver {
             }
         }
 
-        var scrollSize = 0
-        var maxCount = 0
-        scrollSizes.forEach {
-            if (it.key != 0 && it.value > maxCount) {
-                scrollSize = it.key
-                maxCount = it.value
-            }
-        }
-
-        return scrollSize
+        return scrollSizes
     }
 
     private fun getElementPositions(): Map<String, Coords> {
@@ -804,9 +813,9 @@ class IOSAppiumDriver : Driver {
         val size = scrollable.size
 
         val x = location.x * scale
-        val y = location.y + (size.height / 4) * scale
+        val y = location.y * scale
         val width = size.width * scale
-        val height = size.height / 2 * scale
+        val height = size.height * scale
 
         return Coords(x, y, width, height)
     }
