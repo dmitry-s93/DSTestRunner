@@ -215,7 +215,7 @@ class IOSAppiumDriver : Driver {
 
     private fun getLongScreenshot(ignoredElements: Set<Locator>, ignoredRectangles: Set<Rectangle>, screenshotAreas: Set<Locator>): Screenshot {
         val pauseAtExtremePoints: Long = 250
-        val scrollableArea = DriverHelper().reduceAreaByPercent(getScrollableArea(screenScale), percent = 10)
+        val scrollableArea = DriverHelper().changeAreaSize(getScrollableArea(screenScale), coefficient = 0.7)
             ?: return getSingleScreenshot(ignoredElements, ignoredRectangles, screenshotAreas)
         scrollToTop()
         Thread.sleep(pauseAtExtremePoints)
@@ -236,7 +236,7 @@ class IOSAppiumDriver : Driver {
                 break
             val scrollSize = getScrollSize(elementPositionsBefore, getElementPositions()) * screenScale
             if (scrollSize > 0) {
-                val y = scrollableArea.y + scrollableArea.height - scrollSize
+                val y = originShift.y + originShift.height - scrollSize
                 originShift = Coords(viewportArea.x, y, viewportArea.width, scrollSize)
                 bufferedImageList.add(takeScreenshot(originShift))
                 ignoredAreas.addAll(getElementCoordinates(ignoredElements, originShift, imageHeight))
@@ -246,7 +246,7 @@ class IOSAppiumDriver : Driver {
 
         if (imageHeight < maxImageHeight) {
             Thread.sleep(pauseAtExtremePoints)
-            val y = scrollableArea.y + scrollableArea.height
+            val y = originShift.y + originShift.height
             val height = viewportArea.y + viewportArea.height - y
             if (height > 0) {
                 originShift = Coords(viewportArea.x, y, viewportArea.width, height)
@@ -668,7 +668,7 @@ class IOSAppiumDriver : Driver {
     }
 
     private fun scroll(direction: Direction): Boolean {
-        val scrollableArea = DriverHelper().reduceAreaByPercent(getScrollableArea(), percent = 50) ?: return false
+        val scrollableArea = DriverHelper().changeAreaSize(getScrollableArea(), coefficient = 0.5) ?: return false
 
         val centerX = (scrollableArea.width / 2) + scrollableArea.x
         val startY: Int
