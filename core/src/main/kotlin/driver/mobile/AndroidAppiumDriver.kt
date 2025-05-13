@@ -29,6 +29,7 @@ import driver.mobile.device.DeviceFactory
 import driver.mobile.device.NoDeviceException
 import io.appium.java_client.AppiumBy.ByAccessibilityId
 import io.appium.java_client.AppiumBy.ByAndroidUIAutomator
+import io.appium.java_client.AppiumDriver
 import io.appium.java_client.Location
 import io.appium.java_client.android.AndroidDriver
 import logger.Logger
@@ -763,5 +764,9 @@ class AndroidAppiumDriver : Driver {
             if (device != null)
                 DeviceFactory.returnDevice(device!!)
         }
+    }
+
+    override fun getMobileDriver(): AppiumDriver {
+        return driver
     }
 }

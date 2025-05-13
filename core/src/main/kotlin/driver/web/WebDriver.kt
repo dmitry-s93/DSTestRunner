@@ -455,4 +455,8 @@ class WebDriver : Driver {
     override fun quit() {
         driver.quit()
     }
+
+    override fun getWebDriver(): WebDriver {
+        return driver
+    }
 }

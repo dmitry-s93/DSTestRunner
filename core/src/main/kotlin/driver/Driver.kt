@@ -17,7 +17,9 @@ package driver
 
 import action.actions.TouchAction
 import action.helper.Direction
+import io.appium.java_client.AppiumDriver
 import io.appium.java_client.Location
+import org.openqa.selenium.WebDriver
 import pazone.ashot.Screenshot
 import test.element.Locator
 import java.awt.Rectangle
@@ -46,6 +48,10 @@ interface Driver {
     fun quit()
 
     // Web only
+    fun getWebDriver(): WebDriver {
+        throw NotImplementedError(notImplementedMessage)
+    }
+
     fun setPage(url: String) {
         throw NotImplementedError(notImplementedMessage)
     }
@@ -75,6 +81,10 @@ interface Driver {
     }
 
     // Mobile only
+    fun getMobileDriver(): AppiumDriver {
+        throw NotImplementedError(notImplementedMessage)
+    }
+
     fun swipeElement(locator: Locator, direction: Direction) {
         throw NotImplementedError(notImplementedMessage)
     }
