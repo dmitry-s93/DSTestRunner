@@ -28,6 +28,7 @@ import driver.mobile.device.Device
 import driver.mobile.device.DeviceFactory
 import driver.mobile.device.NoDeviceException
 import io.appium.java_client.AppiumBy
+import io.appium.java_client.AppiumDriver
 import io.appium.java_client.Location
 import io.appium.java_client.ios.IOSDriver
 import org.awaitility.Awaitility
@@ -818,5 +819,9 @@ class IOSAppiumDriver : Driver {
         val height = size.height * scale
 
         return Coords(x, y, width, height)
+    }
+
+    override fun getMobileDriver(): AppiumDriver {
+        return driver
     }
 }
