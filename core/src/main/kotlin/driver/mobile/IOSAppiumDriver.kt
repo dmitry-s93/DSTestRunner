@@ -268,7 +268,7 @@ class IOSAppiumDriver : Driver {
 
     private fun isPageScrollable(): Boolean {
         val pageSource = getPageSource()
-        val scrollableElementXpath = "//*[self::XCUIElementTypeScrollView or self::XCUIElementTypeTable]"
+        val scrollableElementXpath = "//*[self::XCUIElementTypeScrollView or self::XCUIElementTypeCollectionView or self::XCUIElementTypeTable]"
         val nodes = DriverHelper().getNodesByXpath(pageSource, scrollableElementXpath)
         for (i in 0 until nodes.length) {
             val scrollableElement = nodes.item(i) as Element
@@ -797,7 +797,7 @@ class IOSAppiumDriver : Driver {
 
     private fun getScrollableArea(scale: Int = 1): Coords? {
         val scrollableElements = driver.findElements(
-            AppiumBy.iOSNsPredicateString("type == 'XCUIElementTypeScrollView' OR type == 'XCUIElementTypeTable'")
+            AppiumBy.iOSNsPredicateString("type == 'XCUIElementTypeScrollView' or type == 'XCUIElementTypeCollectionView' OR type == 'XCUIElementTypeTable'")
         )
         if (scrollableElements.isEmpty())
             return null
