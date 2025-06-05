@@ -622,7 +622,10 @@ class IOSAppiumDriver : Driver {
             if (getScrollSize(elementPositionsBefore, getElementPositions()) == 0) {
                 direction = when(direction) {
                     Direction.UP -> break
-                    Direction.DOWN -> Direction.UP
+                    Direction.DOWN -> {
+                        swipeCount = 0
+                        Direction.UP
+                    }
                     else -> break
                 }
             }
