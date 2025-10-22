@@ -772,4 +772,16 @@ class AndroidAppiumDriver : Driver {
     override fun getMobileDriver(): AppiumDriver {
         return driver
     }
+
+    override fun disableDataConnection() {
+        if (driver.getConnection().isDataEnabled) {
+            driver.toggleData()
+        }
+    }
+
+    override fun enableDataConnection() {
+        if (!driver.getConnection().isDataEnabled) {
+            driver.toggleData()
+        }
+    }
 }

@@ -38,3 +38,5 @@
 | checkAlertText                                | Checks the alert text                                                                                              |  ❌  |    ✅    |  ✅  |
 | acceptAlert                                   | Accepts an alert                                                                                                   |  ❌  |    ✅    |  ✅  |
 | dismissAlert                                  | Dismisses an alert                                                                                                 |  ❌  |    ✅    |  ✅  |
+| disableDataConnection                         | Disables data connection                                                                                           |  ❌  |    ✅    |  ❌  |
+| enableDataConnection                          | Enables data connection                                                                                            |  ❌  |    ✅    |  ❌  |
