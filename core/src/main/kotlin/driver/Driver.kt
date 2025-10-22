@@ -132,4 +132,12 @@ interface Driver {
     fun dismissAlert(buttonLabel: String? = null) {
         throw NotImplementedError(notImplementedMessage)
     }
+
+    fun disableDataConnection() {
+        throw NotImplementedError(notImplementedMessage)
+    }
+
+    fun enableDataConnection() {
+        throw NotImplementedError(notImplementedMessage)
+    }
 }
