@@ -57,6 +57,7 @@ import java.net.URL
 import java.time.Duration
 import java.util.*
 import javax.imageio.ImageIO
+import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -230,15 +231,26 @@ class AndroidAppiumDriver : Driver {
         ignoredAreas.addAll(getIgnoredAreas(ignoredElements, originShift))
         ignoredAreas.addAll(DriverHelper().rectanglesToCoords(ignoredRectangles))
 
+        fun adjustScrollSize(scrollSize: Int, recognizedScrollSize: Int, maxDiff: Int): Int {
+            if (scrollSize != recognizedScrollSize && abs(scrollSize - recognizedScrollSize) <= maxDiff) {
+                return recognizedScrollSize
+            }
+            return scrollSize
+        }
+
         do {
             val elementPositionsBefore = getElementPositions()
             if (!scroll(Direction.UP))
                 break
-            val scrollSize = getScrollSize(elementPositionsBefore, getElementPositions(), Direction.UP)
+            var scrollSize = getScrollSize(elementPositionsBefore, getElementPositions(), Direction.UP)
             if (scrollSize > 0) {
+                val currentImage = takeScreenshot()
+                val recognizedScrollSize = ImageUtils().recognizeScrollSize(currentImage, bufferedImageList.last(), originShift.y, ignoredRectangles)
+                scrollSize = adjustScrollSize(scrollSize, recognizedScrollSize, 20)
+
                 val y = originShift.y + originShift.height - scrollSize
                 originShift = Coords(viewportArea.x, y, viewportArea.width, scrollSize)
-                bufferedImageList.add(takeScreenshot(originShift))
+                bufferedImageList.add(cropImage(currentImage, originShift))
                 ignoredAreas.addAll(getIgnoredAreas(ignoredElements, originShift, imageHeight))
                 imageHeight += scrollSize
             }
@@ -265,9 +277,12 @@ class AndroidAppiumDriver : Driver {
         return screenshot
     }
 
-    private fun takeScreenshot(area: Coords): BufferedImage {
+    private fun takeScreenshot(area: Coords? = null): BufferedImage {
         val inputStream = ByteArrayInputStream(driver.getScreenshotAs(OutputType.BYTES))
-        return cropImage(ImageIO.read(inputStream), area)
+        if (area != null) {
+            return cropImage(ImageIO.read(inputStream), area)
+        }
+        return ImageIO.read(inputStream)
     }
 
     private fun cropImage(image: BufferedImage, coords: Coords): BufferedImage {
