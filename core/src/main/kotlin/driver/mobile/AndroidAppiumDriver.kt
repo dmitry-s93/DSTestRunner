@@ -133,7 +133,7 @@ class AndroidAppiumDriver : Driver {
         }
     }
 
-    override fun checkLoadPage(url: String?, identifier: Locator?): Boolean {
+    override fun checkLoadPage(url: String?, identifier: Locator?, skipPreloaderCheck: Boolean): Boolean {
         var scrollToFind = false
         return try {
             Awaitility.await()
@@ -146,7 +146,7 @@ class AndroidAppiumDriver : Driver {
                         scrollToFind = true
                 }
                 .until {
-                    !isPreloaderDisplayed() && (identifier == null || getWebElements(identifier, scrollToFind).isNotEmpty())
+                    (skipPreloaderCheck || !isPreloaderDisplayed()) && (identifier == null || getWebElements(identifier, scrollToFind).isNotEmpty())
                 }
             true
         } catch (e: ConditionTimeoutException) {
