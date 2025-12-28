@@ -102,7 +102,7 @@ class WebDriver : Driver {
         }
     }
 
-    override fun checkLoadPage(url: String?, identifier: Locator?): Boolean {
+    override fun checkLoadPage(url: String?, identifier: Locator?, skipPreloaderCheck: Boolean): Boolean {
         return try {
             await()
                 .ignoreException(StaleElementReferenceException::class.java)
@@ -110,7 +110,7 @@ class WebDriver : Driver {
                 .pollDelay(Duration.ofMillis(poolDelay))
                 .atMost(Duration.ofMillis(pageLoadTimeout))
                 .until {
-                    (url == null || getCurrentUrl().startsWith(url)) && (identifier == null || getWebElements(identifier, false).isNotEmpty()) && !isPreloaderDisplayed()
+                    (url == null || getCurrentUrl().startsWith(url)) && (identifier == null || getWebElements(identifier, false).isNotEmpty()) && (skipPreloaderCheck || !isPreloaderDisplayed())
                 }
             true
         } catch (e: ConditionTimeoutException) {

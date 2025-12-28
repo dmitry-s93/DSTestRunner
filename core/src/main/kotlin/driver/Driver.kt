@@ -29,7 +29,7 @@ private const val notImplementedMessage = "Method not implemented for this drive
 interface Driver {
     fun getElementTimeout(): Long
     fun click(locator: Locator, scrollToFindElement: Boolean? = null)
-    fun checkLoadPage(url: String?, identifier: Locator?): Boolean
+    fun checkLoadPage(url: String?, identifier: Locator?, skipPreloaderCheck: Boolean = false): Boolean
     fun getElementValue(locator: Locator, scrollToFindElement: Boolean? = null): String
     fun getScreenshot(
         longScreenshot: Boolean = false,

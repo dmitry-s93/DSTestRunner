@@ -138,7 +138,7 @@ class IOSAppiumDriver : Driver {
         }
     }
 
-    override fun checkLoadPage(url: String?, identifier: Locator?): Boolean {
+    override fun checkLoadPage(url: String?, identifier: Locator?, skipPreloaderCheck: Boolean): Boolean {
         var scrollToFind = false
         return try {
             Awaitility.await()
@@ -151,7 +151,7 @@ class IOSAppiumDriver : Driver {
                         scrollToFind = true
                 }
                 .until {
-                    !isPreloaderDisplayed() && (identifier == null || getWebElements(identifier, onlyDisplayed = false, scrollToFind).isNotEmpty())
+                    (skipPreloaderCheck || !isPreloaderDisplayed()) && (identifier == null || getWebElements(identifier, onlyDisplayed = false, scrollToFind).isNotEmpty())
                 }
             true
         } catch (e: ConditionTimeoutException) {
