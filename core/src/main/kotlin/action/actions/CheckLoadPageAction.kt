@@ -35,6 +35,7 @@ class CheckLoadPageAction(private val page: Page) : ActionReturn(), Action {
     private val ignoredRectangles: MutableSet<Rectangle> = HashSet()
     private var screenshotAreas: MutableSet<Locator> = HashSet()
     private var takeScreenshotClass: TakeScreenshot? = null
+    private var skipPreloaderCheck: Boolean = false
 
     override fun getName(): String {
         return Localization.get("CheckLoadPageAction.DefaultName", pageName)
@@ -48,7 +49,7 @@ class CheckLoadPageAction(private val page: Page) : ActionReturn(), Action {
                 if (pageUrl.isNullOrEmpty())
                     return broke(Localization.get("General.PageUrlNotSpecified"))
             }
-            if (!DriverSession.getSession().checkLoadPage(pageUrl, page.pageData.identifier)) {
+            if (!DriverSession.getSession().checkLoadPage(pageUrl, page.pageData.identifier, skipPreloaderCheck)) {
                 if (!pageUrl.isNullOrEmpty() && !DriverSession.getSession().getCurrentUrl().startsWith(pageUrl.toString()))
                     return fail(Localization.get("CheckLoadPageAction.UrlDoesNotMatch"))
                 return fail(Localization.get("CheckLoadPageAction.PageDidNotLoad"))
@@ -233,6 +234,13 @@ class CheckLoadPageAction(private val page: Page) : ActionReturn(), Action {
             }
             ignoredElementLocators.add(element.locator.withReplaceArgs(*arguments.toTypedArray()))
         }
+    }
+
+    /**
+     * Skips preloader check when checking page loading
+     */
+    fun skipPreloaderCheck() {
+        skipPreloaderCheck = true
     }
 }
 
