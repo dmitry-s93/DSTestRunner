@@ -315,9 +315,9 @@ class IOSAppiumDriver : Driver {
         var height = coords.height
 
         if (x + width > image.width)
-            width = image.width
+            width = image.width - x
         if (y + height > image.height)
-            height = image.height
+            height = image.height - y
 
         return image.getSubimage(x, y, width, height)
     }
@@ -439,18 +439,18 @@ class IOSAppiumDriver : Driver {
         when (direction) {
             Direction.UP -> {
                 endX = elementCenter.x
-                endY = viewportArea.y
+                endY = viewportArea.y / screenScale
             }
             Direction.DOWN -> {
                 endX = elementCenter.x
-                endY = viewportArea.y + viewportArea.height
+                endY = (viewportArea.y + viewportArea.height) / screenScale
             }
             Direction.LEFT -> {
-                endX = viewportArea.x
+                endX = viewportArea.x / screenScale
                 endY = elementCenter.y
             }
             Direction.RIGHT -> {
-                endX = viewportArea.x + viewportArea.width
+                endX = (viewportArea.x + viewportArea.width) / screenScale
                 endY = elementCenter.y
             }
         }
@@ -461,7 +461,7 @@ class IOSAppiumDriver : Driver {
         if (appPath.isNullOrEmpty())
             driver.installApp(device?.capabilities?.getCapability("appium:app").toString())
         else
-        driver.installApp(appPath)
+            driver.installApp(appPath)
     }
 
     override fun activateApp(bundleId: String?) {
@@ -817,19 +817,36 @@ class IOSAppiumDriver : Driver {
         val scrollableElements = driver.findElements(
             AppiumBy.iOSNsPredicateString("type == 'XCUIElementTypeScrollView' or type == 'XCUIElementTypeCollectionView' OR type == 'XCUIElementTypeTable'")
         )
-        if (scrollableElements.isEmpty())
-            return null
-        var scrollable = scrollableElements[0]
 
-        if (scrollableElements.size > 1) {
-            for (i in 1..<scrollableElements.size) {
-                if (scrollableElements[i].size.height > scrollable.size.height)
-                    scrollable = scrollableElements[i]
+        val screenHeight = (viewportArea.y + viewportArea.height) / screenScale * scale
+        var scrollableElement: WebElement? = null
+
+        scrollableElements.forEach { element ->
+            val elementY = element.location.y * scale
+            var elementHeight = element.size.height
+            var scrollableElementHeight = scrollableElement?.size?.height ?: 0
+
+            if (scrollableElement != null) {
+                val invisibleHeight1 = elementY + elementHeight - screenHeight
+                val invisibleHeight2 = scrollableElement.location.y + scrollableElementHeight - screenHeight
+
+                if (invisibleHeight1 > 0)
+                    elementHeight -= invisibleHeight1
+
+                if (invisibleHeight2 > 0)
+                    scrollableElementHeight -= invisibleHeight2
+            }
+
+            if (elementY < screenHeight && (scrollableElement == null || elementHeight > scrollableElementHeight)) {
+                scrollableElement = element
             }
         }
 
-        val location = scrollable.location
-        val size = scrollable.size
+        if (scrollableElement == null)
+            return null
+
+        val location = scrollableElement.location
+        val size = scrollableElement.size
 
         val x = location.x * scale
         val y = location.y * scale
