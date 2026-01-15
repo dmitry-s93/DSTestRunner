@@ -172,8 +172,8 @@ class WebDriver : Driver {
         return driver.currentUrl
     }
 
-    override fun getElementValue(locator: Locator, scrollToFindElement: Boolean?): String {
-        var value: String? = ""
+    override fun getElementValue(locator: Locator, scrollToFindElement: Boolean?, attributeName: String?): String {
+        var value = ""
         DriverHelper().handleStaleElementReferenceException("getElementValue", numberOfAttempts) {
             val element =
                 if (scrollToFindElement != null) {
@@ -181,11 +181,15 @@ class WebDriver : Driver {
                 } else {
                     getWebElement(locator)
                 }
-            value = element.text
-            if (value.isNullOrEmpty())
-                value = element.getAttribute("value")
+            if (attributeName.isNullOrEmpty()) {
+                value = element.text
+                if (value.isEmpty())
+                    value = element.getAttribute("value")
+            } else {
+                value = element.getAttribute(attributeName)
+            }
         }
-        return value ?: ""
+        return value
     }
 
     override fun getScreenshot(

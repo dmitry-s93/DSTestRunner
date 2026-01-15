@@ -162,7 +162,7 @@ class AndroidAppiumDriver : Driver {
         return false
     }
 
-    override fun getElementValue(locator: Locator, scrollToFindElement: Boolean?): String {
+    override fun getElementValue(locator: Locator, scrollToFindElement: Boolean?, attributeName: String?): String {
         var value = ""
         DriverHelper().handleStaleElementReferenceException("getElementValue", numberOfAttempts) {
             val element =
@@ -171,7 +171,11 @@ class AndroidAppiumDriver : Driver {
                 } else {
                     getWebElement(locator)
                 }
-            value = element.text
+            if (attributeName.isNullOrEmpty()) {
+                value = element.text
+            } else {
+                value = element.getAttribute(attributeName)
+            }
         }
         return value
     }
