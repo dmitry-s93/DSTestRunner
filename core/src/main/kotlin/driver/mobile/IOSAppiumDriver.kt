@@ -342,7 +342,10 @@ class IOSAppiumDriver : Driver {
                     val elementSize = webElement.size
                     if ((elementLocation.y * screenScale) + (elementSize.height * screenScale) >= originShiftY) {
                         val x = elementLocation.x * screenScale - originShiftX
-                        val y = elementLocation.y * screenScale - originShiftY + yOffset
+                        var y = elementLocation.y * screenScale - originShiftY + yOffset
+                        if (y % screenScale != 0) {
+                            y = (y / screenScale + 1) * screenScale
+                        }
                         val width = elementSize.width * screenScale
                         val height = elementSize.height * screenScale
                         coordinates.add(Coords(x, y, width, height))
