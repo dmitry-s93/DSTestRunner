@@ -254,7 +254,7 @@ class AndroidAppiumDriver : Driver {
 
                 val y = originShift.y + originShift.height - scrollSize
                 originShift = Coords(viewportArea.x, y, viewportArea.width, scrollSize)
-                bufferedImageList.add(cropImage(currentImage, originShift))
+                bufferedImageList.add(ImageUtils().cropImage(currentImage, originShift))
                 ignoredAreas.addAll(getIgnoredAreas(ignoredElements, originShift, imageHeight))
                 imageHeight += scrollSize
             }
@@ -284,13 +284,9 @@ class AndroidAppiumDriver : Driver {
     private fun takeScreenshot(area: Coords? = null): BufferedImage {
         val inputStream = ByteArrayInputStream(driver.getScreenshotAs(OutputType.BYTES))
         if (area != null) {
-            return cropImage(ImageIO.read(inputStream), area)
+            return ImageUtils().cropImage(ImageIO.read(inputStream), area)
         }
         return ImageIO.read(inputStream)
-    }
-
-    private fun cropImage(image: BufferedImage, coords: Coords): BufferedImage {
-        return image.getSubimage(coords.x, coords.y, coords.width, coords.height)
     }
 
     private fun getIgnoredAreas(locators: Set<Locator>, originShift: Coords, yOffset: Int = 0): Set<Coords> {

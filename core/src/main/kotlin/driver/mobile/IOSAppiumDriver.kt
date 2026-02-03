@@ -255,7 +255,7 @@ class IOSAppiumDriver : Driver {
 
                 val y = originShift.y + originShift.height - scrollSize
                 originShift = Coords(viewportArea.x, y, viewportArea.width, scrollSize)
-                bufferedImageList.add(cropImage(currentImage, originShift))
+                bufferedImageList.add(ImageUtils().cropImage(currentImage, originShift))
                 ignoredAreas.addAll(getElementCoordinates(ignoredElements, originShift, imageHeight))
                 imageHeight += scrollSize
             }
@@ -307,23 +307,9 @@ class IOSAppiumDriver : Driver {
     private fun takeScreenshot(area: Coords? = null): BufferedImage {
         val inputStream = ByteArrayInputStream(driver.getScreenshotAs(OutputType.BYTES))
         if (area != null) {
-            return cropImage(ImageIO.read(inputStream), area)
+            return ImageUtils().cropImage(ImageIO.read(inputStream), area)
         }
         return ImageIO.read(inputStream)
-    }
-
-    private fun cropImage(image: BufferedImage, coords: Coords): BufferedImage {
-        val x = coords.x
-        val y = coords.y
-        var width = coords.width
-        var height = coords.height
-
-        if (x + width > image.width)
-            width = image.width - x
-        if (y + height > image.height)
-            height = image.height - y
-
-        return image.getSubimage(x, y, width, height)
     }
 
     private fun getElementCoordinates(locators: Set<Locator>, originShift: Coords? = null, yOffset: Int = 0): Set<Coords> {
@@ -342,7 +328,10 @@ class IOSAppiumDriver : Driver {
                     val elementSize = webElement.size
                     if ((elementLocation.y * screenScale) + (elementSize.height * screenScale) >= originShiftY) {
                         val x = elementLocation.x * screenScale - originShiftX
-                        val y = elementLocation.y * screenScale - originShiftY + yOffset
+                        var y = elementLocation.y * screenScale - originShiftY + yOffset
+                        if (y % screenScale != 0) {
+                            y = (y / screenScale + 1) * screenScale
+                        }
                         val width = elementSize.width * screenScale
                         val height = elementSize.height * screenScale
                         coordinates.add(Coords(x, y, width, height))

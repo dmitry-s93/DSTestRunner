@@ -16,6 +16,7 @@
 
 package utils
 
+import pazone.ashot.coordinates.Coords
 import java.awt.Rectangle
 import java.awt.image.BufferedImage
 import java.io.File
@@ -29,6 +30,20 @@ class ImageUtils {
     fun saveImage(bufferedImage: BufferedImage, output: File) {
         Files.createDirectories(output.toPath())
         ImageIO.write(bufferedImage, "png", output)
+    }
+
+    fun cropImage(image: BufferedImage, coords: Coords): BufferedImage {
+        val x = coords.x
+        val y = coords.y
+        var width = coords.width
+        var height = coords.height
+
+        if (x + width > image.width)
+            width = image.width - x
+        if (y + height > image.height)
+            height = image.height - y
+
+        return image.getSubimage(x, y, width, height)
     }
 
     fun concatImageList(imageList: LinkedList<BufferedImage>): BufferedImage {
