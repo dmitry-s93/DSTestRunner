@@ -122,13 +122,15 @@ class ImageComparison(stepId: String, private val testId: String, parentId: Stri
 
     private fun compareImages() {
         if (templateImage != null) {
+            val expandedIgnoredAreas = expandAreas(ignoredAreas, ScreenshotConfig.expandIgnoredAreasByPixels)
+
             val templateScreenshot = Screenshot(templateImage)
             templateScreenshot.coordsToCompare = coordsToCompare
-            templateScreenshot.ignoredAreas = ignoredAreas
+            templateScreenshot.ignoredAreas = expandedIgnoredAreas
 
             val currentScreenshot = Screenshot(currentImage)
             currentScreenshot.coordsToCompare = coordsToCompare
-            currentScreenshot.ignoredAreas = ignoredAreas
+            currentScreenshot.ignoredAreas = expandedIgnoredAreas
 
             val imageDiff = ImageDiffer().makeDiff(templateScreenshot, currentScreenshot)
             if (imageDiff.hasDiff() && imageDiff.diffSize > ScreenshotConfig.allowableDifference) {
@@ -136,6 +138,22 @@ class ImageComparison(stepId: String, private val testId: String, parentId: Stri
                 ImageUtils().saveImage(markedImage!!, Paths.get(currentScreenshotDir, markedImageRelativePath).toFile())
             }
         }
+    }
+
+    private fun expandAreas(areas: Set<Coords>, expandByPixels: Int): Set<Coords> {
+        val resultAreas: MutableSet<Coords> = HashSet()
+        if (expandByPixels > 0) {
+            areas.forEach { area ->
+                val x = area.x - expandByPixels
+                val y = area.y - expandByPixels
+                val width = area.width + (expandByPixels * 2)
+                val height = area.height + (expandByPixels * 2)
+                resultAreas.add(Coords(x, y, width, height))
+            }
+        } else {
+            resultAreas.addAll(areas)
+        }
+        return resultAreas
     }
 
     private fun markIgnoredAreas(image: BufferedImage, ignoredAreas: Set<Coords>) {

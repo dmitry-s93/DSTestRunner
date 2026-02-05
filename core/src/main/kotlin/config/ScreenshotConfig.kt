@@ -37,6 +37,8 @@ class ScreenshotConfig {
             private set
         var executeJavaScriptAfterScreenshot: String? = null
             private set
+        var expandIgnoredAreasByPixels: Int = 0
+            private set
 
         @Synchronized
         fun load(config: JSONObject) {
@@ -64,6 +66,8 @@ class ScreenshotConfig {
                         val jsFile = screenshotConfig.getString("executeJavaScriptAfterScreenshot")
                         executeJavaScriptAfterScreenshot = ResourceUtils().getResourceByName(jsFile)
                     }
+                    if (screenshotConfig.has("expandIgnoredAreasByPixels"))
+                        expandIgnoredAreasByPixels = screenshotConfig.getInt("expandIgnoredAreasByPixels")
                 }
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", "ScreenshotConfig")
