@@ -46,9 +46,17 @@ class ReporterSession {
         }
 
         fun closeSession() {
-            if (reporterSessions.get() != null) {
-                reporterSessions.get().forEach { session ->
-                    session.quit()
+            val sessions = reporterSessions.get()
+            if (sessions != null) {
+                sessions.forEach { session ->
+                    try {
+                        session.quit()
+                    } catch (e: Exception) {
+                        Logger.error(
+                            "Failed to close reporter session for '${session.javaClass.name}'",
+                            "closeSession"
+                        )
+                    }
                 }
                 reporterSessions.set(null)
             } else {
