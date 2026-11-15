@@ -15,12 +15,14 @@
 
 package reporter.database
 
-import config.MainConfig
+import config.reporter.DatabaseReporterConfig
+import kotlinx.datetime.Clock
 import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.selectAll
 import storage.SessionParametersStorage
+import java.util.UUID
 
 class DatabaseReporterUtils {
     fun connectDatabase(url: String, driver: String, user: String, password: String) {
@@ -32,42 +34,36 @@ class DatabaseReporterUtils {
         )
     }
 
-    fun getProjectId(projectName: String): Long {
-        val project = ProjectsTable.select(ProjectsTable.idRow).where(ProjectsTable.nameRow eq projectName).singleOrNull()
-        if (project != null)
-            return project[ProjectsTable.idRow]
-        return createProject(projectName)
-    }
-
-    private fun createProject(projectName: String): Long {
-        return ProjectsTable.insert {
-            it[nameRow] = projectName
-        } get ProjectsTable.idRow
-    }
-
-    fun createSchema() {
-        SchemaUtils.create(
-            ProjectsTable,
-            LaunchesTable,
-            TestsTable,
-            StepsTable,
-            StepParametersTable,
-            ErrorImagesTable,
-            ImageComparisonInfoTable
-        )
-    }
-
-    @Synchronized
-    fun createSession(projectId: Long) {
-        val session = LaunchesTable.select(LaunchesTable.idRow).where(LaunchesTable.idRow eq MainConfig.sessionId)
+    /**
+     * Verifies that the project referenced by the runner exists.
+     * Projects are created in the report application only, so a missing project is an error.
+     */
+    fun resolveProjectId(projectId: UUID): UUID {
+        val project = ProjectsTable.selectAll()
+            .where(ProjectsTable.idRow eq projectId)
             .singleOrNull()
-        if (session == null) {
-            LaunchesTable.insert {
-                it[idRow] = MainConfig.sessionId
-                it[projectIdRow] = projectId
-                it[threadsRow] = SessionParametersStorage.threadCount
-                it[testsRow] = SessionParametersStorage.testCount
-            }
+            ?: throw IllegalStateException("Project not found: $projectId")
+        return project[ProjectsTable.idRow]
+    }
+
+    /**
+     * Registers the run for the current session and exposes its identifier to the reporters.
+     */
+    @Synchronized
+    fun createSession(projectId: UUID) {
+        val now = Clock.System.now()
+        val runId = UUID.randomUUID()
+        RunsTable.insert {
+            it[idRow] = runId
+            it[projectIdRow] = projectId
+            it[startedAtRow] = now
+            it[finishedAtRow] = null
+            it[threadsRow] = SessionParametersStorage.threadCount
+            it[testsRow] = SessionParametersStorage.testCount
+            it[versionRow] = 1
+            it[createdAtRow] = now
+            it[updatedAtRow] = now
         }
+        DatabaseReporterConfig.runId = runId
     }
 }

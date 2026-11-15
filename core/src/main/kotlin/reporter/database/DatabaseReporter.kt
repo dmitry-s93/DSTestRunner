@@ -17,7 +17,6 @@ package reporter.database
 
 import action.ActionResult
 import action.ImageComparisonData
-import config.MainConfig
 import config.reporter.DatabaseReporterConfig
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -25,12 +24,14 @@ import kotlinx.datetime.Instant.Companion.fromEpochMilliseconds
 import logger.Logger
 import org.apache.commons.lang3.StringUtils
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.VarCharColumnType
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import reporter.Reporter
 import java.io.ByteArrayOutputStream
+import java.util.UUID
 import javax.imageio.ImageIO
 
 
@@ -40,8 +41,8 @@ class DatabaseReporter : Reporter {
     private lateinit var testName: String
     private lateinit var testStartTime: Instant
 
-    private var dbProjectId: Long? = DatabaseReporterConfig.projectId
-    private var dbTestId: Long? = null
+    private var dbProjectId: UUID? = DatabaseReporterConfig.projectId
+    private var dbTestId: UUID? = null
 
     private val steps: LinkedHashMap<String, LinkedHashMap<String, Step>> = LinkedHashMap()
 
@@ -60,13 +61,19 @@ class DatabaseReporter : Reporter {
         this.testStartTime = Clock.System.now()
 
         transaction {
-            dbTestId = TestsTable.insert { table ->
+            val generatedTestId = UUID.randomUUID()
+            // The test row is created before the steps are known, so its end time is a placeholder
+            // until the session is closed.
+            TestsTable.insert { table ->
+                table[idRow] = generatedTestId
                 table[projectIdRow] = dbProjectId!!
-                table[launchIdRow] = MainConfig.sessionId
-                table[identifierRow] = testId
+                table[runIdRow] = DatabaseReporterConfig.runId!!
+                table[identifierRow] = truncateString(testId, identifierRow)
                 table[nameRow] = truncateString(testName, nameRow)
                 table[startTimeRow] = testStartTime
-            } get TestsTable.idRow
+                table[endTimeRow] = testStartTime
+            }
+            dbTestId = generatedTestId
         }
     }
 
@@ -112,33 +119,42 @@ class DatabaseReporter : Reporter {
         }
     }
 
-    private fun saveSteps(id: String, parentStepId: Long? = null) {
+    /**
+     * Writes all direct children of the step identified by [id] and returns the worst status among
+     * the written steps, or null when the step has no children.
+     */
+    private fun saveSteps(id: String, parentStepId: UUID? = null): String? {
+        var worstStatus: String? = null
+
         steps[id]?.forEach { stepItem ->
             val step = stepItem.value
+            val stepId = UUID.randomUUID()
+            val isContainer = steps.containsKey(stepItem.key)
+            val screenshotMismatch = step.imageComparisonData?.markedImagePath != null
 
-            val stepId = StepsTable.insert { table ->
+            // TODO(temporary): screenshot mismatch is reported as BROKEN by ImageComparison;
+            // remap to FAILED until the runner reports FAILED directly.
+            val status = if (screenshotMismatch) DB_STATUS_FAILED else step.result.getStatus().name
+
+            StepsTable.insert { table ->
+                table[StepsTable.idRow] = stepId
                 table[testIdRow] = dbTestId!!
                 table[parentStepIdRow] = parentStepId
-                table[identifierRow] = stepItem.key
+                table[identifierRow] = truncateString(stepItem.key, identifierRow)
                 table[nameRow] = truncateString(step.name, nameRow)
-                if (!steps.containsKey(stepItem.key)) {
-                    table[statusRow] = step.result.getStatus().name
-                }
-                table[messageRow] = step.result.getMessage()?.let {
-                    truncateString(it, columnWithNullableString = messageRow)
-                }
-                table[traceRow] = step.result.getTrace()?.let {
-                    truncateString(it, columnWithNullableString = traceRow)
-                }
+                table[statusRow] = status
+                table[screenshotMismatchRow] = screenshotMismatch
+                table[messageRow] = step.result.getMessage()
+                table[traceRow] = step.result.getTrace()
                 table[startTimeRow] = step.startTime
                 table[endTimeRow] = step.stopTime
-            } get StepsTable.idRow
+            }
 
             step.parameters.forEach { parameter ->
                 StepParametersTable.insert { table ->
-                    table[stepIdRow] = stepId
-                    table[nameRow] = parameter.key
-                    table[valueRow] = truncateString(parameter.value, valueRow)
+                    table[StepParametersTable.stepIdRow] = stepId
+                    table[nameRow] = truncateString(parameter.key, nameRow)
+                    table[valueRow] = parameter.value
                 }
             }
 
@@ -152,35 +168,69 @@ class DatabaseReporter : Reporter {
             }
 
             step.imageComparisonData?.let { imagesData ->
-                ImageComparisonInfoTable.insert { table ->
-                    table[stepIdRow] = stepId
-                    table[templateImagePathRow] = imagesData.templateImagePath
-                    table[currentImagePathRow] = imagesData.currentImagePath
-                    table[markedImagePathRow] = imagesData.markedImagePath
+                val currentImagePath = imagesData.currentImagePath
+                if (!currentImagePath.isNullOrEmpty()) {
+                    ImageComparisonInfoTable.insert { table ->
+                        table[stepIdRow] = stepId
+                        table[currentImagePathRow] = currentImagePath
+                        imagesData.templateImagePath?.let { table[templateImagePathRow] = it }
+                        imagesData.markedImagePath?.let { table[markedImagePathRow] = it }
+                    }
                 }
             }
 
-            saveSteps(stepItem.key, stepId)
+            // A container step takes the worst status of its children; a leaf keeps its own status.
+            val finalStatus = if (isContainer) {
+                val childrenStatus = saveSteps(stepItem.key, stepId)
+                if (childrenStatus != null) {
+                    StepsTable.update({ StepsTable.idRow eq stepId }) {
+                        it[statusRow] = childrenStatus
+                    }
+                    childrenStatus
+                } else {
+                    status
+                }
+            } else {
+                status
+            }
+
+            worstStatus = worseStatus(worstStatus, finalStatus)
+        }
+
+        return worstStatus
+    }
+
+    private fun worseStatus(current: String?, candidate: String): String {
+        if (current == null)
+            return candidate
+        return if (statusSeverity(candidate) > statusSeverity(current)) candidate else current
+    }
+
+    private fun statusSeverity(status: String): Int {
+        return when (status) {
+            DB_STATUS_BROKEN -> 3
+            DB_STATUS_FAILED -> 2
+            DB_STATUS_PASSED -> 1
+            else -> 0
         }
     }
 
-    private fun truncateString(
-        text: String,
-        columnWithString: Column<String>? = null,
-        columnWithNullableString: Column<String?>? = null
-    ): String {
-        val column = columnWithString ?: columnWithNullableString
-        if (column != null) {
-            val colLength = (column.columnType as VarCharColumnType).colLength
-            val textLength = text.length
-            if (textLength > colLength) {
-                Logger.warning(
-                    "Table: ${column.table.tableName}, column: ${column.name}. The value length ($textLength) exceeds the column size ($colLength) in the database and will be truncated.",
-                    "DatabaseReporter"
-                )
-                return StringUtils.abbreviate(text, colLength)
-            }
+    private fun truncateString(text: String, column: Column<String>): String {
+        val colLength = (column.columnType as VarCharColumnType).colLength
+        val textLength = text.length
+        if (textLength > colLength) {
+            Logger.warning(
+                "Table: ${column.table.tableName}, column: ${column.name}. The value length ($textLength) exceeds the column size ($colLength) in the database and will be truncated.",
+                "DatabaseReporter"
+            )
+            return StringUtils.abbreviate(text, colLength)
         }
         return text
+    }
+
+    companion object {
+        private const val DB_STATUS_PASSED = "PASSED"
+        private const val DB_STATUS_FAILED = "FAILED"
+        private const val DB_STATUS_BROKEN = "BROKEN"
     }
 }
