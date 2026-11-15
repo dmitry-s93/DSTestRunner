@@ -22,9 +22,12 @@ class WorkerThread(private val testClassName: String) : Runnable {
     override fun run() {
         Logger.info("Test started: $testClassName")
         ReporterSession.createSession()
-        Class.forName(testClassName).getDeclaredConstructor().newInstance()
-        ReporterSession.closeSession()
-        ValueStorage.clear()
-        Logger.info("Test finished: $testClassName")
+        try {
+            Class.forName(testClassName).getDeclaredConstructor().newInstance()
+        } finally {
+            ReporterSession.closeSession()
+            ValueStorage.clear()
+            Logger.info("Test finished: $testClassName")
+        }
     }
 }
