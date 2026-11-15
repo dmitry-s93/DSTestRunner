@@ -15,15 +15,16 @@
 
 package config.reporter
 
-import config.MainConfig
 import logger.Logger
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.json.JSONObject
 import reporter.database.DatabaseReporterUtils
+import java.util.UUID
 
 class DatabaseReporterConfig {
     companion object {
-        var projectId: Long? = null
+        var projectId: UUID? = null
+        var runId: UUID? = null
 
         @Synchronized
         fun load(config: JSONObject) {
@@ -36,17 +37,14 @@ class DatabaseReporterConfig {
                     val url = reporterConfig.getString("url")
                     val user = reporterConfig.getString("user")
                     val password = reporterConfig.getString("password")
+                    val configuredProjectId = readProjectId(reporterConfig)
 
-                    var createSchema = false
-                    if (reporterConfig.has("createSchema"))
-                        createSchema = reporterConfig.getBoolean("createSchema")
+                    this.projectId = configuredProjectId
 
                     DatabaseReporterUtils().connectDatabase(url, driver, user, password)
                     transaction {
-                        if (createSchema)
-                            DatabaseReporterUtils().createSchema()
-                        projectId = DatabaseReporterUtils().getProjectId((MainConfig.name))
-                        DatabaseReporterUtils().createSession(projectId!!)
+                        val resolvedProjectId = DatabaseReporterUtils().resolveProjectId(configuredProjectId)
+                        DatabaseReporterUtils().createSession(resolvedProjectId)
                     }
                 } else {
                     Logger.warning("Database Reporter config is not specified", logSource)
@@ -54,6 +52,27 @@ class DatabaseReporterConfig {
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", logSource)
                 throw e
+            }
+        }
+
+        /**
+         * The runner only writes data into an existing project created in the report application,
+         * therefore a valid project identifier is mandatory.
+         */
+        private fun readProjectId(reporterConfig: JSONObject): UUID {
+            val projectIdValue = reporterConfig.opt("projectId")
+            if (projectIdValue !is String || projectIdValue.isBlank())
+                throw IllegalArgumentException(
+                    "Database Reporter config must contain \"projectId\": the UUID of a project created in the report application"
+                )
+            val rawProjectId = projectIdValue
+            return try {
+                UUID.fromString(rawProjectId)
+            } catch (e: IllegalArgumentException) {
+                throw IllegalArgumentException(
+                    "Invalid \"projectId\" value in Database Reporter config: \"$rawProjectId\" is not a valid UUID",
+                    e
+                )
             }
         }
     }
