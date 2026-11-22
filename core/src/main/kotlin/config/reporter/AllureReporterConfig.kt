@@ -22,11 +22,11 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 class AllureReporterConfig {
-    companion object {
+    companion object : ReporterConfig {
         private lateinit var _reportDir: Path
 
         @Synchronized
-        fun load(config: JSONObject) {
+        override fun load(config: JSONObject) {
             val logSource = "AllureReporterConfig"
             try {
                 Logger.debug("Reading parameters from config", logSource)
@@ -40,12 +40,17 @@ class AllureReporterConfig {
                     _reportDir = getDefaultPath()
                     Logger.debug("Allure Reporter config is not specified. The default settings are used.", logSource)
                 }
-                Files.createDirectories(_reportDir)
-                Logger.info("The test results will be saved to the \"$_reportDir\" directory", logSource)
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", logSource)
                 throw e
             }
+        }
+
+        @Synchronized
+        override fun prepare() {
+            val logSource = "AllureReporterConfig"
+            Files.createDirectories(_reportDir)
+            Logger.info("The test results will be saved to the \"$_reportDir\" directory", logSource)
         }
 
         private fun getDefaultPath(): Path {

@@ -22,11 +22,18 @@ import config.browser.SafariOptionsConfig
 import config.reporter.AllureReporterConfig
 import config.reporter.CsvReporterConfig
 import config.reporter.DatabaseReporterConfig
+import config.reporter.ReporterConfig
 import logger.Logger
 import org.json.JSONObject
 import utils.ResourceUtils
 
 class ConfigLoader {
+    private val reporterConfigs: Map<String, ReporterConfig> = mapOf(
+        "reporter.allure.AllureReporter" to AllureReporterConfig,
+        "reporter.csv.CsvReporter" to CsvReporterConfig,
+        "reporter.database.DatabaseReporter" to DatabaseReporterConfig
+    )
+
     @Synchronized
     fun loadConfiguration(configName: String) {
         try {
@@ -49,14 +56,29 @@ class ConfigLoader {
             DatabaseListConfig.load(config)
             UserListConfig.load(config)
 
-            if (MainConfig.reporterImpl.contains("reporter.allure.AllureReporter"))
-                AllureReporterConfig.load(config)
-            if (MainConfig.reporterImpl.contains("reporter.csv.CsvReporter"))
-                CsvReporterConfig.load(config)
-            if (MainConfig.reporterImpl.contains("reporter.database.DatabaseReporter"))
-                DatabaseReporterConfig.load(config)
+            reporterConfigs.forEach { (className, cfg) ->
+                if (MainConfig.reporterImpl.contains(className))
+                    cfg.load(config)
+            }
         } catch (e: Exception) {
             Logger.error("An error occurred while reading the config", "ConfigLoader")
+            throw e
+        }
+    }
+
+    /**
+     * Performs the side effects of the enabled reporters. Must be called after the session
+     * parameters are known, because reporters may register a run with them.
+     */
+    @Synchronized
+    fun prepareReporters() {
+        try {
+            reporterConfigs.forEach { (className, cfg) ->
+                if (MainConfig.reporterImpl.contains(className))
+                    cfg.prepare()
+            }
+        } catch (e: Exception) {
+            Logger.error("An error occurred while preparing the reporters", "ConfigLoader")
             throw e
         }
     }

@@ -27,13 +27,16 @@ fun main(args: Array<String>) {
     println("Program arguments: ${args.joinToString()}")
 
     val argsHashMap = parseArguments(args)
-    ConfigLoader().loadConfiguration(getConfigurationFile(argsHashMap))
+    val configLoader = ConfigLoader()
+    configLoader.loadConfiguration(getConfigurationFile(argsHashMap))
 
     val threadCount = getThreadCount(argsHashMap)
     val testList = getTestList(getSpecifiedTests(argsHashMap))
 
     SessionParametersStorage.threadCount = threadCount
     SessionParametersStorage.testCount = testList.size
+
+    configLoader.prepareReporters()
 
     executeTests(testList, threadCount)
 }
