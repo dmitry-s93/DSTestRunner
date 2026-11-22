@@ -19,39 +19,54 @@ import logger.Logger
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.json.JSONObject
 import reporter.database.DatabaseReporterUtils
+import storage.SessionParametersStorage
 import java.util.UUID
 
 class DatabaseReporterConfig {
-    companion object {
+    companion object : ReporterConfig {
         var projectId: UUID? = null
         var runId: UUID? = null
 
+        private var driver: String? = null
+        private var url: String? = null
+        private var user: String? = null
+        private var password: String? = null
+
         @Synchronized
-        fun load(config: JSONObject) {
+        override fun load(config: JSONObject) {
             val logSource = "DatabaseReporterConfig"
             try {
                 Logger.debug("Reading parameters from config", logSource)
                 if (config.has("DatabaseReporter")) {
                     val reporterConfig = config.getJSONObject("DatabaseReporter")
-                    val driver = reporterConfig.getString("driver")
-                    val url = reporterConfig.getString("url")
-                    val user = reporterConfig.getString("user")
-                    val password = reporterConfig.getString("password")
+                    driver = reporterConfig.getString("driver")
+                    url = reporterConfig.getString("url")
+                    user = reporterConfig.getString("user")
+                    password = reporterConfig.getString("password")
                     val configuredProjectId = readProjectId(reporterConfig)
 
                     this.projectId = configuredProjectId
-
-                    DatabaseReporterUtils().connectDatabase(url, driver, user, password)
-                    transaction {
-                        val resolvedProjectId = DatabaseReporterUtils().resolveProjectId(configuredProjectId)
-                        DatabaseReporterUtils().createSession(resolvedProjectId)
-                    }
                 } else {
                     Logger.warning("Database Reporter config is not specified", logSource)
                 }
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", logSource)
                 throw e
+            }
+        }
+
+        @Synchronized
+        override fun prepare() {
+            if (SessionParametersStorage.threadCount <= 0)
+                throw IllegalStateException(
+                    "Reporter preparation must run after session parameters are initialized"
+                )
+
+            val reporterUtils = DatabaseReporterUtils()
+            reporterUtils.connectDatabase(url!!, driver!!, user!!, password!!)
+            transaction {
+                val resolvedProjectId = reporterUtils.resolveProjectId(projectId!!)
+                reporterUtils.createSession(resolvedProjectId)
             }
         }
 

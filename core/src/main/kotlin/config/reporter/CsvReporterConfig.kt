@@ -22,11 +22,11 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 class CsvReporterConfig {
-    companion object {
+    companion object : ReporterConfig {
         private lateinit var _reportDir: Path
 
         @Synchronized
-        fun load(config: JSONObject) {
+        override fun load(config: JSONObject) {
             val logSource = "CsvReporterConfig"
             try {
                 Logger.debug("Reading parameters from config", logSource)
@@ -40,12 +40,17 @@ class CsvReporterConfig {
                     _reportDir = getDefaultPath()
                     Logger.debug("CSV Reporter config is not specified. The default settings are used.", logSource)
                 }
-                Files.createDirectories(_reportDir)
-                Logger.debug("reportDir = $_reportDir", logSource)
             } catch (e: org.json.JSONException) {
                 Logger.error("An error occurred while reading the config", "ReporterConfig")
                 throw e
             }
+        }
+
+        @Synchronized
+        override fun prepare() {
+            val logSource = "CsvReporterConfig"
+            Files.createDirectories(_reportDir)
+            Logger.debug("reportDir = $_reportDir", logSource)
         }
 
         private fun getDefaultPath(): Path {

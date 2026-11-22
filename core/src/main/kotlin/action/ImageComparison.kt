@@ -25,7 +25,11 @@ class ImageComparisonData(
     var templateImage: BufferedImage? = null,
     var templateImagePath: String? = null,
     var markedImage: BufferedImage? = null,
-    var markedImagePath: String? = null
+    var markedImagePath: String? = null,
+    /** True when the step compares screenshots, regardless of the outcome and of saved paths. */
+    val isComparisonStep: Boolean = false,
+    /** True when the comparison was performed and found a difference; a missing template counts. */
+    val mismatch: Boolean = false
 )
 
 class ScreenshotData(
