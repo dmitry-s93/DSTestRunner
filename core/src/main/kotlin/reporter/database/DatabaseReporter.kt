@@ -120,21 +120,26 @@ class DatabaseReporter : Reporter {
     }
 
     /**
-     * Writes all direct children of the step identified by [id] and returns the worst status among
-     * the written steps, or null when the step has no children.
+     * Writes all direct children of the step identified by [id].
+     *
+     * Invariants the written rows must satisfy, because the visual-diff status is derived from the
+     * (status, comparison_mismatch) pair when the data is read:
+     * 1. comparison_mismatch = true is possible only together with is_comparison_step = true;
+     * 2. comparison_mismatch = true means the comparison was performed and found a difference;
+     *    a missing template counts as a difference;
+     * 3. a technical failure of the comparison is written as status = BROKEN with
+     *    comparison_mismatch = false;
+     * 4. status is NULL only for container steps, leaf steps always carry a status;
+     * 5. is_comparison_step = false for container steps.
+     * Invariants 1 and 3 are additionally backed by database constraints on comparison_mismatch.
      */
-    private fun saveSteps(id: String, parentStepId: UUID? = null): String? {
-        var worstStatus: String? = null
-
+    private fun saveSteps(id: String, parentStepId: UUID? = null) {
         steps[id]?.forEach { stepItem ->
             val step = stepItem.value
             val stepId = UUID.randomUUID()
             val isContainer = steps.containsKey(stepItem.key)
-            val screenshotMismatch = step.imageComparisonData?.markedImagePath != null
-
-            // TODO(temporary): screenshot mismatch is reported as BROKEN by ImageComparison;
-            // remap to FAILED until the runner reports FAILED directly.
-            val status = if (screenshotMismatch) DB_STATUS_FAILED else step.result.getStatus().name
+            val comparisonMismatch = !isContainer && step.imageComparisonData?.mismatch == true
+            val isComparisonStep = !isContainer && step.imageComparisonData?.isComparisonStep == true
 
             StepsTable.insert { table ->
                 table[StepsTable.idRow] = stepId
@@ -142,8 +147,10 @@ class DatabaseReporter : Reporter {
                 table[parentStepIdRow] = parentStepId
                 table[identifierRow] = truncateString(stepItem.key, identifierRow)
                 table[nameRow] = truncateString(step.name, nameRow)
-                table[statusRow] = status
-                table[screenshotMismatchRow] = screenshotMismatch
+                // A container has no stored status: it is computed from its leaves when read.
+                table[statusRow] = if (isContainer) null else step.result.getStatus().name
+                table[comparisonMismatchRow] = comparisonMismatch
+                table[isComparisonStepRow] = isComparisonStep
                 table[messageRow] = step.result.getMessage()
                 table[traceRow] = step.result.getTrace()
                 table[startTimeRow] = step.startTime
@@ -179,39 +186,8 @@ class DatabaseReporter : Reporter {
                 }
             }
 
-            // A container step takes the worst status of its children; a leaf keeps its own status.
-            val finalStatus = if (isContainer) {
-                val childrenStatus = saveSteps(stepItem.key, stepId)
-                if (childrenStatus != null) {
-                    StepsTable.update({ StepsTable.idRow eq stepId }) {
-                        it[statusRow] = childrenStatus
-                    }
-                    childrenStatus
-                } else {
-                    status
-                }
-            } else {
-                status
-            }
-
-            worstStatus = worseStatus(worstStatus, finalStatus)
-        }
-
-        return worstStatus
-    }
-
-    private fun worseStatus(current: String?, candidate: String): String {
-        if (current == null)
-            return candidate
-        return if (statusSeverity(candidate) > statusSeverity(current)) candidate else current
-    }
-
-    private fun statusSeverity(status: String): Int {
-        return when (status) {
-            DB_STATUS_BROKEN -> 3
-            DB_STATUS_FAILED -> 2
-            DB_STATUS_PASSED -> 1
-            else -> 0
+            if (isContainer)
+                saveSteps(stepItem.key, stepId)
         }
     }
 
@@ -226,11 +202,5 @@ class DatabaseReporter : Reporter {
             return StringUtils.abbreviate(text, colLength)
         }
         return text
-    }
-
-    companion object {
-        private const val DB_STATUS_PASSED = "PASSED"
-        private const val DB_STATUS_FAILED = "FAILED"
-        private const val DB_STATUS_BROKEN = "BROKEN"
     }
 }

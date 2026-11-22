@@ -48,7 +48,7 @@ class ImageComparison(stepId: String, private val testId: String, parentId: Stri
         if (currentScreenshotDir.isEmpty() || templateScreenshotDir.isEmpty()) {
             return Pair(
                 ActionResult(ActionStatus.BROKEN, Localization.get("ScreenshotCompare.ScreenshotPathsNotSpecified")),
-                ImageComparisonData(currentImage)
+                ImageComparisonData(currentImage, isComparisonStep = true)
             )
         }
         try {
@@ -63,7 +63,8 @@ class ImageComparison(stepId: String, private val testId: String, parentId: Stri
                         ImageComparisonData(
                             currentImage = currentImage, currentImagePath = currentImageRelativePath,
                             templateImage = templateImage, templateImagePath = templateImageRelativePath,
-                            markedImage = markedImage, markedImagePath = markedImageRelativePath
+                            markedImage = markedImage, markedImagePath = markedImageRelativePath,
+                            isComparisonStep = true, mismatch = true
                         )
                     )
                 }
@@ -74,20 +75,25 @@ class ImageComparison(stepId: String, private val testId: String, parentId: Stri
                         ActionResult(ActionStatus.BROKEN, Localization.get("ScreenshotCompare.ReferenceScreenshotMissingWithSave")),
                         ImageComparisonData(
                             currentImage = currentImage, currentImagePath = currentImageRelativePath,
-                            templateImage = templateImage, templateImagePath = templateImageRelativePath
+                            templateImage = templateImage, templateImagePath = templateImageRelativePath,
+                            isComparisonStep = true, mismatch = true
                         )
                     )
                 }
                 return Pair(
                     ActionResult(ActionStatus.BROKEN, Localization.get("ScreenshotCompare.ReferenceScreenshotMissing")),
-                    ImageComparisonData(currentImage = currentImage, currentImagePath = currentImageRelativePath)
+                    ImageComparisonData(
+                        currentImage = currentImage, currentImagePath = currentImageRelativePath,
+                        isComparisonStep = true, mismatch = true
+                    )
                 )
             }
             return Pair(
                 ActionResult(ActionStatus.PASSED, null),
                 ImageComparisonData(
                     currentImage = currentImage, currentImagePath = currentImageRelativePath,
-                    templateImage = templateImage, templateImagePath = templateImageRelativePath
+                    templateImage = templateImage, templateImagePath = templateImageRelativePath,
+                    isComparisonStep = true
                 )
             )
         } catch (e: Exception) {
@@ -97,7 +103,7 @@ class ImageComparison(stepId: String, private val testId: String, parentId: Stri
                     Localization.get("ScreenshotCompare.GeneralError", e.message),
                     e.stackTraceToString()
                 ),
-                ImageComparisonData(currentImage)
+                ImageComparisonData(currentImage, isComparisonStep = true)
             )
         }
     }
