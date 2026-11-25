@@ -126,7 +126,7 @@ class DatabaseReporter : Reporter {
      * (status, comparison_mismatch) pair when the data is read:
      * 1. comparison_mismatch = true is possible only together with is_comparison_step = true;
      * 2. comparison_mismatch = true means the comparison was performed and found a difference;
-     *    a missing template counts as a difference;
+     *    a missing baseline counts as a difference;
      * 3. a technical failure of the comparison is written as status = BROKEN with
      *    comparison_mismatch = false;
      * 4. status is NULL only for container steps, leaf steps always carry a status;
@@ -175,13 +175,13 @@ class DatabaseReporter : Reporter {
             }
 
             step.imageComparisonData?.let { imagesData ->
-                val currentImagePath = imagesData.currentImagePath
-                if (!currentImagePath.isNullOrEmpty()) {
+                val actualImagePath = imagesData.actualImagePath
+                if (!actualImagePath.isNullOrEmpty()) {
                     ImageComparisonInfoTable.insert { table ->
                         table[stepIdRow] = stepId
-                        table[currentImagePathRow] = currentImagePath
-                        imagesData.templateImagePath?.let { table[templateImagePathRow] = it }
-                        imagesData.markedImagePath?.let { table[markedImagePathRow] = it }
+                        table[actualImagePathRow] = actualImagePath
+                        imagesData.baselineImagePath?.let { table[baselineImagePathRow] = it }
+                        imagesData.diffImagePath?.let { table[diffImagePathRow] = it }
                     }
                 }
             }

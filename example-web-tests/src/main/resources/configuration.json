@@ -16,11 +16,11 @@
   },
   "Screenshot": {
     "takeScreenshotOnError": true,
-    "saveTemplateIfMissing": true,
+    "saveBaselineIfMissing": true,
     "allowableDifference": 20,
     "waitTimeBeforeScreenshot": 0,
-    "templateScreenshotDir": "/home/user/Screenshots/Web/template",
-    "currentScreenshotDir": "/home/user/Screenshots/Web/current"
+    "baselineScreenshotDir": "/home/user/Screenshots/Web/template",
+    "actualScreenshotDir": "/home/user/Screenshots/Web/current"
   },
   "ChromeOptions": [
     "window-size=1280,1024",

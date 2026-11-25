@@ -29,61 +29,61 @@ import javax.imageio.ImageIO
 import javax.swing.GrayFilter
 
 class ImageComparison(stepId: String, private val testId: String, parentId: String, screenshotData: ScreenshotData) {
-    private val currentScreenshotDir = ScreenshotConfig.currentScreenshotDir
-    private val templateScreenshotDir = ScreenshotConfig.templateScreenshotDir
+    private val actualScreenshotDir = ScreenshotConfig.actualScreenshotDir
+    private val baselineScreenshotDir = ScreenshotConfig.baselineScreenshotDir
 
     private val fileName = "${parentId.replace(".", "_")}_${stepId}"
-    private val templateImageRelativePath = Paths.get(testId, "${fileName}.png").toString()
-    private val currentImageRelativePath = Paths.get(MainConfig.sessionId.toString(), testId, "${fileName}.png").toString()
-    private val markedImageRelativePath = Paths.get(MainConfig.sessionId.toString(), testId, "${fileName}_marked.png").toString()
+    private val baselineImageRelativePath = Paths.get(testId, "${fileName}.png").toString()
+    private val actualImageRelativePath = Paths.get(MainConfig.sessionId.toString(), testId, "${fileName}.png").toString()
+    private val diffImageRelativePath = Paths.get(MainConfig.sessionId.toString(), testId, "${fileName}_marked.png").toString()
 
-    private var currentImage = screenshotData.image
-    private var templateImage: BufferedImage? = null
-    private var markedImage: BufferedImage? = null
+    private var actualImage = screenshotData.image
+    private var baselineImage: BufferedImage? = null
+    private var diffImage: BufferedImage? = null
 
     private val ignoredAreas = screenshotData.ignoredAreas
     private val coordsToCompare = screenshotData.coordsToCompare
 
     fun compare(): Pair<ActionResult, ImageComparisonData> {
-        if (currentScreenshotDir.isEmpty() || templateScreenshotDir.isEmpty()) {
+        if (actualScreenshotDir.isEmpty() || baselineScreenshotDir.isEmpty()) {
             return Pair(
                 ActionResult(ActionStatus.BROKEN, Localization.get("ScreenshotCompare.ScreenshotPathsNotSpecified")),
-                ImageComparisonData(currentImage, isComparisonStep = true)
+                ImageComparisonData(actualImage, isComparisonStep = true)
             )
         }
         try {
-            markIgnoredAreas(currentImage, ignoredAreas)
-            saveCurrentImage(currentImage)
-            templateImage = readTemplateImage()
-            if (templateImage != null) {
+            markIgnoredAreas(actualImage, ignoredAreas)
+            saveActualImage(actualImage)
+            baselineImage = readBaselineImage()
+            if (baselineImage != null) {
                 compareImages()
-                if (markedImage != null) {
+                if (diffImage != null) {
                     return Pair(
-                        ActionResult(ActionStatus.BROKEN, Localization.get("ScreenshotCompare.CurrentScreenshotNotMatchReference")),
+                        ActionResult(ActionStatus.BROKEN, Localization.get("ScreenshotCompare.ActualScreenshotNotMatchBaseline")),
                         ImageComparisonData(
-                            currentImage = currentImage, currentImagePath = currentImageRelativePath,
-                            templateImage = templateImage, templateImagePath = templateImageRelativePath,
-                            markedImage = markedImage, markedImagePath = markedImageRelativePath,
+                            actualImage = actualImage, actualImagePath = actualImageRelativePath,
+                            baselineImage = baselineImage, baselineImagePath = baselineImageRelativePath,
+                            diffImage = diffImage, diffImagePath = diffImageRelativePath,
                             isComparisonStep = true, mismatch = true
                         )
                     )
                 }
             } else {
-                if (ScreenshotConfig.saveTemplateIfMissing) {
-                    saveTemplateImage(currentImage)
+                if (ScreenshotConfig.saveBaselineIfMissing) {
+                    saveBaselineImage(actualImage)
                     return Pair(
-                        ActionResult(ActionStatus.BROKEN, Localization.get("ScreenshotCompare.ReferenceScreenshotMissingWithSave")),
+                        ActionResult(ActionStatus.BROKEN, Localization.get("ScreenshotCompare.BaselineScreenshotMissingWithSave")),
                         ImageComparisonData(
-                            currentImage = currentImage, currentImagePath = currentImageRelativePath,
-                            templateImage = templateImage, templateImagePath = templateImageRelativePath,
+                            actualImage = actualImage, actualImagePath = actualImageRelativePath,
+                            baselineImage = baselineImage, baselineImagePath = baselineImageRelativePath,
                             isComparisonStep = true, mismatch = true
                         )
                     )
                 }
                 return Pair(
-                    ActionResult(ActionStatus.BROKEN, Localization.get("ScreenshotCompare.ReferenceScreenshotMissing")),
+                    ActionResult(ActionStatus.BROKEN, Localization.get("ScreenshotCompare.BaselineScreenshotMissing")),
                     ImageComparisonData(
-                        currentImage = currentImage, currentImagePath = currentImageRelativePath,
+                        actualImage = actualImage, actualImagePath = actualImageRelativePath,
                         isComparisonStep = true, mismatch = true
                     )
                 )
@@ -91,8 +91,8 @@ class ImageComparison(stepId: String, private val testId: String, parentId: Stri
             return Pair(
                 ActionResult(ActionStatus.PASSED, null),
                 ImageComparisonData(
-                    currentImage = currentImage, currentImagePath = currentImageRelativePath,
-                    templateImage = templateImage, templateImagePath = templateImageRelativePath,
+                    actualImage = actualImage, actualImagePath = actualImageRelativePath,
+                    baselineImage = baselineImage, baselineImagePath = baselineImageRelativePath,
                     isComparisonStep = true
                 )
             )
@@ -103,45 +103,45 @@ class ImageComparison(stepId: String, private val testId: String, parentId: Stri
                     Localization.get("ScreenshotCompare.GeneralError", e.message),
                     e.stackTraceToString()
                 ),
-                ImageComparisonData(currentImage, isComparisonStep = true)
+                ImageComparisonData(actualImage, isComparisonStep = true)
             )
         }
     }
 
-    private fun saveCurrentImage(image: BufferedImage) {
-        val file = Paths.get(currentScreenshotDir, currentImageRelativePath).toFile()
+    private fun saveActualImage(image: BufferedImage) {
+        val file = Paths.get(actualScreenshotDir, actualImageRelativePath).toFile()
         ImageUtils().saveImage(image, file)
     }
 
-    private fun readTemplateImage(): BufferedImage? {
-        val file = Paths.get(templateScreenshotDir, templateImageRelativePath).toFile()
+    private fun readBaselineImage(): BufferedImage? {
+        val file = Paths.get(baselineScreenshotDir, baselineImageRelativePath).toFile()
         if (file.exists())
             return ImageIO.read(file)
         return null
     }
 
-    private fun saveTemplateImage(image: BufferedImage) {
-        val file = Paths.get(templateScreenshotDir, templateImageRelativePath).toFile()
+    private fun saveBaselineImage(image: BufferedImage) {
+        val file = Paths.get(baselineScreenshotDir, baselineImageRelativePath).toFile()
         ImageUtils().saveImage(image, file)
-        templateImage = currentImage
+        baselineImage = actualImage
     }
 
     private fun compareImages() {
-        if (templateImage != null) {
+        if (baselineImage != null) {
             val expandedIgnoredAreas = expandAreas(ignoredAreas, ScreenshotConfig.expandIgnoredAreasByPixels)
 
-            val templateScreenshot = Screenshot(templateImage)
-            templateScreenshot.coordsToCompare = coordsToCompare
-            templateScreenshot.ignoredAreas = expandedIgnoredAreas
+            val baselineScreenshot = Screenshot(baselineImage)
+            baselineScreenshot.coordsToCompare = coordsToCompare
+            baselineScreenshot.ignoredAreas = expandedIgnoredAreas
 
-            val currentScreenshot = Screenshot(currentImage)
-            currentScreenshot.coordsToCompare = coordsToCompare
-            currentScreenshot.ignoredAreas = expandedIgnoredAreas
+            val actualScreenshot = Screenshot(actualImage)
+            actualScreenshot.coordsToCompare = coordsToCompare
+            actualScreenshot.ignoredAreas = expandedIgnoredAreas
 
-            val imageDiff = ImageDiffer().makeDiff(templateScreenshot, currentScreenshot)
+            val imageDiff = ImageDiffer().makeDiff(baselineScreenshot, actualScreenshot)
             if (imageDiff.hasDiff() && imageDiff.diffSize > ScreenshotConfig.allowableDifference) {
-                markedImage = imageDiff.markedImage
-                ImageUtils().saveImage(markedImage!!, Paths.get(currentScreenshotDir, markedImageRelativePath).toFile())
+                diffImage = imageDiff.markedImage
+                ImageUtils().saveImage(diffImage!!, Paths.get(actualScreenshotDir, diffImageRelativePath).toFile())
             }
         }
     }

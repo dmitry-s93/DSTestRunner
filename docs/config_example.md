@@ -14,13 +14,13 @@
   },
   "Screenshot": {
     "takeScreenshotOnError": true,
-    "saveTemplateIfMissing": true,
+    "saveBaselineIfMissing": true,
     "allowableDifference": 20,
     "waitTimeBeforeScreenshot": 0,
     "executeJavaScriptBeforeScreenshot": "js/before_screenshot.js",
     "executeJavaScriptAfterScreenshot": "js/after_screenshot.js",
-    "templateScreenshotDir": "/home/user/Screenshots/Web/template",
-    "currentScreenshotDir": "/home/user/Screenshots/Web/current"
+    "baselineScreenshotDir": "/home/user/Screenshots/Web/template",
+    "actualScreenshotDir": "/home/user/Screenshots/Web/current"
   },
   "WebDriver": {
     "browser": "Chrome",
@@ -81,11 +81,11 @@
   },
   "Screenshot": {
     "takeScreenshotOnError": true,
-    "saveTemplateIfMissing": true,
+    "saveBaselineIfMissing": true,
     "allowableDifference": 20,
     "waitTimeBeforeScreenshot": 0,
-    "templateScreenshotDir": "/home/user/Screenshots/Android/template",
-    "currentScreenshotDir": "/home/user/Screenshots/Android/current"
+    "baselineScreenshotDir": "/home/user/Screenshots/Android/template",
+    "actualScreenshotDir": "/home/user/Screenshots/Android/current"
   },
   "AppiumDriver": {
     "pageLoadTimeout": 20000,
@@ -159,11 +159,11 @@
   },
   "Screenshot": {
     "takeScreenshotOnError": true,
-    "saveTemplateIfMissing": true,
+    "saveBaselineIfMissing": true,
     "allowableDifference": 20,
     "waitTimeBeforeScreenshot": 0,
-    "templateScreenshotDir": "/home/user/Screenshots/iOS/template",
-    "currentScreenshotDir": "/home/user/Screenshots/iOS/current"
+    "baselineScreenshotDir": "/home/user/Screenshots/iOS/template",
+    "actualScreenshotDir": "/home/user/Screenshots/iOS/current"
   },
   "AppiumDriver": {
     "pageLoadTimeout": 20000,
@@ -219,3 +219,7 @@
   }
 }
 ```
+
+### Deprecated `Screenshot` parameters
+
+The deprecated parameters `currentScreenshotDir`, `templateScreenshotDir` and `saveTemplateIfMissing` are still accepted. A deprecation warning is written to the log for each of them. If both the new and the deprecated parameter are set, the new one wins.

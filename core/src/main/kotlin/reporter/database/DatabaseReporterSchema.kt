@@ -27,8 +27,8 @@ object ProjectsTable : Table("projects") {
     val idRow: Column<UUID> = uuid("id")
     val nameRow: Column<String> = varchar("name", length = 100).uniqueIndex()
     val descriptionRow: Column<String?> = varchar("description", length = 500).nullable()
-    val templatesBaseDirRow: Column<String?> = text("templates_base_dir").nullable()
-    val currentScreenshotsBaseDirRow: Column<String?> = text("current_screenshots_base_dir").nullable()
+    val baselineImagesBaseDirRow: Column<String?> = text("baseline_images_base_dir").nullable()
+    val actualImagesBaseDirRow: Column<String?> = text("actual_images_base_dir").nullable()
     val versionRow: Column<Long> = long("version").default(1)
     val createdAtRow: Column<Instant> = timestamp("created_at")
     val updatedAtRow: Column<Instant> = timestamp("updated_at")
@@ -94,7 +94,7 @@ object ErrorImagesTable : Table("error_images") {
 
 object ImageComparisonInfoTable : Table("image_comparison_info") {
     val stepIdRow: Column<UUID> = (uuid("step_id") references StepsTable.idRow).uniqueIndex()
-    val currentImagePathRow: Column<String> = text("current_image_path")
-    val templateImagePathRow: Column<String?> = text("template_image_path").nullable()
-    val markedImagePathRow: Column<String?> = text("marked_image_path").nullable()
+    val actualImagePathRow: Column<String> = text("actual_image_path")
+    val baselineImagePathRow: Column<String?> = text("baseline_image_path").nullable()
+    val diffImagePathRow: Column<String?> = text("diff_image_path").nullable()
 }

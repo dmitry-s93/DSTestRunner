@@ -67,9 +67,9 @@ class AllureReporter : Reporter {
         val status = actionResult.getStatus()
         val attachments = imageComparisonData?.let { getScreenDataAttachments(it) } ?: getErrorImageAttachment(actionResult)
         imageComparisonData?.let { imagesData ->
-            imagesData.currentImagePath?.let { parameters["currentImagePath"] = it }
-            imagesData.templateImagePath?.let {  parameters["templateImagePath"] = it }
-            imagesData.markedImagePath?.let { parameters["markedImagePath"] = it }
+            imagesData.actualImagePath?.let { parameters["actualImagePath"] = it }
+            imagesData.baselineImagePath?.let {  parameters["baselineImagePath"] = it }
+            imagesData.diffImagePath?.let { parameters["diffImagePath"] = it }
         }
         with(step) {
             put("name", name)
@@ -235,13 +235,13 @@ class AllureReporter : Reporter {
 
     private fun getScreenDataAttachments(imageComparisonData: ImageComparisonData): JSONArray {
         val attachments = JSONArray()
-        attachments.put(attachImage(Localization.get("AllureReporter.CurrentScreenshot"), imageComparisonData.currentImage))
-        if (imageComparisonData.markedImage != null) {
-            imageComparisonData.templateImage?.let {
-                attachments.put(attachImage(Localization.get("AllureReporter.ReferenceScreenshot"), it))
+        attachments.put(attachImage(Localization.get("AllureReporter.ActualScreenshot"), imageComparisonData.actualImage))
+        if (imageComparisonData.diffImage != null) {
+            imageComparisonData.baselineImage?.let {
+                attachments.put(attachImage(Localization.get("AllureReporter.BaselineScreenshot"), it))
             }
-            imageComparisonData.markedImage?.let {
-                attachments.put(attachImage(Localization.get("AllureReporter.MarkedScreenshot"), it))
+            imageComparisonData.diffImage?.let {
+                attachments.put(attachImage(Localization.get("AllureReporter.DiffScreenshot"), it))
             }
         }
         return attachments
