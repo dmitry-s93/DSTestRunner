@@ -23,13 +23,13 @@ class ScreenshotConfig {
     companion object {
         var takeScreenshotOnError: Boolean = true
             private set
-        var saveTemplateIfMissing: Boolean = false
+        var saveBaselineIfMissing: Boolean = false
             private set
         var allowableDifference: Int = 20
             private set
-        var templateScreenshotDir: String = ""
+        var baselineScreenshotDir: String = ""
             private set
-        var currentScreenshotDir: String = ""
+        var actualScreenshotDir: String = ""
             private set
         var waitTimeBeforeScreenshot: Long = 0
             private set
@@ -48,14 +48,26 @@ class ScreenshotConfig {
                     val screenshotConfig = config.getJSONObject("Screenshot")
                     if (screenshotConfig.has("takeScreenshotOnError"))
                         takeScreenshotOnError = screenshotConfig.getBoolean("takeScreenshotOnError")
-                    if (screenshotConfig.has("saveTemplateIfMissing"))
-                        saveTemplateIfMissing = screenshotConfig.getBoolean("saveTemplateIfMissing")
+                    saveBaselineIfMissing = readBooleanParameter(
+                        screenshotConfig,
+                        "saveBaselineIfMissing",
+                        "saveTemplateIfMissing",
+                        false
+                    )
                     if (screenshotConfig.has("allowableDifference"))
                         allowableDifference = screenshotConfig.getInt("allowableDifference")
-                    if (screenshotConfig.has("templateScreenshotDir"))
-                        templateScreenshotDir = screenshotConfig.getString("templateScreenshotDir")
-                    if (screenshotConfig.has("currentScreenshotDir"))
-                        currentScreenshotDir = screenshotConfig.getString("currentScreenshotDir")
+                    baselineScreenshotDir = readStringParameter(
+                        screenshotConfig,
+                        "baselineScreenshotDir",
+                        "templateScreenshotDir",
+                        ""
+                    )
+                    actualScreenshotDir = readStringParameter(
+                        screenshotConfig,
+                        "actualScreenshotDir",
+                        "currentScreenshotDir",
+                        ""
+                    )
                     if (screenshotConfig.has("waitTimeBeforeScreenshot"))
                         waitTimeBeforeScreenshot = screenshotConfig.getLong("waitTimeBeforeScreenshot")
                     if (screenshotConfig.has("executeJavaScriptBeforeScreenshot")) {
@@ -73,6 +85,48 @@ class ScreenshotConfig {
                 Logger.error("An error occurred while reading the config", "ScreenshotConfig")
                 throw e
             }
+        }
+
+        /**
+         * Reads a string parameter, preferring [name] and falling back to the deprecated [deprecatedName].
+         * The fallback keeps configs written before the parameter was renamed working.
+         */
+        private fun readStringParameter(
+            config: JSONObject,
+            name: String,
+            deprecatedName: String,
+            defaultValue: String
+        ): String {
+            if (config.has(name))
+                return config.getString(name)
+            if (config.has(deprecatedName)) {
+                warnDeprecatedParameter(deprecatedName, name)
+                return config.getString(deprecatedName)
+            }
+            return defaultValue
+        }
+
+        /**
+         * Reads a boolean parameter, preferring [name] and falling back to the deprecated [deprecatedName].
+         * The fallback keeps configs written before the parameter was renamed working.
+         */
+        private fun readBooleanParameter(
+            config: JSONObject,
+            name: String,
+            deprecatedName: String,
+            defaultValue: Boolean
+        ): Boolean {
+            if (config.has(name))
+                return config.getBoolean(name)
+            if (config.has(deprecatedName)) {
+                warnDeprecatedParameter(deprecatedName, name)
+                return config.getBoolean(deprecatedName)
+            }
+            return defaultValue
+        }
+
+        private fun warnDeprecatedParameter(deprecatedName: String, name: String) {
+            Logger.warning("Parameter $deprecatedName is deprecated, use $name", "ScreenshotConfig")
         }
     }
 }

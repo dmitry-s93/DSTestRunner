@@ -20,15 +20,15 @@ import pazone.ashot.coordinates.Coords
 import java.awt.image.BufferedImage
 
 class ImageComparisonData(
-    val currentImage: BufferedImage,
-    val currentImagePath: String? = null,
-    var templateImage: BufferedImage? = null,
-    var templateImagePath: String? = null,
-    var markedImage: BufferedImage? = null,
-    var markedImagePath: String? = null,
+    val actualImage: BufferedImage,
+    val actualImagePath: String? = null,
+    var baselineImage: BufferedImage? = null,
+    var baselineImagePath: String? = null,
+    var diffImage: BufferedImage? = null,
+    var diffImagePath: String? = null,
     /** True when the step compares screenshots, regardless of the outcome and of saved paths. */
     val isComparisonStep: Boolean = false,
-    /** True when the comparison was performed and found a difference; a missing template counts. */
+    /** True when the comparison was performed and found a difference; a missing baseline counts. */
     val mismatch: Boolean = false
 )
 
